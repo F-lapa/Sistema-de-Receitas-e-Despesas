@@ -236,48 +236,17 @@
         </div>
     </div>
 
-    <!-- Adicione o SDK do Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
-    
-  
-    
-    
     <script>
-        // Coloque aqui a configuração do seu Firebase
-       const firebaseConfig = {
-  apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
-  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
-  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
-  projectId: "sistema-de-receitas-e-despesas",
-  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-  messagingSenderId: "252102478972",
-  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
-  measurementId: "G-K2HCS7WNZV"
-};
-
-        // Inicialize o Firebase
-        firebase.initializeApp(firebaseConfig);
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        
-if (localStorage.getItem('loggedIn') !== 'true') {
+        if (localStorage.getItem('loggedIn') !== 'true') {
             window.location.href = 'index.html';
         }
 
         const username = localStorage.getItem('username');
-        let transactions = [];
-
-        firebase.database().ref(`users/${username}/transactions`).on('value', (snapshot) => {
-            transactions = snapshot.val() ? Object.values(snapshot.val()) : [];
-            updateDescriptionList();
-            updateFilteredView();
-            calculateBalances();
-        });
+        let transactions = JSON.parse(localStorage.getItem(`transactions_${username}`)) || [];
+        let lastTransaction = null;
 
         function saveTransactions() {
-            firebase.database().ref(`users/${username}/transactions`).set(transactions);
+            localStorage.setItem(`transactions_${username}`, JSON.stringify(transactions));
         }
 
         function formatCurrency(value) {
@@ -285,7 +254,7 @@ if (localStorage.getItem('loggedIn') !== 'true') {
         }
 
         function parseCurrency(value) {
-            return parseFloat(value.replace(/[^\d,-]/g, '').replace(',', '.')) || 0;
+            return parseFloat(value.replace(/\./g, '').replace(',', '.').replace('R$', '')) || 0;
         }
 
         function addTransaction() {
