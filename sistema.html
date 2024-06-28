@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Receitas e Despesas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            position: relative;
+        }
+        h1 {
+            text-align: center;
+            color: #333333;
+            margin-bottom: 30px;
+        }
+        .logout {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            color: #007bff;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555555;
+        }
+        input[type="text"], input[type="number"], input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .date-group {
+            display: flex;
+            justify-content: space-between;
+        }
+        .date-group .form-group {
+            width: 48%;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            width: 48%;
+            padding: 12px;
+            margin: 10px 1%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            background-color: #fff;
+        }
+        th {
+            background-color: #f7f7f7;
+            color: #333333;
+        }
+        tbody tr {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        .totals, .filter {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .totals p, .filter p {
+            font-size: 20px;
+            color: #333333;
+        }
+        .totals span, .filter span {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .negative {
+            color: red !important;
+        }
+        .transaction-description {
+            display: flex;
+            align-items: center;
+        }
+        .transaction-amount {
+            text-align: left;
+            color: green;
+        }
+        .transaction-amount.despesa {
+            color: red;
+        }
+        .transaction-icon {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        .filter-results {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Receitas e Despesas</h1>
+        <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
+        <div class="form-group">
+            <label for="date">Data:</label>
+            <input type="date" id="date" onchange="updateFilteredView()">
+        </div>
+        <div class="form-group">
+            <label for="description">Descrição:</label>
+            <input type="text" id="description">
+        </div>
+        <div class="form-group">
+            <label for="amount">Valor (R$):</label>
+            <input type="text" id="amount" placeholder="0,00">
+        </div>
+        <div class="form-group">
+            <label for="type">Tipo:</label>
+            <select id="type">
+                <option value="receita">Receita</option>
+                <option value="despesa">Despesa</option>
+            </select>
+        </div>
+        <div class="buttons">
+            <button onclick="addTransaction()">Adicionar</button>
+            <button onclick="confirmUndo()">Corrigir</button>
+        </div>
+
+        <table id="transactionsTable">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Transactions will be added here -->
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <p>Saldo do Dia: <span id="dailyBalance">R$ 0,00</span></p>
+            <p>Saldo do Mês: <span id="monthlyBalance">R$ 0,00</span></p>
+            <p>Saldo do Ano: <span id="annualBalance">R$ 0,00</span></p>
+        </div>
+
+        <div class="filter">
+            <h2>Filtrar por Período</h2>
+            <div class="date-group">
+                <div class="form-group">
+                    <label for="startDate">Data Inicial:</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">Data Final:</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="filterType">Tipo:</label>
+                <select id="filterType">
+                    <option value="">Todos</option>
+                    <option value="receita">Receita</option>
+                    <option value="despesa">Despesa</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="filterDescription">Descrição:</label>
+                <input type="text" id="filterDescription" list="descriptionList">
+                <datalist id="descriptionList">
+                    <!-- Options will be populated here -->
+                </datalist>
+            </div>
+            <button onclick="filterByPeriod()">Filtrar</button>
+            <button onclick="clearFilter()">Limpar Filtro</button>
+            <div id="filteredResults">
+                <p>Total Receitas: <span id="totalReceitas">R$ 0,00</span></p>
+                <p>Total Despesas: <span id="totalDespesas" class="negative">R$ 0,00</span></p>
+                <p>Saldo: <span id="totalSaldo">R$ 0,00</span></p>
+            </div>
+            <div class="filter-results" id="filterResults">
+                <h3>Extrato</h3>
+                <table id="filteredTransactionsTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Filtered transactions will be added here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if (localStorage.getItem('loggedIn') !== 'true') {
+            window.location.href = 'index.html';
+        }
+
+        const username = localStorage.getItem('username');
+        let transactions = JSON.parse(localStorage.getItem(`transactions_${username}`)) || [];
+        let lastTransaction = null;
+
+        function saveTransactions() {
+            localStorage.setItem(`transactions_${username}`, JSON.stringify(transactions));
+        }
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function parseCurrency(value) {
+            return parseFloat(value.replace(/\./g, '').replace(',', '.').replace('R$', '')) || 0;
+        }
+
+        function addTransaction() {
+            const date = document.getElementById('date').value;
+            const description = document.getElementById('description').value;
+            const amountInput = document.getElementById('amount');
+            const amount = parseCurrency(amountInput.value);
+            const type = document.getElementById('type').value;
+
+            const transaction = { date, description, amount, type };
+            transactions.push(transaction);
+            lastTransaction = transaction;
+
+            saveTransactions();
+            updateDescriptionList();
+            updateFilteredView();
+            calculateBalances();
+
+            // Reset form fields
+            document.getElementById('date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('description').value = '';
+            amountInput.value = '0,00';
+            document.getElementById('type').value = 'receita';
+        }
+
+        function updateDescriptionList() {
+            const descriptionList = document.getElementById('descriptionList');
+            descriptionList.innerHTML = '';
+            const uniqueDescriptions = [...new Set(transactions.map(t => t.description))];
+            uniqueDescriptions.forEach(description => {
+                const option = document.createElement('option');
+                option.value = description;
+                descriptionList.appendChild(option);
+            });
+        }
+
+        function updateFilteredView() {
+            const selectedDate = document.getElementById('date').value;
+            const tbody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+
+            transactions.forEach(transaction => {
+                if (transaction.date === selectedDate) {
+                    const row = tbody.insertRow();
+                    const cellDate = row.insertCell(0);
+                    const cellDescription = row.insertCell(1);
+                    const cellAmount = row.insertCell(2);
+                    const cellType = row.insertCell(3);
+
+                    cellDate.innerText = transaction.date;
+                    cellDescription.innerHTML = `<div class="transaction-description">
+                                                    <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
+                                                    ${transaction.description}
+                                                 </div>`;
+                    cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                    cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                }
+            });
+
+            calculateBalances();
+        }
+
+        function calculateBalances() {
+            const selectedDate = document.getElementById('date').value;
+            const currentMonth = selectedDate.slice(0, 7);
+            const currentYear = selectedDate.slice(0, 4);
+
+            let dailyBalance = 0;
+            let monthlyBalance = 0;
+            let annualBalance = 0;
+
+            transactions.forEach(transaction => {
+                if (transaction.date === selectedDate) {
+                    dailyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                }
+
+                if (transaction.date.startsWith(currentMonth)) {
+                    monthlyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                }
+
+                if (transaction.date.startsWith(currentYear)) {
+                    annualBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                }
+            });
+
+            const dailyBalanceSpan = document.getElementById('dailyBalance');
+            const monthlyBalanceSpan = document.getElementById('monthlyBalance');
+            const annualBalanceSpan = document.getElementById('annualBalance');
+
+            dailyBalanceSpan.innerText = formatCurrency(dailyBalance);
+            monthlyBalanceSpan.innerText = formatCurrency(monthlyBalance);
+            annualBalanceSpan.innerText = formatCurrency(annualBalance);
+
+            dailyBalanceSpan.classList.toggle('negative', dailyBalance < 0);
+            monthlyBalanceSpan.classList.toggle('negative', monthlyBalance < 0);
+            annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
+        }
+
+        function confirmUndo() {
+            if (confirm('Você tem certeza que deseja desfazer a última ação?')) {
+                undoLastTransaction();
+            }
+        }
+
+        function undoLastTransaction() {
+            if (lastTransaction) {
+                const index = transactions.indexOf(lastTransaction);
+                if (index > -1) {
+                    transactions.splice(index, 1);
+                    lastTransaction = null;
+                    saveTransactions();
+                    updateDescriptionList();
+                    updateFilteredView();
+                    calculateBalances();
+                }
+            }
+        }
+
+        function filterByPeriod() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const filterType = document.getElementById('filterType').value;
+            const filterDescription = document.getElementById('filterDescription').value.toLowerCase();
+
+            let totalReceitas = 0;
+            let totalDespesas = 0;
+
+            const filteredTransactions = transactions.filter(transaction => 
+                transaction.date >= startDate && transaction.date <= endDate &&
+                (filterType === '' || transaction.type === filterType) &&
+                (filterDescription === '' || transaction.description.toLowerCase().includes(filterDescription))
+            );
+
+            const filteredTbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
+            filteredTbody.innerHTML = '';
+
+            filteredTransactions.forEach(transaction => {
+                if (transaction.type === 'receita') {
+                    totalReceitas += transaction.amount;
+                } else if (transaction.type === 'despesa') {
+                    totalDespesas += transaction.amount;
+                }
+
+                const row = filteredTbody.insertRow();
+                const cellDate = row.insertCell(0);
+                const cellDescription = row.insertCell(1);
+                const cellAmount = row.insertCell(2);
+                const cellType = row.insertCell(3);
+
+                cellDate.innerText = transaction.date;
+                cellDescription.innerHTML = `<div class="transaction-description">
+                                                <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
+                                                ${transaction.description}
+                                             </div>`;
+                cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+            });
+
+            const totalSaldo = totalReceitas - totalDespesas;
+
+            const totalReceitasSpan = document.getElementById('totalReceitas');
+            const totalDespesasSpan = document.getElementById('totalDespesas');
+            const totalSaldoSpan = document.getElementById('totalSaldo');
+
+            totalReceitasSpan.innerText = formatCurrency(totalReceitas);
+            totalDespesasSpan.innerText = formatCurrency(totalDespesas);
+            totalSaldoSpan.innerText = formatCurrency(totalSaldo);
+
+            totalDespesasSpan.classList.add('negative');
+            totalSaldoSpan.classList.toggle('negative', totalSaldo < 0);
+        }
+
+        function clearFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterDescription').value = '';
+            document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
+            document.getElementById('totalReceitas').innerText = 'R$ 0,00';
+            document.getElementById('totalDespesas').innerText = 'R$ 0,00';
+            document.getElementById('totalSaldo').innerText = 'R$ 0,00';
+        }
+
+        const amountInput = document.getElementById('amount');
+        amountInput.addEventListener('input', function() {
+            let value = this.value.replace(/[^\d,]/g, '');
+            if (value.indexOf(',') !== -1) {
+                let parts = value.split(',');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                value = parts.join(',');
+            } else {
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+            this.value = value.length > 0 ? `R$ ${value}` : 'R$ 0,00';
+        });
+
+        amountInput.addEventListener('focus', function() {
+            this.value = '';
+        });
+
+        amountInput.addEventListener('blur', function() {
+            if (this.value === '') {
+                this.value = 'R$ 0,00';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('date');
+            dateInput.value = new Date().toISOString().split('T')[0];
+            updateDescriptionList();
+            updateFilteredView();
+            calculateBalances();
+        });
+
+        function logout() {
+            localStorage.removeItem('loggedIn');
+            localStorage.removeItem('username');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
