@@ -72,8 +72,8 @@
     <div class="login-container">
         <h1>Login</h1>
         <div class="form-group">
-            <label for="username">Usuário:</label>
-            <input type="text" id="username" required>
+            <label for="email">Email:</label>
+            <input type="text" id="email" required>
         </div>
         <div class="form-group show-password-container">
             <label for="password">Senha:</label>
@@ -81,26 +81,34 @@
             <i class="fas fa-eye show-password" onclick="togglePassword()"></i>
         </div>
         <button onclick="login()">Entrar</button>
+        <button onclick="register()">Registrar</button>
     </div>
 
+    <!-- Adicione o SDK do Firebase -->
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
     <script>
-        const users = {
-            'usuario': 'senha123',
-            'admin': 'admin123'
-        };
+        // Coloque aqui a configuração do seu Firebase
+       const firebaseConfig = {
+  apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+  projectId: "sistema-de-receitas-e-despesas",
+  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+  messagingSenderId: "252102478972",
+  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+  measurementId: "G-K2HCS7WNZV"
+};
 
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (users[username] && users[username] === password) {
-                localStorage.setItem('loggedIn', 'true');
-                localStorage.setItem('username', username);
-                window.location.href = 'sistema.html';
-            } else {
-                alert('Usuário ou senha incorretos.');
-            }
-        }
+        
+        // Inicialize o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
 
         function togglePassword() {
             const passwordInput = document.getElementById('password');
@@ -114,6 +122,35 @@
                 passwordIcon.classList.remove('fa-eye-slash');
                 passwordIcon.classList.add('fa-eye');
             }
+        }
+
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    localStorage.setItem('loggedIn', 'true');
+                    localStorage.setItem('username', user.uid);
+                    window.location.href = 'sistema.html';
+                })
+                .catch((error) => {
+                    alert('Usuário ou senha incorretos.');
+                });
+        }
+
+        function register() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert('Usuário registrado com sucesso!');
+                })
+                .catch((error) => {
+                    alert('Erro ao registrar usuário.');
+                });
         }
     </script>
 </body>
