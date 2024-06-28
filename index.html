@@ -5,7 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    <script>
+        
+        const firebaseConfig = {
+  apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+  projectId: "sistema-de-receitas-e-despesas",
+  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+  messagingSenderId: "252102478972",
+  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+  measurementId: "G-K2HCS7WNZV"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+        <\script>
     <style>
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
@@ -90,17 +112,20 @@
         };
 
         function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+       const email = document.getElementById('username').value;
+       const password = document.getElementById('password').value;
 
-            if (users[username] && users[username] === password) {
-                localStorage.setItem('loggedIn', 'true');
-                localStorage.setItem('username', username);
-                window.location.href = 'sistema.html';
-            } else {
-                alert('Usuário ou senha incorretos.');
-            }
-        }
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            localStorage.setItem('loggedIn', 'true');
+            localStorage.setItem('username', email);
+            window.location.href = 'sistema.html';
+        })
+        .catch((error) => {
+            alert('Usuário ou senha incorretos.');
+        });
+}
+
 
         function togglePassword() {
             const passwordInput = document.getElementById('password');
