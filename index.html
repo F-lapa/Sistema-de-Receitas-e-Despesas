@@ -83,23 +83,54 @@
         <button onclick="login()">Entrar</button>
     </div>
 
+    <!-- Adicione os SDKs Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    <!-- Configurações do seu app Firebase -->
     <script>
-        const users = {
-            'usuario': 'senha123',
-            'admin': 'admin123'
-        };
+        // Configurações do Firebase do seu projeto
+        var firebaseConfig = {
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
 
+
+  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+
+
+  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+
+
+  projectId: "sistema-de-receitas-e-despesas",
+
+
+  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+
+
+  messagingSenderId: "252102478972",
+
+
+  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+
+
+  measurementId: "G-K2HCS7WNZV"
+        };
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <script>
         function login() {
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            if (users[username] && users[username] === password) {
-                localStorage.setItem('loggedIn', 'true');
-                localStorage.setItem('username', username);
-                window.location.href = 'sistema.html';
-            } else {
-                alert('Usuário ou senha incorretos.');
-            }
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    localStorage.setItem('loggedIn', 'true');
+                    localStorage.setItem('username', email);
+                    window.location.href = 'sistema.html';
+                })
+                .catch((error) => {
+                    alert('Usuário ou senha incorretos.');
+                });
         }
 
         function togglePassword() {
