@@ -75,7 +75,7 @@
     <script>
         // Configurações do Firebase do seu projeto
         var firebaseConfig = {
-            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+           apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
     authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
     databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
     projectId: "sistema-de-receitas-e-despesas",
@@ -104,50 +104,55 @@
     </div>
 
     <script>
-        function isValidEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(String(email).toLowerCase());
-        }
-
-        function login() {
-            const email = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (!isValidEmail(email)) {
-                alert("Por favor, insira um e-mail válido.");
-                return;
+        document.addEventListener('DOMContentLoaded', function() {
+            function isValidEmail(email) {
+                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return re.test(String(email).toLowerCase());
             }
 
-            console.log("Tentando fazer login com", email);
+            function login() {
+                const email = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
 
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    console.log("Login bem-sucedido", userCredential);
-                    localStorage.setItem('loggedIn', 'true');
-                    localStorage.setItem('username', email);
-                    window.location.href = 'sistema.html';
-                })
-                .catch((error) => {
-                    alert('Erro ao fazer login: ' + error.message);
-                    console.error('Código do erro:', error.code);
-                    console.error('Mensagem do erro:', error.message);
-                    console.error('Objeto de erro completo:', error);
-                });
-        }
+                if (!isValidEmail(email)) {
+                    alert("Por favor, insira um e-mail válido.");
+                    return;
+                }
 
-        function togglePassword() {
-            const passwordInput = document.getElementById('password');
-            const passwordIcon = document.querySelector('.show-password');
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                passwordIcon.classList.remove('fa-eye');
-                passwordIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                passwordIcon.classList.remove('fa-eye-slash');
-                passwordIcon.classList.add('fa-eye');
+                console.log("Tentando fazer login com", email);
+
+                firebase.auth().signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        console.log("Login bem-sucedido", userCredential);
+                        localStorage.setItem('loggedIn', 'true');
+                        localStorage.setItem('username', email);
+                        window.location.href = 'sistema.html';
+                    })
+                    .catch((error) => {
+                        alert('Erro ao fazer login: ' + error.message);
+                        console.error('Código do erro:', error.code);
+                        console.error('Mensagem do erro:', error.message);
+                        console.error('Objeto de erro completo:', error);
+                    });
             }
-        }
+
+            function togglePassword() {
+                const passwordInput = document.getElementById('password');
+                const passwordIcon = document.querySelector('.show-password');
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    passwordIcon.classList.remove('fa-eye');
+                    passwordIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    passwordIcon.classList.remove('fa-eye-slash');
+                    passwordIcon.classList.add('fa-eye');
+                }
+            }
+
+            document.querySelector('button').addEventListener('click', login);
+            document.querySelector('.show-password').addEventListener('click', togglePassword);
+        });
     </script>
 </body>
 </html>
