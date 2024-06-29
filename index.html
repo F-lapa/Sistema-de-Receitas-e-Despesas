@@ -75,14 +75,14 @@
     <script>
         // Configurações do Firebase do seu projeto
         var firebaseConfig = {
-           apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
-    authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
-    databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
-    projectId: "sistema-de-receitas-e-despesas",
-    storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-    messagingSenderId: "252102478972",
-    appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
-    measurementId: "G-K2HCS7WNZV"
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+  projectId: "sistema-de-receitas-e-despesas",
+  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+  messagingSenderId: "252102478972",
+  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+  measurementId: "G-K2HCS7WNZV"
         };
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
@@ -92,7 +92,7 @@
     <div class="login-container">
         <h1>Login</h1>
         <div class="form-group">
-            <label for="username">E-mail:</label>
+            <label for="username">Usuário:</label>
             <input type="text" id="username" required>
         </div>
         <div class="form-group show-password-container">
@@ -104,55 +104,51 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            function isValidEmail(email) {
-                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                return re.test(String(email).toLowerCase());
-            }
+        async function getCustomToken(uid) {
+            const response = await fetch('http://localhost:3000/gerarToken', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ uid: uid })
+            });
+            const data = await response.json();
+            return data.token;
+        }
 
-            function login() {
-                const email = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-                if (!isValidEmail(email)) {
-                    alert("Por favor, insira um e-mail válido.");
-                    return;
+            if (username === 'usuario' && password === 'senha123') {
+                try {
+                    const token = await getCustomToken(username);
+                    await firebase.auth().signInWithCustomToken(token);
+                    localStorage.setItem('loggedIn', 'true');
+                    localStorage.setItem('username', username);
+                    window.location.href = 'sistema.html';
+                } catch (error) {
+                    console.error('Erro ao fazer login:', error);
+                    alert('Erro ao fazer login: ' + error.message);
                 }
-
-                console.log("Tentando fazer login com", email);
-
-                firebase.auth().signInWithEmailAndPassword(email, password)
-                    .then((userCredential) => {
-                        console.log("Login bem-sucedido", userCredential);
-                        localStorage.setItem('loggedIn', 'true');
-                        localStorage.setItem('username', email);
-                        window.location.href = 'sistema.html';
-                    })
-                    .catch((error) => {
-                        alert('Erro ao fazer login: ' + error.message);
-                        console.error('Código do erro:', error.code);
-                        console.error('Mensagem do erro:', error.message);
-                        console.error('Objeto de erro completo:', error);
-                    });
+            } else {
+                alert('Usuário ou senha incorretos.');
             }
+        }
 
-            function togglePassword() {
-                const passwordInput = document.getElementById('password');
-                const passwordIcon = document.querySelector('.show-password');
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    passwordIcon.classList.remove('fa-eye');
-                    passwordIcon.classList.add('fa-eye-slash');
-                } else {
-                    passwordInput.type = 'password';
-                    passwordIcon.classList.remove('fa-eye-slash');
-                    passwordIcon.classList.add('fa-eye');
-                }
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const passwordIcon = document.querySelector('.show-password');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
             }
-
-            document.querySelector('button').addEventListener('click', login);
-            document.querySelector('.show-password').addEventListener('click', togglePassword);
-        });
+        }
     </script>
 </body>
 </html>
