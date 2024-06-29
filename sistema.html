@@ -134,10 +134,13 @@
             margin-top: 20px;
         }
     </style>
-<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
-    <script> 
+    <!-- Adicione os SDKs Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+    <!-- Configurações do seu app Firebase -->
+    <script>
+        // Configurações do Firebase do seu projeto
         var firebaseConfig = {
     apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
     authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
@@ -147,8 +150,11 @@
     messagingSenderId: "252102478972",
     appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
     measurementId: "G-K2HCS7WNZV"
-  }; 
-    </script> 
+        };
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        console.log("Firebase inicializado no sistema.html");
+    </script>
 </head>
 <body>
     <div class="container">
@@ -249,7 +255,8 @@
                 </table>
             </div>
         </div>
-    </div> 
+    </div>
+
     <script>
         if (localStorage.getItem('loggedIn') !== 'true') {
             window.location.href = 'index.html';
@@ -399,7 +406,94 @@
                 
                 query.get().then((querySnapshot) => {
                     querySnapshot.forEach((doc) => {
-                                   document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
+                        doc.ref.delete().then(() => {
+                            lastTransaction = null;
+                            updateDescriptionList();
+                            updateFilteredView();
+                            calculateBalances();
+                        }).catch((error) => {
+                            console.error('Erro ao desfazer transação: ', error);
+                        });
+                    });
+                }).catch((error) => {
+                    console.error('Erro ao encontrar transação para desfazer: ', error);
+                });
+            }
+        }
+
+        function filterByPeriod() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const filterType = document.getElementById('filterType').value;
+            const filterDescription = document.getElementById('filterDescription').value.toLowerCase();
+
+            let totalReceitas = 0;
+            let totalDespesas = 0;
+
+            const filteredTransactions = [];
+            
+            firebase.firestore().collection('transactions')
+                .where('date', '>=', startDate)
+                .where('date', '<=', endDate)
+                .get()
+                .then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        const transaction = doc.data();
+                        if ((filterType === '' || transaction.type === filterType) &&
+                            (filterDescription === '' || transaction.description.toLowerCase().includes(filterDescription))) {
+                            filteredTransactions.push(transaction);
+                        }
+                    });
+
+                    const filteredTbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
+                    filteredTbody.innerHTML = '';
+
+                    filteredTransactions.forEach(transaction => {
+                        if (transaction.type === 'receita') {
+                            totalReceitas += transaction.amount;
+                        } else if (transaction.type === 'despesa') {
+                            totalDespesas += transaction.amount;
+                        }
+
+                        const row = filteredTbody.insertRow();
+                        const cellDate = row.insertCell(0);
+                        const cellDescription = row.insertCell(1);
+                        const cellAmount = row.insertCell(2);
+                        const cellType = row.insertCell(3);
+
+                        cellDate.innerText = transaction.date;
+                        cellDescription.innerHTML = `<div class="transaction-description">
+                                                        <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
+                                                        ${transaction.description}
+                                                     </div>`;
+                        cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                        cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                    });
+
+                    const totalSaldo = totalReceitas - totalDespesas;
+
+                    const totalReceitasSpan = document.getElementById('totalReceitas');
+                    const totalDespesasSpan = document.getElementById('totalDespesas');
+                    const totalSaldoSpan = document.getElementById('totalSaldo');
+
+                    totalReceitasSpan.innerText = formatCurrency(totalReceitas);
+                    totalDespesasSpan.innerText = formatCurrency(totalDespesas);
+                    totalSaldoSpan.innerText = formatCurrency(totalSaldo);
+
+                    totalDespesasSpan.classList.add('negative');
+                    totalSaldoSpan.classList.toggle('negative', totalSaldo < 0);
+                })
+                .catch((error) => {
+                    console.error('Erro ao filtrar transações: ', error);
+                });
+        }
+
+        function clearFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterDescription').value = '';
+            document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
             document.getElementById('totalReceitas').innerText = 'R$ 0,00';
             document.getElementById('totalDespesas').innerText = 'R$ 0,00';
             document.getElementById('totalSaldo').innerText = 'R$ 0,00';
@@ -444,4 +538,3 @@
     </script>
 </body>
 </html>
-
