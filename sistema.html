@@ -142,7 +142,7 @@
     <script>
         // Configurações do Firebase do seu projeto
         var firebaseConfig = {
-            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+           apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
   authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
   databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
   projectId: "sistema-de-receitas-e-despesas",
@@ -535,6 +535,7 @@
             document.getElementById('filterButton').addEventListener('click', filterByPeriod);
             document.getElementById('clearFilterButton').addEventListener('click', clearFilter);
 
+            // Carregar transações do Firestore ao carregar a página
             document.addEventListener('DOMContentLoaded', function() {
                 const dateInput = document.getElementById('date');
                 dateInput.value = new Date().toISOString().split('T')[0];
