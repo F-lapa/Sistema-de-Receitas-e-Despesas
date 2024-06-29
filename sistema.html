@@ -142,7 +142,7 @@
     <script>
         // Configurações do Firebase do seu projeto
         var firebaseConfig = {
-           apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
     authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
     databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
     projectId: "sistema-de-receitas-e-despesas",
@@ -280,8 +280,13 @@
                 const amount = parseCurrency(amountInput.value);
                 const type = document.getElementById('type').value;
 
+                if (!date || !description || !amount || !type) {
+                    alert('Por favor, preencha todos os campos.');
+                    return;
+                }
+
                 const transaction = { date, description, amount, type };
-                
+
                 firebase.firestore().collection('transactions').add(transaction)
                     .then(() => {
                         lastTransaction = transaction;
