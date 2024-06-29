@@ -75,7 +75,7 @@
     <script>
         // Configurações do Firebase do seu projeto
         var firebaseConfig = {
-           apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
     authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
     databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
     projectId: "sistema-de-receitas-e-despesas",
@@ -92,24 +92,33 @@
     <div class="login-container">
         <h1>Login</h1>
         <div class="form-group">
-            <label for="username">Usuário:</label>
-            <input type="text" id="username" required>
+            <label for="username">E-mail:</label>
+            <input type="text" id="fernandolapa1987@gmail.com" required>
         </div>
         <div class="form-group show-password-container">
             <label for="password">Senha:</label>
-            <input type="password" id="password" required>
+            <input type="password" id="Nando@1354" required>
             <i class="fas fa-eye show-password" onclick="togglePassword()"></i>
         </div>
         <button onclick="login()">Entrar</button>
     </div>
 
     <script>
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(String(email).toLowerCase());
+        }
+
         function login() {
             const email = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            console.log("fernandolapa1987@gmail.com:", email);
-            console.log("Nando@1354:", password);
+            if (!isValidEmail(email)) {
+                alert("Por favor, insira um e-mail válido.");
+                return;
+            }
+
+            console.log("Tentando fazer login com", email);
 
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
