@@ -75,7 +75,7 @@
     <script>
         // Configurações do Firebase do seu projeto
         var firebaseConfig = {
-            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+           apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
     authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
     databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
     projectId: "sistema-de-receitas-e-despesas",
@@ -108,7 +108,8 @@
             const email = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            console.log("Tentando fazer login com", email);
+            console.log("fernandolapa1987@gmail.com:", email);
+            console.log("Nando@1354:", password);
 
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
@@ -119,9 +120,9 @@
                 })
                 .catch((error) => {
                     alert('Erro ao fazer login: ' + error.message);
-                    console.error('Erro ao fazer login:', error.code, error.message);
-                    // Exibir mais detalhes do erro
-                    console.log('Detalhes do erro:', error);
+                    console.error('Código do erro:', error.code);
+                    console.error('Mensagem do erro:', error.message);
+                    console.error('Objeto de erro completo:', error);
                 });
         }
 
