@@ -142,7 +142,7 @@
     <script>
         // Configurações do Firebase do seu projeto
         var firebaseConfig = {
-    apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+           apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
     authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
     databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
     projectId: "sistema-de-receitas-e-despesas",
@@ -153,7 +153,6 @@
         };
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
-        console.log("Firebase inicializado no sistema.html");
     </script>
 </head>
 <body>
@@ -162,7 +161,7 @@
         <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
         <div class="form-group">
             <label for="date">Data:</label>
-            <input type="date" id="date" onchange="updateFilteredView()">
+            <input type="date" id="date">
         </div>
         <div class="form-group">
             <label for="description">Descrição:</label>
@@ -180,8 +179,8 @@
             </select>
         </div>
         <div class="buttons">
-            <button onclick="addTransaction()">Adicionar</button>
-            <button onclick="confirmUndo()">Corrigir</button>
+            <button id="addTransactionButton">Adicionar</button>
+            <button id="undoButton">Corrigir</button>
         </div>
 
         <table id="transactionsTable">
@@ -231,8 +230,8 @@
                     <!-- Options will be populated here -->
                 </datalist>
             </div>
-            <button onclick="filterByPeriod()">Filtrar</button>
-            <button onclick="clearFilter()">Limpar Filtro</button>
+            <button id="filterButton">Filtrar</button>
+            <button id="clearFilterButton">Limpar Filtro</button>
             <div id="filteredResults">
                 <p>Total Receitas: <span id="totalReceitas">R$ 0,00</span></p>
                 <p>Total Despesas: <span id="totalDespesas" class="negative">R$ 0,00</span></p>
@@ -258,283 +257,292 @@
     </div>
 
     <script>
-        if (localStorage.getItem('loggedIn') !== 'true') {
-            window.location.href = 'index.html';
-        }
-
-        const username = localStorage.getItem('username');
-        let lastTransaction = null;
-
-        function formatCurrency(value) {
-            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        function parseCurrency(value) {
-            return parseFloat(value.replace(/\./g, '').replace(',', '.').replace('R$', '')) || 0;
-        }
-
-        function addTransaction() {
-            const date = document.getElementById('date').value;
-            const description = document.getElementById('description').value;
-            const amountInput = document.getElementById('amount');
-            const amount = parseCurrency(amountInput.value);
-            const type = document.getElementById('type').value;
-
-            const transaction = { date, description, amount, type };
-            
-            firebase.firestore().collection('transactions').add(transaction)
-                .then(() => {
-                    lastTransaction = transaction;
-                    updateDescriptionList();
-                    updateFilteredView();
-                    calculateBalances();
-                })
-                .catch((error) => {
-                    console.error('Erro ao adicionar transação: ', error);
-                });
-
-            // Reset form fields
-            document.getElementById('date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('description').value = '';
-            amountInput.value = '0,00';
-            document.getElementById('type').value = 'receita';
-        }
-
-        function updateDescriptionList() {
-            const descriptionList = document.getElementById('descriptionList');
-            descriptionList.innerHTML = '';
-            firebase.firestore().collection('transactions').get()
-                .then((querySnapshot) => {
-                    const uniqueDescriptions = [...new Set(querySnapshot.docs.map(doc => doc.data().description))];
-                    uniqueDescriptions.forEach(description => {
-                        const option = document.createElement('option');
-                        option.value = description;
-                        descriptionList.appendChild(option);
-                    });
-                });
-        }
-
-        function updateFilteredView() {
-            const selectedDate = document.getElementById('date').value;
-            const tbody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
-            tbody.innerHTML = '';
-
-            firebase.firestore().collection('transactions')
-                .where('date', '==', selectedDate)
-                .get()
-                .then((querySnapshot) => {
-                    querySnapshot.forEach((doc) => {
-                        const transaction = doc.data();
-                        const row = tbody.insertRow();
-                        const cellDate = row.insertCell(0);
-                        const cellDescription = row.insertCell(1);
-                        const cellAmount = row.insertCell(2);
-                        const cellType = row.insertCell(3);
-
-                        cellDate.innerText = transaction.date;
-                        cellDescription.innerHTML = `<div class="transaction-description">
-                                                        <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
-                                                        ${transaction.description}
-                                                     </div>`;
-                        cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
-                        cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-                    });
-                    calculateBalances();
-                })
-                .catch((error) => {
-                    console.error('Erro ao carregar transações: ', error);
-                });
-        }
-
-        function calculateBalances() {
-            const selectedDate = document.getElementById('date').value;
-            const currentMonth = selectedDate.slice(0, 7);
-            const currentYear = selectedDate.slice(0, 4);
-
-            let dailyBalance = 0;
-            let monthlyBalance = 0;
-            let annualBalance = 0;
-
-            firebase.firestore().collection('transactions').get()
-                .then((querySnapshot) => {
-                    querySnapshot.forEach((doc) => {
-                        const transaction = doc.data();
-
-                        if (transaction.date === selectedDate) {
-                            dailyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
-                        }
-
-                        if (transaction.date.startsWith(currentMonth)) {
-                            monthlyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
-                        }
-
-                        if (transaction.date.startsWith(currentYear)) {
-                            annualBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
-                        }
-                    });
-
-                    const dailyBalanceSpan = document.getElementById('dailyBalance');
-                    const monthlyBalanceSpan = document.getElementById('monthlyBalance');
-                    const annualBalanceSpan = document.getElementById('annualBalance');
-
-                    dailyBalanceSpan.innerText = formatCurrency(dailyBalance);
-                    monthlyBalanceSpan.innerText = formatCurrency(monthlyBalance);
-                    annualBalanceSpan.innerText = formatCurrency(annualBalance);
-
-                    dailyBalanceSpan.classList.toggle('negative', dailyBalance < 0);
-                    monthlyBalanceSpan.classList.toggle('negative', monthlyBalance < 0);
-                    annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
-                })
-                .catch((error) => {
-                    console.error('Erro ao calcular saldos: ', error);
-                });
-        }
-
-        function confirmUndo() {
-            if (confirm('Você tem certeza que deseja desfazer a última ação?')) {
-                undoLastTransaction();
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('loggedIn') !== 'true') {
+                window.location.href = 'index.html';
             }
-        }
 
-        function undoLastTransaction() {
-            if (lastTransaction) {
-                const query = firebase.firestore().collection('transactions')
-                    .where('date', '==', lastTransaction.date)
-                    .where('description', '==', lastTransaction.description)
-                    .where('amount', '==', lastTransaction.amount)
-                    .where('type', '==', lastTransaction.type);
+            const username = localStorage.getItem('username');
+            let lastTransaction = null;
+
+            function formatCurrency(value) {
+                return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            }
+
+            function parseCurrency(value) {
+                return parseFloat(value.replace(/\./g, '').replace(',', '.').replace('R$', '')) || 0;
+            }
+
+            function addTransaction() {
+                const date = document.getElementById('date').value;
+                const description = document.getElementById('description').value;
+                const amountInput = document.getElementById('amount');
+                const amount = parseCurrency(amountInput.value);
+                const type = document.getElementById('type').value;
+
+                const transaction = { date, description, amount, type };
                 
-                query.get().then((querySnapshot) => {
-                    querySnapshot.forEach((doc) => {
-                        doc.ref.delete().then(() => {
-                            lastTransaction = null;
-                            updateDescriptionList();
-                            updateFilteredView();
-                            calculateBalances();
-                        }).catch((error) => {
-                            console.error('Erro ao desfazer transação: ', error);
+                firebase.firestore().collection('transactions').add(transaction)
+                    .then(() => {
+                        lastTransaction = transaction;
+                        updateDescriptionList();
+                        updateFilteredView();
+                        calculateBalances();
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao adicionar transação: ', error);
+                    });
+
+                // Reset form fields
+                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('description').value = '';
+                amountInput.value = '0,00';
+                document.getElementById('type').value = 'receita';
+            }
+
+            function updateDescriptionList() {
+                const descriptionList = document.getElementById('descriptionList');
+                descriptionList.innerHTML = '';
+                firebase.firestore().collection('transactions').get()
+                    .then((querySnapshot) => {
+                        const uniqueDescriptions = [...new Set(querySnapshot.docs.map(doc => doc.data().description))];
+                        uniqueDescriptions.forEach(description => {
+                            const option = document.createElement('option');
+                            option.value = description;
+                            descriptionList.appendChild(option);
                         });
                     });
-                }).catch((error) => {
-                    console.error('Erro ao encontrar transação para desfazer: ', error);
-                });
             }
-        }
 
-        function filterByPeriod() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const filterType = document.getElementById('filterType').value;
-            const filterDescription = document.getElementById('filterDescription').value.toLowerCase();
+            function updateFilteredView() {
+                const selectedDate = document.getElementById('date').value;
+                const tbody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
+                tbody.innerHTML = '';
 
-            let totalReceitas = 0;
-            let totalDespesas = 0;
+                firebase.firestore().collection('transactions')
+                    .where('date', '==', selectedDate)
+                    .get()
+                    .then((querySnapshot) => {
+                        querySnapshot.forEach((doc) => {
+                            const transaction = doc.data();
+                            const row = tbody.insertRow();
+                            const cellDate = row.insertCell(0);
+                            const cellDescription = row.insertCell(1);
+                            const cellAmount = row.insertCell(2);
+                            const cellType = row.insertCell(3);
 
-            const filteredTransactions = [];
-            
-            firebase.firestore().collection('transactions')
-                .where('date', '>=', startDate)
-                .where('date', '<=', endDate)
-                .get()
-                .then((querySnapshot) => {
-                    querySnapshot.forEach((doc) => {
-                        const transaction = doc.data();
-                        if ((filterType === '' || transaction.type === filterType) &&
-                            (filterDescription === '' || transaction.description.toLowerCase().includes(filterDescription))) {
-                            filteredTransactions.push(transaction);
-                        }
+                            cellDate.innerText = transaction.date;
+                            cellDescription.innerHTML = `<div class="transaction-description">
+                                                            <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
+                                                            ${transaction.description}
+                                                         </div>`;
+                            cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                            cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                        });
+                        calculateBalances();
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao carregar transações: ', error);
                     });
+            }
 
-                    const filteredTbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
-                    filteredTbody.innerHTML = '';
+            function calculateBalances() {
+                const selectedDate = document.getElementById('date').value;
+                const currentMonth = selectedDate.slice(0, 7);
+                const currentYear = selectedDate.slice(0, 4);
 
-                    filteredTransactions.forEach(transaction => {
-                        if (transaction.type === 'receita') {
-                            totalReceitas += transaction.amount;
-                        } else if (transaction.type === 'despesa') {
-                            totalDespesas += transaction.amount;
-                        }
+                let dailyBalance = 0;
+                let monthlyBalance = 0;
+                let annualBalance = 0;
 
-                        const row = filteredTbody.insertRow();
-                        const cellDate = row.insertCell(0);
-                        const cellDescription = row.insertCell(1);
-                        const cellAmount = row.insertCell(2);
-                        const cellType = row.insertCell(3);
+                firebase.firestore().collection('transactions').get()
+                    .then((querySnapshot) => {
+                        querySnapshot.forEach((doc) => {
+                            const transaction = doc.data();
 
-                        cellDate.innerText = transaction.date;
-                        cellDescription.innerHTML = `<div class="transaction-description">
-                                                        <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
-                                                        ${transaction.description}
-                                                     </div>`;
-                        cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
-                        cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                            if (transaction.date === selectedDate) {
+                                dailyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                            }
+
+                            if (transaction.date.startsWith(currentMonth)) {
+                                monthlyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                            }
+
+                            if (transaction.date.startsWith(currentYear)) {
+                                annualBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                            }
+                        });
+
+                        const dailyBalanceSpan = document.getElementById('dailyBalance');
+                        const monthlyBalanceSpan = document.getElementById('monthlyBalance');
+                        const annualBalanceSpan = document.getElementById('annualBalance');
+
+                        dailyBalanceSpan.innerText = formatCurrency(dailyBalance);
+                        monthlyBalanceSpan.innerText = formatCurrency(monthlyBalance);
+                        annualBalanceSpan.innerText = formatCurrency(annualBalance);
+
+                        dailyBalanceSpan.classList.toggle('negative', dailyBalance < 0);
+                        monthlyBalanceSpan.classList.toggle('negative', monthlyBalance < 0);
+                        annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao calcular saldos: ', error);
                     });
-
-                    const totalSaldo = totalReceitas - totalDespesas;
-
-                    const totalReceitasSpan = document.getElementById('totalReceitas');
-                    const totalDespesasSpan = document.getElementById('totalDespesas');
-                    const totalSaldoSpan = document.getElementById('totalSaldo');
-
-                    totalReceitasSpan.innerText = formatCurrency(totalReceitas);
-                    totalDespesasSpan.innerText = formatCurrency(totalDespesas);
-                    totalSaldoSpan.innerText = formatCurrency(totalSaldo);
-
-                    totalDespesasSpan.classList.add('negative');
-                    totalSaldoSpan.classList.toggle('negative', totalSaldo < 0);
-                })
-                .catch((error) => {
-                    console.error('Erro ao filtrar transações: ', error);
-                });
-        }
-
-        function clearFilter() {
-            document.getElementById('startDate').value = '';
-            document.getElementById('endDate').value = '';
-            document.getElementById('filterType').value = '';
-            document.getElementById('filterDescription').value = '';
-            document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
-            document.getElementById('totalReceitas').innerText = 'R$ 0,00';
-            document.getElementById('totalDespesas').innerText = 'R$ 0,00';
-            document.getElementById('totalSaldo').innerText = 'R$ 0,00';
-        }
-
-        const amountInput = document.getElementById('amount');
-        amountInput.addEventListener('input', function() {
-            let value = this.value.replace(/[^\d,]/g, '');
-            if (value.indexOf(',') !== -1) {
-                let parts = value.split(',');
-                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                value = parts.join(',');
-            } else {
-                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             }
-            this.value = value.length > 0 ? `R$ ${value}` : 'R$ 0,00';
-        });
 
-        amountInput.addEventListener('focus', function() {
-            this.value = '';
-        });
-
-        amountInput.addEventListener('blur', function() {
-            if (this.value === '') {
-                this.value = 'R$ 0,00';
+            function confirmUndo() {
+                if (confirm('Você tem certeza que deseja desfazer a última ação?')) {
+                    undoLastTransaction();
+                }
             }
-        });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const dateInput = document.getElementById('date');
-            dateInput.value = new Date().toISOString().split('T')[0];
-            updateDescriptionList();
-            updateFilteredView();
-            calculateBalances();
-        });
+            function undoLastTransaction() {
+                if (lastTransaction) {
+                    const query = firebase.firestore().collection('transactions')
+                        .where('date', '==', lastTransaction.date)
+                        .where('description', '==', lastTransaction.description)
+                        .where('amount', '==', lastTransaction.amount)
+                        .where('type', '==', lastTransaction.type);
+                    
+                    query.get().then((querySnapshot) => {
+                        querySnapshot.forEach((doc) => {
+                            doc.ref.delete().then(() => {
+                                lastTransaction = null;
+                                updateDescriptionList();
+                                updateFilteredView();
+                                calculateBalances();
+                            }).catch((error) => {
+                                console.error('Erro ao desfazer transação: ', error);
+                            });
+                        });
+                    }).catch((error) => {
+                        console.error('Erro ao encontrar transação para desfazer: ', error);
+                    });
+                }
+            }
 
-        function logout() {
-            localStorage.removeItem('loggedIn');
-            localStorage.removeItem('username');
-            window.location.href = 'index.html';
-        }
+            function filterByPeriod() {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const filterType = document.getElementById('filterType').value;
+                const filterDescription = document.getElementById('filterDescription').value.toLowerCase();
+
+                let totalReceitas = 0;
+                let totalDespesas = 0;
+
+                const filteredTransactions = [];
+                
+                firebase.firestore().collection('transactions')
+                    .where('date', '>=', startDate)
+                    .where('date', '<=', endDate)
+                    .get()
+                    .then((querySnapshot) => {
+                        querySnapshot.forEach((doc) => {
+                            const transaction = doc.data();
+                            if ((filterType === '' || transaction.type === filterType) &&
+                                (filterDescription === '' || transaction.description.toLowerCase().includes(filterDescription))) {
+                                filteredTransactions.push(transaction);
+                            }
+                        });
+
+                        const filteredTbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
+                        filteredTbody.innerHTML = '';
+
+                        filteredTransactions.forEach(transaction => {
+                            if (transaction.type === 'receita') {
+                                totalReceitas += transaction.amount;
+                            } else if (transaction.type === 'despesa') {
+                                totalDespesas += transaction.amount;
+                            }
+
+                            const row = filteredTbody.insertRow();
+                            const cellDate = row.insertCell(0);
+                            const cellDescription = row.insertCell(1);
+                            const cellAmount = row.insertCell(2);
+                            const cellType = row.insertCell(3);
+
+                            cellDate.innerText = transaction.date;
+                            cellDescription.innerHTML = `<div class="transaction-description">
+                                                            <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
+                                                            ${transaction.description}
+                                                         </div>`;
+                            cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                            cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                        });
+
+                        const totalSaldo = totalReceitas - totalDespesas;
+
+                        const totalReceitasSpan = document.getElementById('totalReceitas');
+                        const totalDespesasSpan = document.getElementById('totalDespesas');
+                        const totalSaldoSpan = document.getElementById('totalSaldo');
+
+                        totalReceitasSpan.innerText = formatCurrency(totalReceitas);
+                        totalDespesasSpan.innerText = formatCurrency(totalDespesas);
+                        totalSaldoSpan.innerText = formatCurrency(totalSaldo);
+
+                        totalDespesasSpan.classList.add('negative');
+                        totalSaldoSpan.classList.toggle('negative', totalSaldo < 0);
+                    })
+                    .catch((error) => {
+                        console.error('Erro ao filtrar transações: ', error);
+                    });
+            }
+
+            function clearFilter() {
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
+                document.getElementById('filterType').value = '';
+                document.getElementById('filterDescription').value = '';
+                document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
+                document.getElementById('totalReceitas').innerText = 'R$ 0,00';
+                document.getElementById('totalDespesas').innerText = 'R$ 0,00';
+                document.getElementById('totalSaldo').innerText = 'R$ 0,00';
+            }
+
+            const amountInput = document.getElementById('amount');
+            amountInput.addEventListener('input', function() {
+                let value = this.value.replace(/[^\d,]/g, '');
+                if (value.indexOf(',') !== -1) {
+                    let parts = value.split(',');
+                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    value = parts.join(',');
+                } else {
+                    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                }
+                this.value = value.length > 0 ? `R$ ${value}` : 'R$ 0,00';
+            });
+
+            amountInput.addEventListener('focus', function() {
+                this.value = '';
+            });
+
+            amountInput.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.value = 'R$ 0,00';
+                }
+            });
+
+            document.getElementById('addTransactionButton').addEventListener('click', addTransaction);
+            document.getElementById('undoButton').addEventListener('click', confirmUndo);
+            document.getElementById('filterButton').addEventListener('click', filterByPeriod);
+            document.getElementById('clearFilterButton').addEventListener('click', clearFilter);
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const dateInput = document.getElementById('date');
+                dateInput.value = new Date().toISOString().split('T')[0];
+                updateDescriptionList();
+                updateFilteredView();
+                calculateBalances();
+            });
+
+            function logout() {
+                localStorage.removeItem('loggedIn');
+                localStorage.removeItem('username');
+                window.location.href = 'index.html';
+            }
+
+            document.querySelector('.logout').addEventListener('click', logout);
+        });
     </script>
 </body>
 </html>
