@@ -115,7 +115,7 @@
                     window.location.href = 'sistema.html';
                 })
                 .catch((error) => {
-                    alert('Usuário ou senha incorretos.');
+                    alert('Erro ao fazer login: ' + error.message);
                     console.error('Erro ao fazer login:', error);
                 });
         }
