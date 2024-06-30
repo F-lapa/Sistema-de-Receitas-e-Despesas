@@ -213,6 +213,7 @@
                     <th>Descrição</th>
                     <th>Valor</th>
                     <th>Tipo</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
             <tbody>
@@ -269,6 +270,7 @@
                             <th>Descrição</th>
                             <th>Valor</th>
                             <th>Tipo</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -295,6 +297,7 @@
             <div class="buttons">
                 <button onclick="registerNewUser()">Registrar Novo Usuário</button>
                 <button onclick="clearAllTransactions()">Limpar Minhas Transações</button>
+                <button onclick="clearSpecificTransaction()">Limpar Transações Específicas</button>
             </div>
         </div>
     </div>
@@ -379,7 +382,7 @@
             const amount = parseCurrency(amountInput.value);
             const type = document.getElementById('type').value;
 
-            const transaction = { date, description, amount, type };
+            const transaction = { id: generateTransactionId(), date, description, amount, type };
             transactions.push(transaction);
             lastTransaction = transaction;
             localStorage.setItem('lastTransaction', JSON.stringify(lastTransaction));
@@ -394,6 +397,10 @@
             document.getElementById('description').value = '';
             amountInput.value = '0,00';
             document.getElementById('type').value = 'receita';
+        }
+
+        function generateTransactionId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
         }
 
         function updateDescriptionList() {
@@ -420,6 +427,7 @@
                     const cellDescription = row.insertCell(1);
                     const cellAmount = row.insertCell(2);
                     const cellType = row.insertCell(3);
+                    const cellActions = row.insertCell(4);
 
                     cellDate.innerText = transaction.date;
                     cellDescription.innerHTML = `<div class="transaction-description">
@@ -428,6 +436,7 @@
                                                  </div>`;
                     cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
                     cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                    cellActions.innerHTML = `<button onclick="removeTransaction('${transaction.id}')">Remover</button>`;
                 }
             });
 
@@ -478,7 +487,7 @@
 
         function undoLastTransaction() {
             if (lastTransaction) {
-                const index = transactions.indexOf(lastTransaction);
+                const index = transactions.findIndex(t => t.id === lastTransaction.id);
                 if (index > -1) {
                     transactions.splice(index, 1);
                     lastTransaction = null;
@@ -490,6 +499,16 @@
                 }
             } else {
                 alert('Nenhuma transação a desfazer.');
+            }
+        }
+
+        function removeTransaction(transactionId) {
+            const index = transactions.findIndex(t => t.id === transactionId);
+            if (index > -1) {
+                transactions.splice(index, 1);
+                saveTransactions();
+                updateFilteredView();
+                calculateBalances();
             }
         }
 
@@ -523,6 +542,7 @@
                 const cellDescription = row.insertCell(1);
                 const cellAmount = row.insertCell(2);
                 const cellType = row.insertCell(3);
+                const cellActions = row.insertCell(4);
 
                 cellDate.innerText = transaction.date;
                 cellDescription.innerHTML = `<div class="transaction-description">
@@ -531,6 +551,7 @@
                                              </div>`;
                 cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
                 cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                cellActions.innerHTML = `<button onclick="removeTransaction('${transaction.id}')">Remover</button>`;
             });
 
             const totalSaldo = totalReceitas - totalDespesas;
@@ -606,6 +627,15 @@
                 }).catch(error => {
                     alert('Erro ao remover transações: ' + error.message);
                 });
+            }
+        }
+
+        function clearSpecificTransaction() {
+            if (confirm('Você tem certeza que deseja limpar transações específicas?')) {
+                const transactionId = prompt('Informe o ID da transação a ser removida:');
+                if (transactionId) {
+                    removeTransaction(transactionId);
+                }
             }
         }
 
