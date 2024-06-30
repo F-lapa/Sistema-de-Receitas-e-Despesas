@@ -164,8 +164,9 @@
             flex-direction: column;
             align-items: center;
         }
-        .admin-section input {
+        .admin-section input, .admin-section select {
             width: 50%;
+            margin-bottom: 10px;
         }
         .admin-section .buttons {
             flex-direction: column;
@@ -292,9 +293,16 @@
                 <label for="newUserPassword">Senha do Novo Usuário:</label>
                 <input type="password" id="newUserPassword">
             </div>
+            <div class="form-group">
+                <label for="userSelect">Selecionar Usuário:</label>
+                <select id="userSelect">
+                    <!-- Options will be populated here -->
+                </select>
+            </div>
             <div class="buttons">
                 <button onclick="registerNewUser()">Registrar Novo Usuário</button>
                 <button onclick="clearAllTransactions()">Limpar Minhas Transações</button>
+                <button onclick="adminUndoLastTransaction()">Corrigir Última Ação do Usuário</button>
             </div>
         </div>
     </div>
@@ -342,6 +350,7 @@
 
         let transactions = [];
         let lastTransactionId = localStorage.getItem('lastTransactionId');
+        let allUsers = [];
 
         function saveTransactions() {
             const userId = auth.currentUser.uid;
@@ -363,7 +372,23 @@
         function checkAdmin(email) {
             if (email === 'fernandolapa1987@gmail.com') {
                 document.getElementById('adminIcon').style.display = 'block';
+                loadAllUsers();
             }
+        }
+
+        function loadAllUsers() {
+            database.ref('users').once('value').then((snapshot) => {
+                const users = snapshot.val();
+                const userSelect = document.getElementById('userSelect');
+                userSelect.innerHTML = '';
+                for (let uid in users) {
+                    allUsers.push({ uid, name: users[uid].name });
+                    const option = document.createElement('option');
+                    option.value = uid;
+                    option.textContent = users[uid].name;
+                    userSelect.appendChild(option);
+                }
+            });
         }
 
         function formatCurrency(value) {
@@ -486,13 +511,13 @@
             if (lastTransactionId) {
                 const userId = auth.currentUser.uid;
                 database.ref('transactions/' + userId).once('value', function(snapshot) {
-                    const transactions = snapshot.val();
-                    const index = transactions.findIndex(t => t.id === lastTransactionId);
+                    const userTransactions = snapshot.val();
+                    const index = userTransactions.findIndex(t => t.id === lastTransactionId);
                     if (index > -1) {
-                        transactions.splice(index, 1);
+                        userTransactions.splice(index, 1);
                         lastTransactionId = null;
                         localStorage.removeItem('lastTransactionId');
-                        database.ref('transactions/' + userId).set(transactions).then(() => {
+                        database.ref('transactions/' + userId).set(userTransactions).then(() => {
                             loadTransactions();
                         });
                     } else {
@@ -501,6 +526,31 @@
                 });
             } else {
                 alert('Nenhuma transação a desfazer.');
+            }
+        }
+
+        function adminUndoLastTransaction() {
+            const selectedUserId = document.getElementById('userSelect').value;
+            if (selectedUserId) {
+                database.ref('transactions/' + selectedUserId).once('value', function(snapshot) {
+                    const userTransactions = snapshot.val();
+                    const lastTransactionId = userTransactions && userTransactions.length > 0 ? userTransactions[userTransactions.length - 1].id : null;
+                    if (lastTransactionId) {
+                        const index = userTransactions.findIndex(t => t.id === lastTransactionId);
+                        if (index > -1) {
+                            userTransactions.splice(index, 1);
+                            database.ref('transactions/' + selectedUserId).set(userTransactions).then(() => {
+                                alert('Última transação do usuário corrigida.');
+                            });
+                        } else {
+                            alert('Nenhuma transação a desfazer para este usuário.');
+                        }
+                    } else {
+                        alert('Nenhuma transação encontrada para este usuário.');
+                    }
+                });
+            } else {
+                alert('Selecione um usuário para corrigir a última transação.');
             }
         }
 
