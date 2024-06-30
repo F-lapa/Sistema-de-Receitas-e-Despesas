@@ -204,7 +204,7 @@
         </div>
         <div class="buttons">
             <button onclick="addTransaction()">Adicionar</button>
-            <button onclick="confirmUndo()">Corrigir</button>
+            <button onclick="clearLast24HoursTransactions()">Limpar Últimas 24 Horas</button>
         </div>
 
         <table id="transactionsTable">
@@ -501,31 +501,16 @@
             annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
         }
 
-        function confirmUndo() {
-            if (confirm('Você tem certeza que deseja desfazer a última ação?')) {
-                undoLastTransaction();
-            }
-        }
-
-        function undoLastTransaction() {
-            if (lastTransactionId) {
-                const userId = auth.currentUser.uid;
-                database.ref('transactions/' + userId).once('value', function(snapshot) {
-                    const userTransactions = snapshot.val();
-                    const index = userTransactions.findIndex(t => t.id === lastTransactionId);
-                    if (index > -1) {
-                        userTransactions.splice(index, 1);
-                        lastTransactionId = null;
-                        localStorage.removeItem('lastTransactionId');
-                        database.ref('transactions/' + userId).set(userTransactions).then(() => {
-                            loadTransactions();
-                        });
-                    } else {
-                        alert('Nenhuma transação a desfazer.');
-                    }
-                });
-            } else {
-                alert('Nenhuma transação a desfazer.');
+        function clearLast24HoursTransactions() {
+            if (confirm('Você tem certeza que deseja limpar as transações das últimas 24 horas?')) {
+                const now = new Date();
+                const past24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                transactions = transactions.filter(transaction => transaction.date < past24Hours);
+                saveTransactions();
+                updateDescriptionList();
+                updateFilteredView();
+                calculateBalances();
+                alert('Transações das últimas 24 horas foram removidas.');
             }
         }
 
