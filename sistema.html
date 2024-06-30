@@ -232,7 +232,7 @@
         </div>
         <div class="form-group">
             <label for="amount">Valor (R$):</label>
-            <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight">
+            <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight" autocomplete="off">
         </div>
         <div class="form-group">
             <label for="type">Tipo:</label>
@@ -608,13 +608,13 @@
                     totalDespesas += transaction.amount;
                 }
 
-                                const row = filteredTbody.insertRow();
+                const row = filteredTbody.insertRow();
                 const cellDate = row.insertCell(0);
                 const cellDescription = row.insertCell(1);
                 const cellAmount = row.insertCell(2);
                 const cellType = row.insertCell(3);
 
-                cellDate.innerText = transaction.date;
+                               cellDate.innerText = transaction.date;
                 cellDescription.innerHTML = `<div class="transaction-description">
                                                 <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
                                                 ${transaction.description}
