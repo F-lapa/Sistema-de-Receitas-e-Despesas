@@ -31,6 +31,7 @@
             text-align: center;
             color: #555555;
             margin-bottom: 20px;
+            font-size: 1.2em;
         }
         .logout {
             position: absolute;
@@ -235,13 +236,6 @@
                     <option value="despesa">Despesa</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="filterDescription">Descrição:</label>
-                <input type="text" id="filterDescription" list="descriptionList">
-                <datalist id="descriptionList">
-                    <!-- Options will be populated here -->
-                </datalist>
-            </div>
             <button onclick="filterByPeriod()">Filtrar</button>
             <button onclick="clearFilter()">Limpar Filtro</button>
             <div id="filteredResults">
@@ -315,7 +309,7 @@
                     const userData = snapshot.val();
                     const userName = userData ? userData.name : "Usuário";
                     localStorage.setItem('username', userName);
-                    document.getElementById('userGreeting').textContent = 'Olá, ' + userName;
+                    document.getElementById('userGreeting').innerHTML = '<span>Olá, <strong>' + userName + '</strong>!</span>';
                     loadTransactions();
                     checkAdmin(user.email);
                 });
@@ -480,15 +474,13 @@
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             const filterType = document.getElementById('filterType').value;
-            const filterDescription = document.getElementById('filterDescription').value.toLowerCase();
 
             let totalReceitas = 0;
             let totalDespesas = 0;
 
             const filteredTransactions = transactions.filter(transaction => 
                 transaction.date >= startDate && transaction.date <= endDate &&
-                (filterType === '' || transaction.type === filterType) &&
-                (filterDescription === '' || transaction.description.toLowerCase().includes(filterDescription))
+                (filterType === '' || transaction.type === filterType)
             );
 
             const filteredTbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
@@ -534,7 +526,6 @@
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
             document.getElementById('filterType').value = '';
-            document.getElementById('filterDescription').value = '';
             document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
             document.getElementById('totalReceitas').innerText = 'R$ 0,00';
             document.getElementById('totalDespesas').innerText = 'R$ 0,00';
@@ -567,7 +558,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             const dateInput = document.getElementById('date');
             dateInput.value = new Date().toISOString().split('T')[0];
-            document.getElementById('filterDescription').value = '';  // Assegure-se de que o campo de descrição do filtro esteja vazio
         });
 
         function logout() {
