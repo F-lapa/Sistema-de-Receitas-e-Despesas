@@ -244,6 +244,7 @@
         <div class="buttons">
             <button onclick="addTransaction()">Adicionar</button>
             <button onclick="openModal()">Remover Período</button>
+            <button onclick="openLimitModal()">Limite de Gastos Mensal</button>
         </div>
 
         <table id="transactionsTable">
@@ -264,6 +265,8 @@
             <p>Saldo do Dia: <span id="dailyBalance">R$ 0,00</span></p>
             <p>Saldo do Mês: <span id="monthlyBalance">R$ 0,00</span></p>
             <p>Saldo do Ano: <span id="annualBalance">R$ 0,00</span></p>
+            <p>Limite de Gastos: <span id="monthlyLimitValue">R$ 0,00</span></p>
+            <p>Gastos Restantes: <span id="remainingBalance">R$ 0,00</span></p>
         </div>
 
         <div class="filter">
@@ -363,6 +366,19 @@
         </div>
     </div>
 
+    <!-- Modal para definir limite de gastos -->
+    <div id="limitModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLimitModal()">&times;</span>
+            <h2>Definir Limite de Gastos Mensal</h2>
+            <div class="form-group">
+                <label for="monthlyLimit">Limite Mensal (R$):</label>
+                <input type="text" id="monthlyLimit" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight" autocomplete="off">
+            </div>
+            <button onclick="setMonthlyLimit()">Salvar Limite</button>
+        </div>
+    </div>
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
@@ -407,6 +423,9 @@
         let transactions = [];
         let lastTransactionId = localStorage.getItem('lastTransactionId');
         let allUsers = [];
+        let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
+
+        document.getElementById('monthlyLimitValue').innerText = formatCurrency(monthlyLimit);
 
         function saveTransactions() {
             const userId = auth.currentUser.uid;
@@ -514,7 +533,7 @@
                                                     <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
                                                     ${transaction.description}
                                                  </div>`;
-                    cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                    cellAmount.innerHTML = <div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>;
                     cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
                 }
             });
@@ -556,6 +575,9 @@
             dailyBalanceSpan.classList.toggle('negative', dailyBalance < 0);
             monthlyBalanceSpan.classList.toggle('negative', monthlyBalance < 0);
             annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
+
+            // Chamada para calcular o valor restante do limite de gastos
+            calculateRemainingBalance();
         }
 
         function openModal() {
@@ -614,12 +636,12 @@
                 const cellAmount = row.insertCell(2);
                 const cellType = row.insertCell(3);
 
-                               cellDate.innerText = transaction.date;
+                cellDate.innerText = transaction.date;
                 cellDescription.innerHTML = `<div class="transaction-description">
                                                 <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
                                                 ${transaction.description}
                                              </div>`;
-                cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                cellAmount.innerHTML = <div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>;
                 cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
             });
 
@@ -745,6 +767,80 @@
             } else {
                 alert('Nenhuma ação anterior para corrigir.');
             }
+        }
+
+        function openLimitModal() {
+            console.log('Abrir Modal de Limite de Gastos');
+            document.getElementById('limitModal').style.display = "block";
+        }
+
+        function closeLimitModal() {
+            console.log('Fechar Modal de Limite de Gastos');
+            document.getElementById('limitModal').style.display = "none";
+        }
+
+        function setMonthlyLimit() {
+            const limitInput = document.getElementById('monthlyLimit');
+            monthlyLimit = parseCurrency(limitInput.value);
+            localStorage.setItem('monthlyLimit', formatCurrency(monthlyLimit));
+            document.getElementById('monthlyLimitValue').innerText = formatCurrency(monthlyLimit);
+            calculateRemainingBalance();
+            closeLimitModal();
+        }
+
+        function calculateRemainingBalance() {
+            const currentMonth = new Date().toISOString().split('T')[0].slice(0, 7);
+            let spentThisMonth = 0;
+
+            transactions.forEach(transaction => {
+                if (transaction.date.startsWith(currentMonth) && transaction.type === 'despesa') {
+                    spentThisMonth += transaction.amount;
+                }
+            });
+
+            const remainingBalance = monthlyLimit - spentThisMonth;
+            document.getElementById('remainingBalance').innerText = formatCurrency(remainingBalance);
+            document.getElementById('remainingBalance').classList.toggle('negative', remainingBalance < 0);
+        }
+
+        // Atualize a função calculateBalances para incluir a chamada a calculateRemainingBalance
+        function calculateBalances() {
+            const selectedDate = document.getElementById('date').value;
+            const currentMonth = selectedDate.slice(0, 7);
+            const currentYear = selectedDate.slice(0, 4);
+
+            let dailyBalance = 0;
+            let monthlyBalance = 0;
+            let annualBalance = 0;
+
+            transactions.forEach(transaction => {
+                if (transaction.date === selectedDate) {
+                    dailyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                }
+
+                if (transaction.date.startsWith(currentMonth)) {
+                    monthlyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                }
+
+                if (transaction.date.startsWith(currentYear)) {
+                    annualBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                }
+            });
+
+            const dailyBalanceSpan = document.getElementById('dailyBalance');
+            const monthlyBalanceSpan = document.getElementById('monthlyBalance');
+            const annualBalanceSpan = document.getElementById('annualBalance');
+
+            dailyBalanceSpan.innerText = formatCurrency(dailyBalance);
+            monthlyBalanceSpan.innerText = formatCurrency(monthlyBalance);
+            annualBalanceSpan.innerText = formatCurrency(annualBalance);
+
+            dailyBalanceSpan.classList.toggle('negative', dailyBalance < 0);
+            monthlyBalanceSpan.classList.toggle('negative', monthlyBalance < 0);
+            annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
+
+            // Chamada para calcular o valor restante do limite de gastos
+            calculateRemainingBalance();
         }
     </script>
 </body>
