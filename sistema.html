@@ -303,7 +303,7 @@
                 const username = user.email;
                 localStorage.setItem('username', username);
                 loadTransactions();
-                checkAdmin();
+                checkAdmin(user.email);
             } else {
                 window.location.href = 'index.html';  // Redirecionar para a página de login se não estiver autenticado
             }
@@ -329,9 +329,8 @@
             });
         }
 
-        function checkAdmin() {
-            const user = auth.currentUser;
-            if (user.email === 'fernandolapa1987@gmail.com') {
+        function checkAdmin(email) {
+            if (email === 'fernandolapa1987@gmail.com') {
                 document.getElementById('adminIcon').style.display = 'block';
             }
         }
