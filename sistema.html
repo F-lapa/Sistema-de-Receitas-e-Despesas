@@ -6,9 +6,10 @@
     <title>Sistema de Receitas e Despesas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Seu CSS aqui */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
+            background-color: #f0f2f5;
             margin: 0;
             padding: 0;
         }
@@ -17,15 +18,14 @@
             margin: 50px auto;
             padding: 20px;
             background-color: #ffffff;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
             position: relative;
         }
         h1 {
             text-align: center;
             color: #333333;
             margin-bottom: 10px;
-            font-size: 2.5em;
         }
         .greeting {
             text-align: center;
@@ -92,18 +92,13 @@
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 30px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #0056b3;
-            transform: translateY(-2px);
-        }
-        button:active {
-            transform: translateY(2px);
         }
         table {
             width: 100%;
@@ -115,7 +110,6 @@
             padding: 12px;
             text-align: left;
             background-color: #fff;
-            border-radius: 10px;
         }
         th {
             background-color: #f7f7f7;
@@ -377,14 +371,14 @@
     <script>
         // Configuração do Firebase
         var firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
             authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
             databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
             projectId: "sistema-de-receitas-e-despesas",
             storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID",
-            measurementId: "YOUR_MEASUREMENT_ID"
+            messagingSenderId: "252102478972",
+            appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+            measurementId: "G-K2HCS7WNZV"
         };
         // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
@@ -395,16 +389,15 @@
         auth.onAuthStateChanged(user => {
             if (user) {
                 const userId = user.uid;
-                const userEmail = user.email;
                 database.ref('users/' + userId).once('value').then((snapshot) => {
                     const userData = snapshot.val();
                     const userName = userData ? userData.name : "Usuário";
                     localStorage.setItem('username', userName);
-                    document.getElementById('userGreeting').innerHTML = userEmail === 'fernandolapa1987@gmail.com' ? 
+                    document.getElementById('userGreeting').innerHTML = user.email === 'fernandolapa1987@gmail.com' ? 
                         '<span>Olá, <strong>Administrador!</strong></span>' : 
                         '<span>Olá, <strong>' + userName + '</strong>!</span>';
                     loadTransactions();
-                    checkAdmin(userEmail);
+                    checkAdmin(user.email);
                 });
             } else {
                 window.location.href = 'index.html';  // Redirecionar para a página de login se não estiver autenticado
