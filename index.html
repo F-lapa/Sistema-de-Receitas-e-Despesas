@@ -117,18 +117,29 @@
             auth.signInWithEmailAndPassword(email, password)
                 .then(userCredential => {
                     const user = userCredential.user;
+                    console.log("Usuário autenticado:", user.email);  // Log para depuração
                     database.ref('users/' + user.uid).once('value').then(snapshot => {
-                        if (snapshot.val().authorized) {
-                            localStorage.setItem('loggedIn', 'true');
-                            localStorage.setItem('username', user.email);
-                            window.location.href = 'sistema.html';  // Redirecionar para a página do sistema
+                        if (snapshot.exists()) {
+                            console.log("Dados do usuário:", snapshot.val());  // Log para depuração
+                            if (snapshot.val().authorized) {
+                                localStorage.setItem('loggedIn', 'true');
+                                localStorage.setItem('username', user.email);
+                                window.location.href = 'sistema.html';  // Redirecionar para a página do sistema
+                            } else {
+                                alert('Usuário não autorizado. Aguarde a autorização.');
+                                auth.signOut();
+                            }
                         } else {
-                            alert('Usuário não autorizado. Aguarde a autorização.');
+                            alert('Erro ao verificar a autorização do usuário.');
                             auth.signOut();
                         }
+                    }).catch(error => {
+                        console.error("Erro ao acessar o banco de dados:", error);
+                        alert('Erro ao verificar a autorização do usuário.');
                     });
                 })
                 .catch(error => {
+                    console.error("Erro ao fazer login:", error);
                     alert('Erro ao fazer login: ' + error.message);
                 });
         }
