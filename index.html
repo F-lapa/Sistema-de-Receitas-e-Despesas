@@ -124,6 +124,7 @@
                             if (snapshot.val().authorized) {
                                 localStorage.setItem('loggedIn', 'true');
                                 localStorage.setItem('username', user.email);
+                                localStorage.setItem('admin', snapshot.val().admin);
                                 window.location.href = 'sistema.html';  // Redirecionar para a página do sistema
                             } else {
                                 alert('Usuário não autorizado. Aguarde a autorização.');
