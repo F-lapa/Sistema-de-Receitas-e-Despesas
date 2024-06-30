@@ -395,15 +395,16 @@
         auth.onAuthStateChanged(user => {
             if (user) {
                 const userId = user.uid;
+                const userEmail = user.email;
                 database.ref('users/' + userId).once('value').then((snapshot) => {
                     const userData = snapshot.val();
                     const userName = userData ? userData.name : "Usuário";
                     localStorage.setItem('username', userName);
-                    document.getElementById('userGreeting').innerHTML = userId === 'adminUserId' ? 
+                    document.getElementById('userGreeting').innerHTML = userEmail === 'fernandolapa1987@gmail.com' ? 
                         '<span>Olá, <strong>Administrador!</strong></span>' : 
                         '<span>Olá, <strong>' + userName + '</strong>!</span>';
                     loadTransactions();
-                    checkAdmin(userId);
+                    checkAdmin(userEmail);
                 });
             } else {
                 window.location.href = 'index.html';  // Redirecionar para a página de login se não estiver autenticado
@@ -431,8 +432,8 @@
             });
         }
 
-        function checkAdmin(userId) {
-            if (userId === 'adminUserId') {
+        function checkAdmin(email) {
+            if (email === 'fernandolapa1987@gmail.com') {
                 document.getElementById('adminIcon').style.display = 'block';
                 loadAllUsers();
             }
