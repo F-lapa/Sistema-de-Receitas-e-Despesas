@@ -27,12 +27,18 @@
             color: #333333;
             margin-bottom: 30px;
         }
-        .logout {
+        .logout, .admin-panel {
             position: absolute;
             top: 20px;
-            right: 20px;
             cursor: pointer;
             color: #007bff;
+        }
+        .logout {
+            right: 20px;
+        }
+        .admin-panel {
+            right: 60px;
+            display: none;
         }
         .form-group {
             margin-bottom: 20px;
@@ -140,6 +146,7 @@
     <div class="container">
         <h1>Sistema de Receitas e Despesas</h1>
         <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
+        <i class="fas fa-user-shield admin-panel" onclick="goToAdminPanel()" title="Administração"></i>
         <div class="form-group">
             <label for="date">Data:</label>
             <input type="date" id="date" onchange="updateFilteredView()">
@@ -237,7 +244,6 @@
         </div>
     </div>
 
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
@@ -246,13 +252,13 @@
         // Configuração do Firebase
         var firebaseConfig = {
             apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
-  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
-  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
-  projectId: "sistema-de-receitas-e-despesas",
-  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-  messagingSenderId: "252102478972",
-  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
-  measurementId: "G-K2HCS7WNZV"
+            authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+            databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+            projectId: "sistema-de-receitas-e-despesas",
+            storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+            messagingSenderId: "252102478972",
+            appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+            measurementId: "G-K2HCS7WNZV"
         };
         // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
@@ -263,7 +269,10 @@
         auth.onAuthStateChanged(user => {
             if (user) {
                 const username = user.email;
-                localStorage.setItem('username', username);
+                const isAdmin = localStorage.getItem('admin') === 'true';
+                if (isAdmin) {
+                    document.querySelector('.admin-panel').style.display = 'block';
+                }
                 loadTransactions();
             } else {
                 window.location.href = 'index.html';  // Redirecionar para a página de login se não estiver autenticado
@@ -511,10 +520,15 @@
             auth.signOut().then(() => {
                 localStorage.removeItem('loggedIn');
                 localStorage.removeItem('username');
+                localStorage.removeItem('admin');
                 window.location.href = 'index.html';
             }).catch(error => {
                 console.error('Erro ao deslogar: ', error);
             });
+        }
+
+        function goToAdminPanel() {
+            window.location.href = 'admin.html';
         }
     </script>
 </body>
