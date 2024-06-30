@@ -224,19 +224,19 @@
         <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
         <div class="form-group">
             <label for="date">Data:</label>
-            <input type="date" id="date" onchange="updateFilteredView()" class="highlight" autocomplete="off">
+            <input type="date" id="date" onchange="updateFilteredView()" class="highlight">
         </div>
         <div class="form-group">
             <label for="description">Descrição:</label>
-            <input type="text" id="description" class="highlight" autocomplete="off">
+            <input type="text" id="description" class="highlight">
         </div>
         <div class="form-group">
             <label for="amount">Valor (R$):</label>
-            <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight" autocomplete="off">
+            <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight">
         </div>
         <div class="form-group">
             <label for="type">Tipo:</label>
-            <select id="type" class="highlight" autocomplete="off">
+            <select id="type" class="highlight">
                 <option value="receita">Receita</option>
                 <option value="despesa">Despesa</option>
             </select>
@@ -271,16 +271,16 @@
             <div class="date-group">
                 <div class="form-group">
                     <label for="startDate">Data Inicial:</label>
-                    <input type="date" id="startDate" class="highlight" autocomplete="off">
+                    <input type="date" id="startDate" class="highlight">
                 </div>
                 <div class="form-group">
                     <label for="endDate">Data Final:</label>
-                    <input type="date" id="endDate" class="highlight" autocomplete="off">
+                    <input type="date" id="endDate" class="highlight">
                 </div>
             </div>
             <div class="form-group">
                 <label for="filterType">Tipo:</label>
-                <select id="filterType" class="highlight" autocomplete="off">
+                <select id="filterType" class="highlight">
                     <option value="">Todos</option>
                     <option value="receita">Receita</option>
                     <option value="despesa">Despesa</option>
@@ -288,7 +288,7 @@
             </div>
             <div class="form-group">
                 <label for="filterDescription">Descrição:</label>
-                <select id="filterDescription" class="highlight" autocomplete="off">
+                <select id="filterDescription" class="highlight">
                     <option value="">Todos</option>
                     <!-- Options will be populated here -->
                 </select>
@@ -322,19 +322,19 @@
             <h2>Gerenciamento de Usuários</h2>
             <div class="form-group">
                 <label for="newUserName">Nome do Novo Usuário:</label>
-                <input type="text" id="newUserName" class="highlight" autocomplete="off">
+                <input type="text" id="newUserName" class="highlight">
             </div>
             <div class="form-group">
                 <label for="newUserEmail">Email do Novo Usuário:</label>
-                <input type="text" id="newUserEmail" class="highlight" autocomplete="off">
+                <input type="text" id="newUserEmail" class="highlight">
             </div>
             <div class="form-group">
                 <label for="newUserPassword">Senha do Novo Usuário:</label>
-                <input type="password" id="newUserPassword" class="highlight" autocomplete="off">
+                <input type="password" id="newUserPassword" class="highlight">
             </div>
             <div class="form-group">
                 <label for="userSelect">Selecionar Usuário:</label>
-                <select id="userSelect" class="highlight" autocomplete="off">
+                <select id="userSelect" class="highlight">
                     <!-- Options will be populated here -->
                 </select>
             </div>
@@ -353,11 +353,11 @@
             <h2>Selecionar Período para Remover</h2>
             <div class="form-group">
                 <label for="modalStartDate">Data Inicial:</label>
-                <input type="date" id="modalStartDate" class="highlight" autocomplete="off">
+                <input type="date" id="modalStartDate" class="highlight">
             </div>
             <div class="form-group">
                 <label for="modalEndDate">Data Final:</label>
-                <input type="date" id="modalEndDate" class="highlight" autocomplete="off">
+                <input type="date" id="modalEndDate" class="highlight">
             </div>
             <button onclick="removeTransactionsByPeriod()">Remover Transações</button>
         </div>
