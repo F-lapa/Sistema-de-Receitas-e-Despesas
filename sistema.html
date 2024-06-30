@@ -175,6 +175,40 @@
             width: 100%;
             margin-bottom: 10px;
         }
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -204,7 +238,7 @@
         </div>
         <div class="buttons">
             <button onclick="addTransaction()">Adicionar</button>
-            <button onclick="clearLast24HoursTransactions()">Limpar Últimas 24 Horas</button>
+            <button onclick="openModal()">Remover Período</button>
         </div>
 
         <table id="transactionsTable">
@@ -304,6 +338,23 @@
                 <button onclick="clearAllTransactions()">Limpar Minhas Transações</button>
                 <button onclick="adminUndoLastTransaction()">Corrigir Última Ação do Usuário</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Selecionar Período para Remover</h2>
+            <div class="form-group">
+                <label for="modalStartDate">Data Inicial:</label>
+                <input type="date" id="modalStartDate">
+            </div>
+            <div class="form-group">
+                <label for="modalEndDate">Data Final:</label>
+                <input type="date" id="modalEndDate">
+            </div>
+            <button onclick="removeTransactionsByPeriod()">Remover Transações</button>
         </div>
     </div>
 
@@ -501,42 +552,25 @@
             annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
         }
 
-        function clearLast24HoursTransactions() {
-            if (confirm('Você tem certeza que deseja limpar as transações das últimas 24 horas?')) {
-                const now = new Date();
-                const past24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-                transactions = transactions.filter(transaction => transaction.date < past24Hours);
-                saveTransactions();
-                updateDescriptionList();
-                updateFilteredView();
-                calculateBalances();
-                alert('Transações das últimas 24 horas foram removidas.');
-            }
+        function openModal() {
+            document.getElementById('myModal').style.display = "block";
         }
 
-        function adminUndoLastTransaction() {
-            const selectedUserId = document.getElementById('userSelect').value;
-            if (selectedUserId) {
-                database.ref('transactions/' + selectedUserId).once('value', function(snapshot) {
-                    const userTransactions = snapshot.val();
-                    const lastTransactionId = userTransactions && userTransactions.length > 0 ? userTransactions[userTransactions.length - 1].id : null;
-                    if (lastTransactionId) {
-                        const index = userTransactions.findIndex(t => t.id === lastTransactionId);
-                        if (index > -1) {
-                            userTransactions.splice(index, 1);
-                            database.ref('transactions/' + selectedUserId).set(userTransactions).then(() => {
-                                alert('Última transação do usuário corrigida.');
-                            });
-                        } else {
-                            alert('Nenhuma transação a desfazer para este usuário.');
-                        }
-                    } else {
-                        alert('Nenhuma transação encontrada para este usuário.');
-                    }
-                });
-            } else {
-                alert('Selecione um usuário para corrigir a última transação.');
-            }
+        function closeModal() {
+            document.getElementById('myModal').style.display = "none";
+        }
+
+        function removeTransactionsByPeriod() {
+            const startDate = document.getElementById('modalStartDate').value;
+            const endDate = document.getElementById('modalEndDate').value;
+
+            transactions = transactions.filter(transaction => !(transaction.date >= startDate && transaction.date <= endDate));
+            saveTransactions();
+            updateDescriptionList();
+            updateFilteredView();
+            calculateBalances();
+            closeModal();
+            alert('Transações do período selecionado foram removidas.');
         }
 
         function filterByPeriod() {
