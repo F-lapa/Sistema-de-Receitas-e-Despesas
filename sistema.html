@@ -27,7 +27,7 @@
             color: #333333;
             margin-bottom: 10px;
         }
-        .email {
+        .greeting {
             text-align: center;
             color: #555555;
             margin-bottom: 20px;
@@ -167,7 +167,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="email" id="userEmail"></div>
+        <div class="greeting" id="userGreeting"></div>
         <h1>Sistema de Receitas e Despesas</h1>
         <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
         <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
@@ -270,6 +270,10 @@
         <div class="admin-section" id="adminSection">
             <h2>Gerenciamento de Usuários</h2>
             <div class="form-group">
+                <label for="newUserName">Nome do Novo Usuário:</label>
+                <input type="text" id="newUserName">
+            </div>
+            <div class="form-group">
                 <label for="newUserEmail">Email do Novo Usuário:</label>
                 <input type="text" id="newUserEmail">
             </div>
@@ -306,11 +310,15 @@
         // Verifique se o usuário está autenticado
         auth.onAuthStateChanged(user => {
             if (user) {
-                const username = user.email;
-                localStorage.setItem('username', username);
-                document.getElementById('userEmail').textContent = 'Logado como: ' + username;
-                loadTransactions();
-                checkAdmin(user.email);
+                const userId = user.uid;
+                database.ref('users/' + userId).once('value').then((snapshot) => {
+                    const userData = snapshot.val();
+                    const userName = userData ? userData.name : "Usuário";
+                    localStorage.setItem('username', userName);
+                    document.getElementById('userGreeting').textContent = 'Olá, ' + userName;
+                    loadTransactions();
+                    checkAdmin(user.email);
+                });
             } else {
                 window.location.href = 'index.html';  // Redirecionar para a página de login se não estiver autenticado
             }
@@ -578,14 +586,22 @@
         }
 
         function registerNewUser() {
+            const name = document.getElementById('newUserName').value;
             const email = document.getElementById('newUserEmail').value;
             const password = document.getElementById('newUserPassword').value;
 
             auth.createUserWithEmailAndPassword(email, password)
                 .then(userCredential => {
-                    alert('Novo usuário registrado com sucesso.');
-                    document.getElementById('newUserEmail').value = '';
-                    document.getElementById('newUserPassword').value = '';
+                    const user = userCredential.user;
+                    database.ref('users/' + user.uid).set({
+                        name: name,
+                        email: email
+                    }).then(() => {
+                        alert('Novo usuário registrado com sucesso.');
+                        document.getElementById('newUserName').value = '';
+                        document.getElementById('newUserEmail').value = '';
+                        document.getElementById('newUserPassword').value = '';
+                    });
                 })
                 .catch(error => {
                     alert('Erro ao registrar novo usuário: ' + error.message);
