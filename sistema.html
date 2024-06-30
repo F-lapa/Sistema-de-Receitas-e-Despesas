@@ -248,10 +248,10 @@
             </div>
             <div class="form-group">
                 <label for="filterDescription">Descrição:</label>
-                <input type="text" id="filterDescription" list="descriptionList">
-                <datalist id="descriptionList">
+                <select id="filterDescription">
+                    <option value="">Todos</option>
                     <!-- Options will be populated here -->
-                </datalist>
+                </select>
             </div>
             <button onclick="filterByPeriod()">Filtrar</button>
             <button onclick="clearFilter()">Limpar Filtro</button>
@@ -294,7 +294,7 @@
             </div>
             <div class="buttons">
                 <button onclick="registerNewUser()">Registrar Novo Usuário</button>
-                <button onclick="clearAllTransactions()">Limpar Todas as Transações</button>
+                <button onclick="clearAllTransactions()">Limpar Minhas Transações</button>
             </div>
         </div>
     </div>
@@ -396,13 +396,14 @@
         }
 
         function updateDescriptionList() {
-            const descriptionList = document.getElementById('descriptionList');
-            descriptionList.innerHTML = '';
+            const filterDescription = document.getElementById('filterDescription');
+            filterDescription.innerHTML = '<option value="">Todos</option>';
             const uniqueDescriptions = [...new Set(transactions.map(t => t.description))];
             uniqueDescriptions.forEach(description => {
                 const option = document.createElement('option');
                 option.value = description;
-                descriptionList.appendChild(option);
+                option.text = description;
+                filterDescription.appendChild(option);
             });
         }
 
@@ -591,14 +592,14 @@
         }
 
         function clearAllTransactions() {
-            if (confirm('Você tem certeza que deseja limpar todas as transações?')) {
+            if (confirm('Você tem certeza que deseja limpar todas as suas transações?')) {
                 const userId = auth.currentUser.uid;
                 database.ref('transactions/' + userId).remove().then(() => {
                     transactions = [];
                     updateDescriptionList();
                     updateFilteredView();
                     calculateBalances();
-                    alert('Todas as transações foram removidas.');
+                    alert('Todas as suas transações foram removidas.');
                 }).catch(error => {
                     alert('Erro ao remover transações: ' + error.message);
                 });
