@@ -266,7 +266,7 @@
                 localStorage.setItem('username', username);
                 loadTransactions();
             } else {
-                window.location.href = 'login.html';  // Redirecionar para a página de login se não estiver autenticado
+                window.location.href = 'index.html';  // Redirecionar para a página de login se não estiver autenticado
             }
         });
 
@@ -511,7 +511,7 @@
             auth.signOut().then(() => {
                 localStorage.removeItem('loggedIn');
                 localStorage.removeItem('username');
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
             }).catch(error => {
                 console.error('Erro ao deslogar: ', error);
             });
