@@ -89,7 +89,7 @@
     <script>
         // Configuração do Firebase
         var firebaseConfig = {
-          apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
   authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
   databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
   projectId: "sistema-de-receitas-e-despesas",
@@ -112,7 +112,7 @@
                     const user = userCredential.user;
                     localStorage.setItem('loggedIn', 'true');
                     localStorage.setItem('username', user.email);
-                    window.location.href = 'index.html';  // Redirecionar para a página principal
+                    window.location.href = 'sistema.html';  // Redirecionar para a página do sistema
                 })
                 .catch(error => {
                     alert('Erro ao fazer login: ' + error.message);
