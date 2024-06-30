@@ -6,6 +6,7 @@
     <title>Sistema de Receitas e Despesas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* Seu CSS aqui */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
@@ -213,14 +214,6 @@
             text-decoration: none;
             cursor: pointer;
         }
-        .footer {
-            position: fixed;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            font-size: 0.9em;
-            color: #777;
-        }
     </style>
 </head>
 <body>
@@ -370,10 +363,6 @@
         </div>
     </div>
 
-    <div class="footer">
-        E-mail do usuário: <span id="userEmail"></span>
-    </div>
-
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
@@ -403,12 +392,10 @@
                 database.ref('users/' + userId).once('value').then((snapshot) => {
                     const userData = snapshot.val();
                     const userName = userData ? userData.name : "Usuário";
-                    const userEmail = userData ? userData.email : "";
                     localStorage.setItem('username', userName);
                     document.getElementById('userGreeting').innerHTML = user.email === 'fernandolapa1987@gmail.com' ? 
                         '<span>Olá, <strong>Administrador!</strong></span>' : 
                         '<span>Olá, <strong>' + userName + '</strong>!</span>';
-                    document.getElementById('userEmail').innerText = userEmail;
                     loadTransactions();
                     checkAdmin(user.email);
                 });
@@ -627,7 +614,7 @@
                 const cellAmount = row.insertCell(2);
                 const cellType = row.insertCell(3);
 
-                cellDate.innerText = transaction.date;
+                               cellDate.innerText = transaction.date;
                 cellDescription.innerHTML = `<div class="transaction-description">
                                                 <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
                                                 ${transaction.description}
