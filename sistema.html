@@ -339,7 +339,7 @@
         });
 
         let transactions = [];
-        let lastTransaction = null;
+        let lastTransaction = JSON.parse(localStorage.getItem('lastTransaction')) || null;
 
         function saveTransactions() {
             const userId = auth.currentUser.uid;
@@ -382,6 +382,7 @@
             const transaction = { date, description, amount, type };
             transactions.push(transaction);
             lastTransaction = transaction;
+            localStorage.setItem('lastTransaction', JSON.stringify(lastTransaction));
 
             saveTransactions();
             updateDescriptionList();
@@ -481,6 +482,7 @@
                 if (index > -1) {
                     transactions.splice(index, 1);
                     lastTransaction = null;
+                    localStorage.removeItem('lastTransaction');
                     saveTransactions();
                     updateDescriptionList();
                     updateFilteredView();
@@ -580,6 +582,7 @@
             auth.signOut().then(() => {
                 localStorage.removeItem('loggedIn');
                 localStorage.removeItem('username');
+                localStorage.removeItem('lastTransaction');
                 window.location.href = 'index.html';
             }).catch(error => {
                 console.error('Erro ao deslogar: ', error);
