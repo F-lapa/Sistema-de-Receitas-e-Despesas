@@ -98,6 +98,21 @@
         // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+        const auth = firebase.auth();
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                const isAdmin = localStorage.getItem('admin') === 'true';
+                if (!isAdmin) {
+                    alert('Acesso negado. Você não tem permissão para acessar esta página.');
+                    window.location.href = 'sistema.html';
+                } else {
+                    loadUsers();
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
 
         function loadUsers() {
             const tbody = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
@@ -125,10 +140,6 @@
                     alert('Erro ao autorizar usuário: ' + error.message);
                 });
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            loadUsers();
-        });
     </script>
 </body>
 </html>
