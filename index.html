@@ -67,13 +67,27 @@
             cursor: pointer;
         }
     </style>
-    <!-- Adicione os SDKs Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-    <!-- Configurações do seu app Firebase -->
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login</h1>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="text" id="email" required>
+        </div>
+        <div class="form-group show-password-container">
+            <label for="password">Senha:</label>
+            <input type="password" id="password" required>
+            <i class="fas fa-eye show-password" onclick="togglePassword()"></i>
+        </div>
+        <button onclick="login()">Entrar</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+
     <script>
-        // Configurações do Firebase do seu projeto
+        // Configuração do Firebase
         var firebaseConfig = {
             apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
   authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
@@ -84,56 +98,25 @@
   appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
   measurementId: "G-K2HCS7WNZV"
         };
-        // Inicializar Firebase
+        // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
-    </script>
-</head>
-<body>
-    <div class="login-container">
-        <h1>Login</h1>
-        <div class="form-group">
-            <label for="username">Usuário:</label>
-            <input type="text" id="username" required>
-        </div>
-        <div class="form-group show-password-container">
-            <label for="password">Senha:</label>
-            <input type="password" id="password" required>
-            <i class="fas fa-eye show-password" onclick="togglePassword()"></i>
-        </div>
-        <button onclick="login()">Entrar</button>
-    </div>
+        const auth = firebase.auth();
 
-    <script>
-        async function getCustomToken(uid) {
-            const response = await fetch('http://localhost:3000/gerarToken', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ uid: uid })
-            });
-            const data = await response.json();
-            return data.token;
-        }
-
-        async function login() {
-            const username = document.getElementById('username').value;
+        function login() {
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            if (username === 'usuario' && password === 'senha123') {
-                try {
-                    const token = await getCustomToken(username);
-                    await firebase.auth().signInWithCustomToken(token);
+            auth.signInWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    // Usuário logado
+                    const user = userCredential.user;
                     localStorage.setItem('loggedIn', 'true');
-                    localStorage.setItem('username', username);
-                    window.location.href = 'sistema.html';
-                } catch (error) {
-                    console.error('Erro ao fazer login:', error);
+                    localStorage.setItem('username', user.email);
+                    window.location.href = 'index.html';  // Redirecionar para a página principal
+                })
+                .catch(error => {
                     alert('Erro ao fazer login: ' + error.message);
-                }
-            } else {
-                alert('Usuário ou senha incorretos.');
-            }
+                });
         }
 
         function togglePassword() {
