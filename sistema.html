@@ -57,26 +57,15 @@
             font-weight: bold;
             color: #555555;
         }
-        .input-wrapper {
-            position: relative;
-        }
-        .input-wrapper input {
+        input[type="text"], input[type="number"], input[type="date"], select {
             width: 100%;
-            padding: 10px 10px 10px 30px; /* Adjust padding to fit the currency symbol */
+            padding: 10px;
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
             font-size: 16px;
             transition: all 0.3s ease;
-        }
-        .input-wrapper .currency-symbol {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 16px;
-            color: #555555;
         }
         input[type="text"]:invalid, input[type="date"]:invalid {
             border-color: red;
@@ -235,22 +224,19 @@
         <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
         <div class="form-group">
             <label for="date">Data:</label>
-            <input type="date" id="date" onchange="updateFilteredView()" class="highlight">
+            <input type="date" id="date" onchange="updateFilteredView()" class="highlight" autocomplete="off">
         </div>
         <div class="form-group">
             <label for="description">Descrição:</label>
-            <input type="text" id="description" class="highlight">
+            <input type="text" id="description" class="highlight" autocomplete="off">
         </div>
         <div class="form-group">
             <label for="amount">Valor (R$):</label>
-            <div class="input-wrapper">
-                <span class="currency-symbol">R$</span>
-                <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight">
-            </div>
+            <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight" autocomplete="off">
         </div>
         <div class="form-group">
             <label for="type">Tipo:</label>
-            <select id="type" class="highlight">
+            <select id="type" class="highlight" autocomplete="off">
                 <option value="receita">Receita</option>
                 <option value="despesa">Despesa</option>
             </select>
@@ -285,16 +271,16 @@
             <div class="date-group">
                 <div class="form-group">
                     <label for="startDate">Data Inicial:</label>
-                    <input type="date" id="startDate" class="highlight">
+                    <input type="date" id="startDate" class="highlight" autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="endDate">Data Final:</label>
-                    <input type="date" id="endDate" class="highlight">
+                    <input type="date" id="endDate" class="highlight" autocomplete="off">
                 </div>
             </div>
             <div class="form-group">
                 <label for="filterType">Tipo:</label>
-                <select id="filterType" class="highlight">
+                <select id="filterType" class="highlight" autocomplete="off">
                     <option value="">Todos</option>
                     <option value="receita">Receita</option>
                     <option value="despesa">Despesa</option>
@@ -302,7 +288,7 @@
             </div>
             <div class="form-group">
                 <label for="filterDescription">Descrição:</label>
-                <select id="filterDescription" class="highlight">
+                <select id="filterDescription" class="highlight" autocomplete="off">
                     <option value="">Todos</option>
                     <!-- Options will be populated here -->
                 </select>
@@ -336,19 +322,19 @@
             <h2>Gerenciamento de Usuários</h2>
             <div class="form-group">
                 <label for="newUserName">Nome do Novo Usuário:</label>
-                <input type="text" id="newUserName" class="highlight">
+                <input type="text" id="newUserName" class="highlight" autocomplete="off">
             </div>
             <div class="form-group">
                 <label for="newUserEmail">Email do Novo Usuário:</label>
-                <input type="text" id="newUserEmail" class="highlight">
+                <input type="text" id="newUserEmail" class="highlight" autocomplete="off">
             </div>
             <div class="form-group">
                 <label for="newUserPassword">Senha do Novo Usuário:</label>
-                <input type="password" id="newUserPassword" class="highlight">
+                <input type="password" id="newUserPassword" class="highlight" autocomplete="off">
             </div>
             <div class="form-group">
                 <label for="userSelect">Selecionar Usuário:</label>
-                <select id="userSelect" class="highlight">
+                <select id="userSelect" class="highlight" autocomplete="off">
                     <!-- Options will be populated here -->
                 </select>
             </div>
@@ -367,11 +353,11 @@
             <h2>Selecionar Período para Remover</h2>
             <div class="form-group">
                 <label for="modalStartDate">Data Inicial:</label>
-                <input type="date" id="modalStartDate" class="highlight">
+                <input type="date" id="modalStartDate" class="highlight" autocomplete="off">
             </div>
             <div class="form-group">
                 <label for="modalEndDate">Data Final:</label>
-                <input type="date" id="modalEndDate" class="highlight">
+                <input type="date" id="modalEndDate" class="highlight" autocomplete="off">
             </div>
             <button onclick="removeTransactionsByPeriod()">Remover Transações</button>
         </div>
