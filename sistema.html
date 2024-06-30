@@ -614,7 +614,7 @@
                 const cellAmount = row.insertCell(2);
                 const cellType = row.insertCell(3);
 
-                               cellDate.innerText = transaction.date;
+                cellDate.innerText = transaction.date;
                 cellDescription.innerHTML = `<div class="transaction-description">
                                                 <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
                                                 ${transaction.description}
