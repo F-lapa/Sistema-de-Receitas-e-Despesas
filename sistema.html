@@ -25,7 +25,12 @@
         h1 {
             text-align: center;
             color: #333333;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
+        }
+        .email {
+            text-align: center;
+            color: #555555;
+            margin-bottom: 20px;
         }
         .logout {
             position: absolute;
@@ -163,6 +168,7 @@
 <body>
     <div class="container">
         <h1>Sistema de Receitas e Despesas</h1>
+        <div class="email" id="userEmail"></div>
         <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
         <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
         <div class="form-group">
@@ -302,6 +308,7 @@
             if (user) {
                 const username = user.email;
                 localStorage.setItem('username', username);
+                document.getElementById('userEmail').textContent = 'Logado como: ' + username;
                 loadTransactions();
                 checkAdmin(user.email);
             } else {
@@ -552,6 +559,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const dateInput = document.getElementById('date');
             dateInput.value = new Date().toISOString().split('T')[0];
+            document.getElementById('filterDescription').value = '';  // Assegure-se de que o campo de descrição do filtro esteja vazio
         });
 
         function logout() {
