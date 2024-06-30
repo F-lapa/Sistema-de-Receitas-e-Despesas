@@ -456,6 +456,7 @@
         }
 
         function addTransaction() {
+            console.log('Adicionar Transação');
             const date = document.getElementById('date').value;
             const description = document.getElementById('description').value;
             const amountInput = document.getElementById('amount');
@@ -558,14 +559,17 @@
         }
 
         function openModal() {
+            console.log('Abrir Modal');
             document.getElementById('myModal').style.display = "block";
         }
 
         function closeModal() {
+            console.log('Fechar Modal');
             document.getElementById('myModal').style.display = "none";
         }
 
         function removeTransactionsByPeriod() {
+            console.log('Remover Transações por Período');
             const startDate = document.getElementById('modalStartDate').value;
             const endDate = document.getElementById('modalEndDate').value;
 
@@ -579,6 +583,7 @@
         }
 
         function filterByPeriod() {
+            console.log('Filtrar por Período');
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             const filterType = document.getElementById('filterType').value;
@@ -603,7 +608,7 @@
                     totalDespesas += transaction.amount;
                 }
 
-                const row = filteredTbody.insertRow();
+                                const row = filteredTbody.insertRow();
                 const cellDate = row.insertCell(0);
                 const cellDescription = row.insertCell(1);
                 const cellAmount = row.insertCell(2);
@@ -633,6 +638,7 @@
         }
 
         function clearFilter() {
+            console.log('Limpar Filtro');
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
             document.getElementById('filterType').value = '';
@@ -667,6 +673,7 @@
         });
 
         function logout() {
+            console.log('Logout');
             auth.signOut().then(() => {
                 localStorage.removeItem('loggedIn');
                 localStorage.removeItem('username');
@@ -678,11 +685,13 @@
         }
 
         function toggleAdminSection() {
+            console.log('Toggle Admin Section');
             const adminSection = document.getElementById('adminSection');
             adminSection.style.display = adminSection.style.display === 'block' ? 'none' : 'block';
         }
 
         function clearAllTransactions() {
+            console.log('Limpar Todas as Transações');
             if (confirm('Você tem certeza que deseja limpar todas as suas transações?')) {
                 const userId = auth.currentUser.uid;
                 database.ref('transactions/' + userId).remove().then(() => {
@@ -698,6 +707,7 @@
         }
 
         function registerNewUser() {
+            console.log('Registrar Novo Usuário');
             const name = document.getElementById('newUserName').value;
             const email = document.getElementById('newUserEmail').value;
             const password = document.getElementById('newUserPassword').value;
@@ -713,11 +723,28 @@
                         document.getElementById('newUserName').value = '';
                         document.getElementById('newUserEmail').value = '';
                         document.getElementById('newUserPassword').value = '';
+                        loadAllUsers(); // Atualiza a lista de usuários após registrar um novo usuário
                     });
                 })
                 .catch(error => {
                     alert('Erro ao registrar novo usuário: ' + error.message);
                 });
+        }
+
+        function adminUndoLastTransaction() {
+            console.log('Corrigir Última Ação do Usuário');
+            if (lastTransactionId) {
+                transactions = transactions.filter(transaction => transaction.id !== lastTransactionId);
+                saveTransactions();
+                updateDescriptionList();
+                updateFilteredView();
+                calculateBalances();
+                alert('Última ação do usuário foi corrigida.');
+                lastTransactionId = null;
+                localStorage.removeItem('lastTransactionId');
+            } else {
+                alert('Nenhuma ação anterior para corrigir.');
+            }
         }
     </script>
 </body>
