@@ -66,6 +66,9 @@
             box-sizing: border-box;
             font-size: 16px;
         }
+        input[type="text"]:invalid {
+            border-color: red;
+        }
         .date-group {
             display: flex;
             justify-content: space-between;
@@ -164,6 +167,13 @@
         .admin-section input {
             width: 50%;
         }
+        .admin-section .buttons {
+            flex-direction: column;
+        }
+        .admin-section button {
+            width: 100%;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -182,7 +192,7 @@
         </div>
         <div class="form-group">
             <label for="amount">Valor (R$):</label>
-            <input type="text" id="amount" placeholder="0,00">
+            <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido">
         </div>
         <div class="form-group">
             <label for="type">Tipo:</label>
@@ -282,7 +292,10 @@
                 <label for="newUserPassword">Senha do Novo Usuário:</label>
                 <input type="password" id="newUserPassword">
             </div>
-            <button onclick="registerNewUser()">Registrar Novo Usuário</button>
+            <div class="buttons">
+                <button onclick="registerNewUser()">Registrar Novo Usuário</button>
+                <button onclick="clearAllTransactions()">Limpar Todas as Transações</button>
+            </div>
         </div>
     </div>
 
@@ -544,15 +557,7 @@
 
         const amountInput = document.getElementById('amount');
         amountInput.addEventListener('input', function() {
-            let value = this.value.replace(/[^\d,]/g, '');
-            if (value.indexOf(',') !== -1) {
-                let parts = value.split(',');
-                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                value = parts.join(',');
-            } else {
-                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            }
-            this.value = value.length > 0 ? 'R$ ' + value : 'R$ 0,00';
+            this.value = this.value.replace(/[^\d,]/g, '');
         });
 
         amountInput.addEventListener('focus', function() {
@@ -561,7 +566,7 @@
 
         amountInput.addEventListener('blur', function() {
             if (this.value === '') {
-                this.value = 'R$ 0,00';
+                this.value = '0,00';
             }
         });
 
@@ -583,6 +588,21 @@
         function toggleAdminSection() {
             const adminSection = document.getElementById('adminSection');
             adminSection.style.display = adminSection.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function clearAllTransactions() {
+            if (confirm('Você tem certeza que deseja limpar todas as transações?')) {
+                const userId = auth.currentUser.uid;
+                database.ref('transactions/' + userId).remove().then(() => {
+                    transactions = [];
+                    updateDescriptionList();
+                    updateFilteredView();
+                    calculateBalances();
+                    alert('Todas as transações foram removidas.');
+                }).catch(error => {
+                    alert('Erro ao remover transações: ' + error.message);
+                });
+            }
         }
 
         function registerNewUser() {
