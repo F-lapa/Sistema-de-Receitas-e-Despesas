@@ -65,9 +65,14 @@
             border-radius: 5px;
             box-sizing: border-box;
             font-size: 16px;
+            transition: all 0.3s ease;
         }
         input[type="text"]:invalid {
             border-color: red;
+        }
+        input[type="text"].highlight {
+            border: 2px solid #007bff;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
         }
         .date-group {
             display: flex;
@@ -227,7 +232,7 @@
         </div>
         <div class="form-group">
             <label for="amount">Valor (R$):</label>
-            <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido">
+            <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight">
         </div>
         <div class="form-group">
             <label for="type">Tipo:</label>
@@ -645,6 +650,7 @@
 
         amountInput.addEventListener('focus', function() {
             this.value = '';
+            this.classList.remove('highlight');
         });
 
         amountInput.addEventListener('blur', function() {
