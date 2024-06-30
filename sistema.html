@@ -329,7 +329,9 @@
                     const userData = snapshot.val();
                     const userName = userData ? userData.name : "Usuário";
                     localStorage.setItem('username', userName);
-                    document.getElementById('userGreeting').innerHTML = '<span>Olá, <strong>' + userName + '</strong>!</span>';
+                    document.getElementById('userGreeting').innerHTML = user.email === 'fernandolapa1987@gmail.com' ? 
+                        '<span>Olá, <strong>Administrador!</strong></span>' : 
+                        '<span>Olá, <strong>' + userName + '</strong>!</span>';
                     loadTransactions();
                     checkAdmin(user.email);
                 });
@@ -482,16 +484,21 @@
 
         function undoLastTransaction() {
             if (lastTransactionId) {
-                const index = transactions.findIndex(t => t.id === lastTransactionId);
-                if (index > -1) {
-                    transactions.splice(index, 1);
-                    lastTransactionId = null;
-                    localStorage.removeItem('lastTransactionId');
-                    saveTransactions();
-                    updateDescriptionList();
-                    updateFilteredView();
-                    calculateBalances();
-                }
+                const userId = auth.currentUser.uid;
+                database.ref('transactions/' + userId).once('value', function(snapshot) {
+                    const transactions = snapshot.val();
+                    const index = transactions.findIndex(t => t.id === lastTransactionId);
+                    if (index > -1) {
+                        transactions.splice(index, 1);
+                        lastTransactionId = null;
+                        localStorage.removeItem('lastTransactionId');
+                        database.ref('transactions/' + userId).set(transactions).then(() => {
+                            loadTransactions();
+                        });
+                    } else {
+                        alert('Nenhuma transação a desfazer.');
+                    }
+                });
             } else {
                 alert('Nenhuma transação a desfazer.');
             }
