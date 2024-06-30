@@ -57,15 +57,26 @@
             font-weight: bold;
             color: #555555;
         }
-        input[type="text"], input[type="number"], input[type="date"], select {
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper input {
             width: 100%;
-            padding: 10px;
+            padding: 10px 10px 10px 30px; /* Adjust padding to fit the currency symbol */
             margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box;
             font-size: 16px;
             transition: all 0.3s ease;
+        }
+        .input-wrapper .currency-symbol {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #555555;
         }
         input[type="text"]:invalid, input[type="date"]:invalid {
             border-color: red;
@@ -232,7 +243,10 @@
         </div>
         <div class="form-group">
             <label for="amount">Valor (R$):</label>
-            <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight">
+            <div class="input-wrapper">
+                <span class="currency-symbol">R$</span>
+                <input type="text" id="amount" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" class="highlight">
+            </div>
         </div>
         <div class="form-group">
             <label for="type">Tipo:</label>
