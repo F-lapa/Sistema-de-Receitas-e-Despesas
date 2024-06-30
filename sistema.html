@@ -509,8 +509,11 @@
                     const cellType = row.insertCell(3);
 
                     cellDate.innerText = transaction.date;
-                    cellDescription.innerHTML = '<div class="transaction-description"><i class="transaction-icon ' + (transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down') + '" style="color: ' + (transaction.type === 'receita' ? 'green' : 'red') + ';"></i>' + transaction.description + '</div>';
-                    cellAmount.innerHTML = '<div class="transaction-amount ' + transaction.type + '">' + formatCurrency(transaction.amount) + '</div>';
+                    cellDescription.innerHTML = `<div class="transaction-description">
+                                                    <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
+                                                    ${transaction.description}
+                                                 </div>`;
+                    cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
                     cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
                 }
             });
@@ -595,36 +598,126 @@
 
             filteredTransactions.forEach(transaction => {
                 if (transaction.type === 'receita') {
-                    totalReceitas += transaction.amount
-                        getElementById('newUserEmail').value = '';
+                    totalReceitas += transaction.amount;
+                } else if (transaction.type === 'despesa') {
+                    totalDespesas += transaction.amount;
+                }
+
+                const row = filteredTbody.insertRow();
+                const cellDate = row.insertCell(0);
+                const cellDescription = row.insertCell(1);
+                const cellAmount = row.insertCell(2);
+                const cellType = row.insertCell(3);
+
+                cellDate.innerText = transaction.date;
+                cellDescription.innerHTML = `<div class="transaction-description">
+                                                <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
+                                                ${transaction.description}
+                                             </div>`;
+                cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+            });
+
+            const totalSaldo = totalReceitas - totalDespesas;
+
+            const totalReceitasSpan = document.getElementById('totalReceitas');
+            const totalDespesasSpan = document.getElementById('totalDespesas');
+            const totalSaldoSpan = document.getElementById('totalSaldo');
+
+            totalReceitasSpan.innerText = formatCurrency(totalReceitas);
+            totalDespesasSpan.innerText = formatCurrency(totalDespesas);
+            totalSaldoSpan.innerText = formatCurrency(totalSaldo);
+
+            totalDespesasSpan.classList.add('negative');
+            totalSaldoSpan.classList.toggle('negative', totalSaldo < 0);
+        }
+
+        function clearFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterDescription').value = '';
+            document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
+            document.getElementById('totalReceitas').innerText = 'R$ 0,00';
+            document.getElementById('totalDespesas').innerText = 'R$ 0,00';
+            document.getElementById('totalSaldo').innerText = 'R$ 0,00';
+        }
+
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.classList.remove('highlight');
+            });
+        });
+
+        const amountInput = document.getElementById('amount');
+        amountInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^\d,]/g, '');
+        });
+
+        amountInput.addEventListener('blur', function() {
+            if (this.value === '') {
+                this.value = '0,00';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('date');
+            dateInput.value = new Date().toISOString().split('T')[0];
+        });
+
+        function logout() {
+            auth.signOut().then(() => {
+                localStorage.removeItem('loggedIn');
+                localStorage.removeItem('username');
+                localStorage.removeItem('lastTransactionId');
+                window.location.href = 'index.html';
+            }).catch(error => {
+                console.error('Erro ao deslogar: ', error);
+            });
+        }
+
+        function toggleAdminSection() {
+            const adminSection = document.getElementById('adminSection');
+            adminSection.style.display = adminSection.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function clearAllTransactions() {
+            if (confirm('Você tem certeza que deseja limpar todas as suas transações?')) {
+                const userId = auth.currentUser.uid;
+                database.ref('transactions/' + userId).remove().then(() => {
+                    transactions = [];
+                    updateDescriptionList();
+                    updateFilteredView();
+                    calculateBalances();
+                    alert('Todas as suas transações foram removidas.');
+                }).catch(error => {
+                    alert('Erro ao remover transações: ' + error.message);
+                });
+            }
+        }
+
+        function registerNewUser() {
+            const name = document.getElementById('newUserName').value;
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    const user = userCredential.user;
+                    database.ref('users/' + user.uid).set({
+                        name: name,
+                        email: email
+                    }).then(() => {
+                        alert('Novo usuário registrado com sucesso.');
+                        document.getElementById('newUserName').value = '';
+                        document.getElementById('newUserEmail').value = '';
                         document.getElementById('newUserPassword').value = '';
                     });
                 })
                 .catch(error => {
                     alert('Erro ao registrar novo usuário: ' + error.message);
                 });
-        }
-
-        function adminUndoLastTransaction() {
-            const selectedUserId = document.getElementById('userSelect').value;
-            if (selectedUserId && lastTransactionId) {
-                database.ref('transactions/' + selectedUserId).once('value').then(snapshot => {
-                    const userTransactions = snapshot.val() || [];
-                    const updatedTransactions = userTransactions.filter(transaction => transaction.id !== lastTransactionId);
-                    database.ref('transactions/' + selectedUserId).set(updatedTransactions).then(() => {
-                        alert('Última ação do usuário corrigida com sucesso.');
-                        if (auth.currentUser.uid === selectedUserId) {
-                            transactions = updatedTransactions;
-                            updateFilteredView();
-                            calculateBalances();
-                        }
-                    });
-                }).catch(error => {
-                    alert('Erro ao corrigir última ação do usuário: ' + error.message);
-                });
-            } else {
-                alert('Selecione um usuário e uma transação válida para corrigir.');
-            }
         }
     </script>
 </body>
