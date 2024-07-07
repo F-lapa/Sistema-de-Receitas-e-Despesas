@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definir Limite de Gastos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+            font-weight: 300;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            width: 48%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .current-limit, .remaining-limit {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .current-limit span, .remaining-limit span {
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Definir Limite de Gastos</h1>
+        <div class="form-group">
+            <label for="period">Período:</label>
+            <input type="date" id="startDate"> a <input type="date" id="endDate">
+        </div>
+        <div class="form-group">
+            <label for="monthlyLimit">Limite de Gastos (R$):</label>
+            <input type="text" id="monthlyLimit" placeholder="0,00" pattern="^\d+(\.\d{1,2})?$" title="Digite um valor válido" autocomplete="off">
+        </div>
+        <div class="buttons">
+            <button onclick="setMonthlyLimit()">Definir Limite</button>
+            <button onclick="resetMonthlyLimit()">Zerar Limite de Gastos</button>
+        </div>
+        <div class="current-limit">
+            <p>Limite Atual: <span id="currentLimit">R$ 0,00</span></p>
+        </div>
+        <div class="remaining-limit">
+            <p>Gasto Restante: <span id="remainingLimit">R$ 0,00</span></p>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+    <script>
+        // Configuração do Firebase
+        var firebaseConfig = {
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+  projectId: "sistema-de-receitas-e-despesas",
+  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+  messagingSenderId: "252102478972",
+  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+  measurementId: "G-K2HCS7WNZV"
+        };
+        // Inicialize o Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        let monthlyLimit = 0;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loadMonthlyLimit();
+            } else {
+                window.location.href = 'index.html';  // Redirecionar para a página de login se não estiver autenticado
+            }
+        });
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function parseCurrency(value) {
+            return parseFloat(value.replace(/\./g, '').replace(',', '.').replace('R$', '')) || 0;
+        }
+
+        function setMonthlyLimit() {
+            const userId = auth.currentUser.uid;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const limitInput = document.getElementById('monthlyLimit');
+            const limit = parseCurrency(limitInput.value);
+
+            if (startDate === "" || endDate === "" || limit === 0) {
+                alert("Por favor, preencha todos os campos corretamente.");
+                return;
+            }
+
+            database.ref('limits/' + userId).set({
+                startDate: startDate,
+                endDate: endDate,
+                limit: limit
+            }).then(() => {
+                alert('Limite de gastos definido com sucesso.');
+                loadMonthlyLimit();
+            }).catch(error => {
+                alert('Erro ao definir limite: ' + error.message);
+            });
+        }
+
+        function resetMonthlyLimit() {
+            if (!confirm('Tem certeza que deseja zerar o limite de gastos?')) {
+                return;
+            }
+
+            const userId = auth.currentUser.uid;
+            database.ref('limits/' + userId).remove().then(() => {
+                alert('Limite de gastos zerado com sucesso.');
+                document.getElementById('currentLimit').innerText = formatCurrency(0);
+                document.getElementById('remainingLimit').innerText = formatCurrency(0);
+            }).catch(error => {
+                alert('Erro ao zerar limite: ' + error.message);
+            });
+        }
+
+        function loadMonthlyLimit() {
+            const userId = auth.currentUser.uid;
+            database.ref('limits/' + userId).once('value').then(snapshot => {
+                const limitData = snapshot.val();
+                if (limitData) {
+                    monthlyLimit = limitData.limit;
+                    const startDate = limitData.startDate;
+                    const endDate = limitData.endDate;
+                    calculateRemainingLimit(userId, startDate, endDate, monthlyLimit);
+                    document.getElementById('currentLimit').innerText = formatCurrency(monthlyLimit);
+                }
+            });
+        }
+
+        function calculateRemainingLimit(userId, startDate, endDate, limit) {
+            database.ref('transactions/' + userId).once('value').then(snapshot => {
+                const transactions = snapshot.val();
+                let totalExpenses = 0;
+
+                if (transactions) {
+                    for (let key in transactions) {
+                        const transaction = transactions[key];
+                        if (transaction.type === 'despesa' && transaction.date >= startDate && transaction.date <= endDate) {
+                            totalExpenses += transaction.amount;
+                        }
+                    }
+                }
+
+                const remainingLimit = limit - totalExpenses;
+                document.getElementById('remainingLimit').innerText = formatCurrency(remainingLimit);
+            });
+        }
+    </script>
+</body>
+</html>
