@@ -9,30 +9,30 @@
     <style>
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #282c34;
+            background-color: #2c3e50;
             margin: 0;
             padding: 0;
-            color: #f1f1f1;
+            color: #ecf0f1;
         }
         .container {
             max-width: 600px;
             margin: 30px auto;
             padding: 20px;
-            background-color: #1c1e22;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            background-color: #34495e;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             border-radius: 12px;
             position: relative;
         }
         h1 {
             text-align: center;
-            color: #61dafb;
+            color: #ecf0f1;
             margin-bottom: 15px;
             font-size: 1.8em;
             font-weight: 500;
         }
         .greeting {
             text-align: center;
-            color: #f1f1f1;
+            color: #ecf0f1;
             margin-bottom: 15px;
             font-size: 1.2em;
         }
@@ -40,7 +40,7 @@
             position: absolute;
             top: 10px;
             cursor: pointer;
-            color: #61dafb;
+            color: #ecf0f1;
             font-size: 1.2em;
         }
         .logout {
@@ -54,7 +54,7 @@
             top: 10px;
             left: 10px;
             cursor: pointer;
-            color: #61dafb;
+            color: #ecf0f1;
             font-size: 1.2em;
             display: none;
         }
@@ -65,7 +65,7 @@
             display: block;
             margin-bottom: 6px;
             font-weight: bold;
-            color: #61dafb;
+            color: #bdc3c7;
         }
         input[type="text"], input[type="number"], input[type="date"], select, input[type="password"] {
             width: 100%;
@@ -75,13 +75,13 @@
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 14px;
-            background-color: #282c34;
-            color: #f1f1f1;
+            background-color: #2c3e50;
+            color: #ecf0f1;
             transition: all 0.3s ease;
         }
         input.highlight, select.highlight {
-            border: 2px solid #61dafb;
-            box-shadow: 0 0 10px rgba(97, 218, 251, 0.5);
+            border: 2px solid #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
         .buttons {
             display: flex;
@@ -90,8 +90,8 @@
         button {
             width: 48%;
             padding: 10px;
-            background-color: #61dafb;
-            color: #282c34;
+            background-color: #3498db;
+            color: #ecf0f1;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -99,7 +99,7 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
         button:hover {
-            background-color: #21a1f1;
+            background-color: #2980b9;
             transform: scale(1.05);
         }
         table {
@@ -111,11 +111,11 @@
         th, td {
             padding: 10px;
             text-align: left;
-            background-color: #1c1e22;
+            background-color: #34495e;
         }
         th {
-            background-color: #282c34;
-            color: #61dafb;
+            background-color: #2c3e50;
+            color: #bdc3c7;
         }
         tbody tr {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -123,7 +123,7 @@
             overflow: hidden;
         }
         tbody tr:hover {
-            background-color: #333841;
+            background-color: #3b4b5e;
         }
         .totals, .filter {
             margin-top: 15px;
@@ -131,11 +131,11 @@
         }
         .totals p, .filter p {
             font-size: 18px;
-            color: #f1f1f1;
+            color: #ecf0f1;
         }
         .totals span, .filter span {
             font-weight: bold;
-            color: #61dafb;
+            color: #3498db;
         }
         .negative {
             color: red !important;
@@ -164,7 +164,7 @@
         }
         .admin-section h2 {
             text-align: center;
-            color: #61dafb;
+            color: #ecf0f1;
         }
         .admin-section .form-group {
             display: flex;
@@ -194,7 +194,7 @@
             right: 10px;
             top: 12px;
             cursor: pointer;
-            color: #61dafb;
+            color: #3498db;
         }
         .modal {
             display: none;
@@ -208,25 +208,25 @@
             background-color: rgba(0, 0, 0, 0.4);
         }
         .modal-content {
-            background-color: #1c1e22;
+            background-color: #34495e;
             margin: 15% auto;
             padding: 15px;
             border: 1px solid #444;
             width: 70%;
             max-width: 400px;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-            color: #f1f1f1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            color: #ecf0f1;
         }
         .close {
-            color: #f1f1f1;
+            color: #ecf0f1;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
         .close:hover,
         .close:focus {
-            color: #61dafb;
+            color: #3498db;
             text-decoration: none;
             cursor: pointer;
         }
@@ -250,8 +250,8 @@
             background-size: 200px 100%;
         }
         input[type="text"]:hover, input[type="number"]:hover, input[type="date"]:hover, select:hover, input[type="password"]:hover {
-            border-color: #61dafb;
-            box-shadow: 0 0 10px rgba(97, 218, 251, 0.5);
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
     </style>
 </head>
@@ -259,7 +259,7 @@
     <div class="container">
         <div class="greeting" id="userGreeting"></div>
         <div class="logo"></div>
-        <h1>Sistema de Receitas e Despesas</h1>
+        <h1 style="display:none;">Sistema de Receitas e Despesas</h1>
         <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
         <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
         <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
