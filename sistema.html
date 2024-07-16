@@ -3,782 +3,765 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Receitas e Despesas</title>
+    <title>Adicionar Cliente - Garagem 87</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #2c3e50;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f2f2f2;
             margin: 0;
-            padding: 0;
-            color: #ecf0f1;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
-            max-width: 600px;
-            margin: 30px auto;
+            background: #ffffff;
             padding: 20px;
-            background-color: #34495e;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
         }
-        h1 {
-            text-align: center;
-            color: #ecf0f1;
-            margin-bottom: 15px;
-            font-size: 1.8em;
-            font-weight: 500;
-        }
-        .greeting {
-            text-align: center;
-            color: #ecf0f1;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-        }
-        .logout, .change-password {
-            position: absolute;
-            top: 10px;
-            cursor: pointer;
-            color: #ecf0f1;
-            font-size: 1.2em;
-        }
-        .logout {
-            right: 10px;
-        }
-        .change-password {
-            right: 40px;
-        }
-        .admin-icon {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            cursor: pointer;
-            color: #ecf0f1;
-            font-size: 1.2em;
-            display: none;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
+        .container img {
+            width: 100%;
+            max-width: 250px;
             display: block;
-            margin-bottom: 6px;
-            font-weight: bold;
-            color: #bdc3c7;
+            margin: 0 auto 10px;
+            animation: shine 1.5s infinite;
         }
-        input[type="text"], input[type="number"], input[type="date"], select, input[type="password"] {
+        @keyframes shine {
+            0% {
+                filter: brightness(1);
+            }
+            50% {
+                filter: brightness(1.5);
+            }
+            100% {
+                filter: brightness(1);
+            }
+        }
+        .container h2 {
+            text-align: center;
+            color: #d32f2f;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .btn {
             width: 100%;
             padding: 10px;
-            margin-bottom: 8px;
-            border: 1px solid #444;
-            border-radius: 6px;
-            box-sizing: border-box;
+            border: none;
+            border-radius: 5px;
+            background-color: #d32f2f;
+            color: white;
+            cursor: pointer;
             font-size: 14px;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            transition: all 0.3s ease;
+            font-weight: bold;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+            text-align: center;
         }
-        input.highlight, select.highlight {
-            border: 2px solid #3498db;
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        .btn:hover {
+            background-color: #9a0007;
         }
-        .buttons {
+        .search-container {
+            margin-bottom: 20px;
+        }
+        #buscar-cliente {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #b2dfdb;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .lista-cabecalho {
+            display: none;
+        }
+        #lista-clientes {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        #lista-clientes li {
             display: flex;
             justify-content: space-between;
-        }
-        button {
-            width: 48%;
+            align-items: center;
             padding: 10px;
-            background-color: #3498db;
-            color: #ecf0f1;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 5px 0;
+            background: #ffffff;
+            border-radius: 5px;
+            border: 1px solid #b2dfdb;
+            transition: box-shadow 0.3s, transform 0.3s;
         }
-        button:hover {
-            background-color: #2980b9;
-            transform: scale(1.05);
-        }
-        table {
-            width: 100%;
-            margin-top: 15px;
-            border-collapse: separate;
-            border-spacing: 0 8px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            background-color: #34495e;
-        }
-        th {
-            background-color: #2c3e50;
-            color: #bdc3c7;
-        }
-        tbody tr {
+        #lista-clientes li:hover {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 6px;
-            overflow: hidden;
+            transform: translateY(-5px);
         }
-        tbody tr:hover {
-            background-color: #3b4b5e;
-        }
-        .totals, .filter {
-            margin-top: 15px;
-            text-align: center;
-        }
-        .totals p, .filter p {
-            font-size: 18px;
-            color: #ecf0f1;
-        }
-        .totals span, .filter span {
+        #lista-clientes li span {
+            display: block;
             font-weight: bold;
-            color: #3498db;
+            color: #d32f2f;
+            font-size: 14px;
         }
-        .negative {
-            color: red !important;
-        }
-        .transaction-description {
+        .icon-actions {
             display: flex;
             align-items: center;
+            gap: 10px;
         }
-        .transaction-amount {
-            text-align: left;
-            color: green;
-        }
-        .transaction-amount.despesa {
-            color: red;
-        }
-        .transaction-icon {
-            margin-right: 10px;
-            font-size: 1.2em;
-        }
-        .filter-results {
-            margin-top: 20px;
-        }
-        .admin-section {
-            display: none;
-            margin-top: 20px;
-        }
-        .admin-section h2 {
-            text-align: center;
-            color: #ecf0f1;
-        }
-        .admin-section .form-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .admin-section input, .admin-section select {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        .admin-section .buttons {
-            flex-direction: column;
-        }
-        .admin-section button {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        .password-field {
-            position: relative;
-        }
-        .password-field input {
-            width: calc(100% - 40px);
-            margin-bottom: 0;
-        }
-        .password-field i {
-            position: absolute;
-            right: 10px;
-            top: 12px;
+        .icon-actions i {
+            color: #e57373;
+            font-size: 18px;
             cursor: pointer;
-            color: #3498db;
+            transition: color 0.3s;
+        }
+        .icon-actions i:hover {
+            color: #d32f2f;
+        }
+        .icon-history {
+            color: #1976d2;
+        }
+        .icon-history:hover {
+            color: #0d47a1;
         }
         .modal {
             display: none;
             position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
+            z-index: 1000; /* Padrão para todas as modais */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
             width: 100%;
-            height: 100%;
+            max-width: 500px; /* Ajuste a largura máxima para 500px */
+            height: auto;
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            box-sizing: border-box;
+            animation: fadeIn 0.5s;
+        }
+        .modal-show {
+            z-index: 1001; /* Garantir que a modal aberta esteja na frente */
+        }
+        #modalDetalhesOrcamento.modal-show {
+            z-index: 1002; /* Modal de detalhes deve estar sempre na frente */
+        }
+        .modal.fade {
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .modal.fade.in {
+            opacity: 1;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         .modal-content {
-            background-color: #34495e;
-            margin: 15% auto;
-            padding: 15px;
-            border: 1px solid #444;
-            width: 70%;
-            max-width: 400px;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px; /* Ajuste a largura máxima para 500px */
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            color: #ecf0f1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .modal-header, .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header {
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .modal-footer {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 10px;
+            margin-top: 20px;
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: #d32f2f;
+            font-size: 18px;
         }
         .close {
-            color: #ecf0f1;
-            float: right;
-            font-size: 28px;
+            color: #aaa;
+            font-size: 24px;
             font-weight: bold;
+            cursor: pointer;
         }
         .close:hover,
         .close:focus {
-            color: #3498db;
-            text-decoration: none;
+            color: black;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .form-group input {
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #b2dfdb;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .btn-modal {
+            background-color: #d32f2f;
+            color: white;
+            cursor: pointer;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .btn-modal:hover {
+            background-color: #9a0007;
+        }
+        .orcamento-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #ffffff;
+            border-radius: 5px;
+            border: 1px solid #b2dfdb;
+            transition: box-shadow 0.3s, transform 0.3s;
+        }
+        .orcamento-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+        .orcamento-item span {
+            display: block;
+            font-weight: bold;
+            color: #d32f2f;
+            font-size: 14px;
             cursor: pointer;
         }
-        .fa-trash-alt {
-            cursor: pointer;
-            color: red;
+        .orcamento-item .orcamento-info {
+            font-size: 12px;
+            color: #757575;
         }
-        @keyframes shine {
-            0% { background-position: -200px; }
-            100% { background-position: 200px; }
+        /* Estilo para os detalhes do orçamento */
+        .details-header {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
         }
-        .logo {
-    width: 200px; /* Aumenta a largura da logo */
-    height: auto;
-    margin: 0 auto;
-    display: block;
-    background: url('logo.png') no-repeat center;
-    background-size: contain;
-    animation: shine 2s infinite linear;
-    background-image: linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.1) 100%);
-    background-size: 200px 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.logo:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
-}
-
-        input[type="text"]:hover, input[type="number"]:hover, input[type="date"]:hover, select:hover, input[type="password"]:hover {
-            border-color: #3498db;
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        .details-section {
+            margin-bottom: 10px;
+        }
+        .details-section h2 {
+            font-size: 16px;
+            color: #d32f2f;
+            margin-bottom: 5px;
+        }
+        .details-section p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .details-table th,
+        .details-table td {
+            border: 1px solid #b2dfdb;
+            padding: 8px;
+            text-align: left;
+        }
+        .details-table th {
+            background-color: #d32f2f;
+            color: white;
+        }
+        .details-table td {
+            background-color: #f5f5f5;
+        }
+        /* Destacar valor total dos orçamentos */
+        .total-orcamentos {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: right;
+            color: #d32f2f;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="greeting" id="userGreeting"></div>
-        <div class="logo"></div>
-        <img src="logo.png" alt="Logo do Sistema" class="logo">
-        <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
-        <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
-        <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
-        
-        <input type="text" style="display:none;" autocomplete="username">
-        <input type="password" style="display:none;" autocomplete="new-password">
-        
-        <div class="form-group">
-            <label for="date">Data:</label>
-            <input type="date" id="date" class="highlight" onchange="updateFilteredView()">
+        <img src="LogoGaragem87.png" alt="Logo da Garagem87">
+        <h2>Cadastro de Cliente</h2>
+        <button class="btn" onclick="abrirModalAdicionar()">Adicionar Cliente</button>
+        <div class="search-container">
+            <input type="text" id="buscar-cliente" onkeyup="filtrarClientes()" placeholder="Buscar cliente...">
         </div>
-        <div class="form-group">
-            <label for="description">Descrição:</label>
-            <input type="text" id="description" class="highlight">
-        </div>
-        <div class="form-group">
-            <label for="amount">Valor (R$):</label>
-            <input type="text" id="amount" name="amount_field" placeholder="0,00" value="0,00" class="highlight" autocomplete="off" oninput="validateAmount()">
-        </div>
-        <div class="form-group">
-            <label for="type">Tipo:</label>
-            <select id="type" class="highlight">
-                <option value="receita">Receita</option>
-                <option value="despesa">Despesa</option>
-            </select>
-        </div>
-        <div class="buttons">
-            <button onclick="addTransaction()">Adicionar</button>
-            <button onclick="goToLimitPage()">Definir Limite de Gastos</button>
-        </div>
+        <ul id="lista-clientes">
+            <!-- Lista de clientes adicionados -->
+        </ul>
+    </div>
 
-        <table id="transactionsTable">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Descrição</th>
-                    <th>Valor</th>
-                    <th>Tipo</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Transactions will be added here -->
-            </tbody>
-        </table>
-
-        <div class="totals">
-            <p>Saldo do Dia: <span id="dailyBalance">R$ 0,00</span></p>
-            <p>Saldo do Mês: <span id="monthlyBalance">R$ 0,00</span></p>
-            <p>Saldo do Ano: <span id="annualBalance">R$ 0,00</span></p>
-        </div>
-
-        <div class="filter">
-            <h2>Filtrar por Período</h2>
-            <div class="date-group">
+    <!-- Modal Adicionar Cliente -->
+    <div id="modalAdicionarCliente" class="modal fade">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Cliente</h2>
+                <span class="close" onclick="fecharModalAdicionar()">&times;</span>
+            </div>
+            <form id="form-cliente">
                 <div class="form-group">
-                    <label for="startDate">Data Inicial:</label>
-                    <input type="date" id="startDate" class="highlight">
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome" required>
                 </div>
                 <div class="form-group">
-                    <label for="endDate">Data Final:</label>
-                    <input type="date" id="endDate" class="highlight">
+                    <label for="carro">Carro:</label>
+                    <input type="text" id="carro" name="carro" required>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="filterType">Tipo:</label>
-                <select id="filterType" class="highlight">
-                    <option value="">Todos</option>
-                    <option value="receita">Receita</option>
-                    <option value="despesa">Despesa</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="filterDescription">Descrição:</label>
-                <select id="filterDescription" class="highlight">
-                    <option value="">Todos</option>
-                </select>
-            </div>
-            <button onclick="filterByPeriod()">Filtrar</button>
-            <button onclick="clearFilter()">Limpar Filtro</button>
-            <div id="filteredResults">
-                <p>Total Receitas: <span id="totalReceitas">R$ 0,00</span></p>
-                <p>Total Despesas: <span id="totalDespesas" class="negative">R$ 0,00</span></p>
-                <p>Saldo: <span id="totalSaldo">R$ 0,00</span></p>
-            </div>
-            <div class="filter-results" id="filterResults">
-                <h3>Extrato</h3>
-                <table id="filteredTransactionsTable">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Descrição</th>
-                            <th>Valor</th>
-                            <th>Tipo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Filtered transactions will be added here -->
-                    </tbody>
-                </table>
-            </div>
+                <div class="form-group">
+                    <label for="cor">Cor do Veículo:</label>
+                    <input type="text" id="cor" name="cor" required>
+                </div>
+                <div class="form-group">
+                    <label for="placa">Placa do Carro:</label>
+                    <input type="text" id="placa" name="placa" required>
+                </div>
+                <div class="form-group">
+                    <label for="ano">Ano do Veículo:</label>
+                    <input type="number" id="ano" name="ano" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal" onclick="adicionarCliente()">Salvar Cliente</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div class="admin-section" id="adminSection">
-            <h2>Gerenciamento de Usuários</h2>
-            <div class="form-group">
-                <label for="newUserName">Nome do Novo Usuário:</label>
-                <input type="text" id="newUserName" class="highlight">
+    <!-- Modal Editar Cliente -->
+    <div id="modalEditarCliente" class="modal fade">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Cliente</h2>
+                <span class="close" onclick="fecharModalEditar()">&times;</span>
             </div>
-            <div class="form-group">
-                <label for="newUserEmail">Email do Novo Usuário:</label>
-                <input type="text" id="newUserEmail" class="highlight">
+            <form id="form-editar-cliente">
+                <input type="hidden" id="editar-index">
+                <div class="form-group">
+                    <label for="editar-nome">Nome:</label>
+                    <input type="text" id="editar-nome" name="editar-nome" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="editar-carro">Carro:</label>
+                    <input type="text" id="editar-carro" name="editar-carro" required>
+                </div>
+                <div class="form-group">
+                    <label for="editar-cor">Cor do Veículo:</label>
+                    <input type="text" id="editar-cor" name="editar-cor" required>
+                </div>
+                <div class="form-group">
+                    <label for="editar-placa">Placa do Carro:</label>
+                    <input type="text" id="editar-placa" name="editar-placa" required>
+                </div>
+                <div class="form-group">
+                    <label for="editar-ano">Ano do Veículo:</label>
+                    <input type="number" id="editar-ano" name="editar-ano" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal" onclick="salvarCliente()">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Remover Cliente -->
+    <div id="modalRemoverCliente" class="modal fade">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Remover Cliente</h2>
+                <span class="close" onclick="fecharModalRemover()">&times;</span>
             </div>
-            <div class="form-group password-field">
-                <label for="newUserPassword">Senha do Novo Usuário:</label>
-                <input type="password" id="newUserPassword" class="highlight" value="">
-                <i class="fas fa-eye" id="togglePassword" onclick="togglePasswordVisibility('newUserPassword')"></i>
+            <div class="modal-body">
+                <p>Tem certeza que deseja remover este cliente?</p>
             </div>
-            <div class="buttons">
-                <button onclick="registerNewUser()">Registrar Novo Usuário</button>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal" onclick="removerClienteConfirmado()">Sim</button>
+                <button type="button" class="btn-modal" onclick="fecharModalRemover()">Não</button>
             </div>
         </div>
     </div>
 
-    <div id="changePasswordModal" class="modal">
+    <!-- Modal Detalhes Orçamento -->
+    <div id="modalDetalhesOrcamento" class="modal fade">
         <div class="modal-content">
-            <span class="close" onclick="closeChangePasswordModal()">&times;</span>
-            <h2>Alterar Senha</h2>
-            <div class="form-group password-field">
-                <label for="newPassword">Nova Senha:</label>
-                <input type="password" id="newPassword" class="highlight">
-                <i class="fas fa-eye" id="toggleChangePassword" onclick="togglePasswordVisibility('newPassword')"></i>
+            <div class="modal-header">
+                <h2>Detalhes do Orçamento</h2>
+                <span class="close" onclick="fecharModal('modalDetalhesOrcamento')">&times;</span>
             </div>
-            <button onclick="changePassword()">Alterar Senha</button>
+            <div class="modal-body" id="detalhes-modal-body">
+                <!-- Conteúdo dos detalhes do orçamento será inserido aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Histórico de Orçamentos -->
+    <div id="modalHistoricoOrcamentos" class="modal fade">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Histórico de Orçamentos</h2>
+                <span class="close" onclick="fecharModalHistorico()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="historico-orcamentos-lista">
+                    <!-- Lista de orçamentos será inserida aqui -->
+                </div>
+                <div class="total-orcamentos" id="total-orcamentos"></div>
+            </div>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
     <script>
-        var firebaseConfig = {
-    apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
-    authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
-    databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
-    projectId: "sistema-de-receitas-e-despesas",
-    storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-    messagingSenderId: "252102478972",
-    appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
-    measurementId: "G-K2HCS7WNZV"
+        const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "garagem87-c652e.firebaseapp.com",
+    databaseURL: "https://garagem87-c652e-default-rtdb.firebaseio.com",
+    projectId: "garagem87-c652e",
+    storageBucket: "garagem87-c652e.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID",
+    measurementId: "YOUR_MEASUREMENT_ID"
 };
 
 firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const auth = firebase.auth();
+const db = firebase.firestore();
 
-auth.onAuthStateChanged(user => {
-    if (user) {
-        const userId = user.uid;
-        database.ref('users/' + userId).once('value').then((snapshot) => {
-            const userData = snapshot.val();
-            const userName = userData ? userData.name : "Usuário";
-            localStorage.setItem('username', userName);
-            document.getElementById('userGreeting').innerHTML = user.email === 'fernandolapa1987@gmail.com' ? 
-                '<span>Olá, <strong>Administrador!</strong></span>' : 
-                '<span>Olá, <strong>' + userName + '</strong>!</span>';
-            loadTransactions();
-            checkAdmin(user.email);
+function adicionarCliente() {
+    const nome = document.getElementById('nome').value;
+    const carro = document.getElementById('carro').value;
+    const cor = document.getElementById('cor').value;
+    const placa = document.getElementById('placa').value;
+    const ano = document.getElementById('ano').value;
+
+    if (nome && carro && cor && placa && ano) {
+        const cliente = { nome, carro, cor, placa, ano };
+        db.collection("clientes").add(cliente).then(() => {
+            atualizarListaClientes();
+            document.getElementById('form-cliente').reset();
+            fecharModalAdicionar();
+        }).catch((error) => {
+            console.error("Error adding document: ", error);
         });
     } else {
-        window.location.href = 'index.html';  
-    }
-});
-
-let transactions = [];
-let lastTransactionId = localStorage.getItem('lastTransactionId');
-let allUsers = [];
-let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
-
-function saveTransactions() {
-    const userId = auth.currentUser.uid;
-    database.ref('transactions/' + userId).set(transactions);
-}
-
-function loadTransactions() {
-    const userId = auth.currentUser.uid;
-    database.ref('transactions/' + userId).once('value', function(snapshot) {
-        if (snapshot.val()) {
-            transactions = snapshot.val();
-            updateDescriptionList();
-            updateFilteredView();
-            calculateBalances();
-        }
-    });
-}
-
-function checkAdmin(email) {
-    if (email === 'fernandolapa1987@gmail.com') {
-        document.getElementById('adminIcon').style.display = 'block';
-        loadAllUsers();
+        alert("Por favor, preencha todos os campos.");
     }
 }
 
-function loadAllUsers() {
-    database.ref('users').once('value').then((snapshot) => {
-        const users = snapshot.val();
-        for (let uid in users) {
-            allUsers.push({ uid, name: users[uid].name });
-        }
-    });
-}
-
-function formatCurrency(value) {
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-function parseCurrency(value) {
-    return parseFloat(value.replace(/\./g, '').replace(',', '.').replace('R$', '')) || 0;
-}
-
-function addTransaction() {
-    const date = document.getElementById('date').value;
-    const description = document.getElementById('description').value;
-    const amountInput = document.getElementById('amount');
-    const amount = parseCurrency(amountInput.value);
-    const type = document.getElementById('type').value;
-
-    const transaction = { id: generateTransactionId(), date, description, amount, type };
-    transactions.push(transaction);
-    lastTransactionId = transaction.id;
-    localStorage.setItem('lastTransactionId', lastTransactionId);
-
-    saveTransactions();
-    updateDescriptionList();
-    updateFilteredView();
-    calculateBalances();
-
-    document.getElementById('date').value = getCurrentDate();
-    document.getElementById('description').value = '';
-    amountInput.value = '0,00';
-    document.getElementById('type').value = 'receita';
-}
-
-function generateTransactionId() {
-    return '_' + Math.random().toString(36).substr(2, 9);
-}
-
-function updateDescriptionList() {
-    const filterDescription = document.getElementById('filterDescription');
-    filterDescription.innerHTML = '<option value="">Todos</option>';
-    const uniqueDescriptions = [...new Set(transactions.map(t => t.description))];
-    uniqueDescriptions.forEach(description => {
-        const option = document.createElement('option');
-        option.value = description;
-        option.text = description;
-        filterDescription.appendChild(option);
-    });
-}
-
-function updateFilteredView() {
-    const selectedDate = document.getElementById('date').value;
-    const tbody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
-    tbody.innerHTML = '';
-
-    transactions.forEach(transaction => {
-        if (transaction.date === selectedDate) {
-            const row = tbody.insertRow();
-            
-            const cellDate = row.insertCell(0);
-            const cellDescription = row.insertCell(1);
-            const cellAmount = row.insertCell(2);
-            const cellType = row.insertCell(3);
-            const cellAction = row.insertCell(4);
-
-            cellDate.innerText = transaction.date;
-            cellDescription.innerHTML = `<div class="transaction-description">
-                                            <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
-                                            ${transaction.description}
-                                         </div>`;
-            cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
-            cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-            cellAction.innerHTML = `<i class="fas fa-trash-alt" onclick="confirmRemoveTransaction('${transaction.id}')" style="cursor:pointer; color:red;"></i>`;
-        }
-    });
-
-    calculateBalances();
-}
-
-function confirmRemoveTransaction(transactionId) {
-    if (confirm('Tem certeza que deseja remover esta transação?')) {
-        removeTransaction(transactionId);
-    }
-}
-
-function removeTransaction(transactionId) {
-    transactions = transactions.filter(transaction => transaction.id !== transactionId);
-    saveTransactions();
-    updateDescriptionList();
-    updateFilteredView();
-    calculateBalances();
-}
-
-function calculateBalances() {
-    const selectedDate = document.getElementById('date').value;
-    const currentMonth = selectedDate.slice(0, 7);
-    const currentYear = selectedDate.slice(0, 4);
-
-    let dailyBalance = 0;
-    let monthlyBalance = 0;
-    let annualBalance = 0;
-
-    transactions.forEach(transaction => {
-        if (transaction.date === selectedDate) {
-            dailyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
-        }
-
-        if (transaction.date.startsWith(currentMonth)) {
-            monthlyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
-        }
-
-        if (transaction.date.startsWith(currentYear)) {
-            annualBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
-        }
-    });
-
-    const dailyBalanceSpan = document.getElementById('dailyBalance');
-    const monthlyBalanceSpan = document.getElementById('monthlyBalance');
-    const annualBalanceSpan = document.getElementById('annualBalance');
-
-    dailyBalanceSpan.innerText = formatCurrency(dailyBalance);
-    monthlyBalanceSpan.innerText = formatCurrency(monthlyBalance);
-    annualBalanceSpan.innerText = formatCurrency(annualBalance);
-
-    dailyBalanceSpan.classList.toggle('negative', dailyBalance < 0);
-    monthlyBalanceSpan.classList.toggle('negative', monthlyBalance < 0);
-    annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
-}
-
-function filterByPeriod() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    const filterType = document.getElementById('filterType').value;
-    const filterDescription = document.getElementById('filterDescription').value.toLowerCase();
-
-    let totalReceitas = 0;
-    let totalDespesas = 0;
-
-    const filteredTransactions = transactions.filter(transaction => 
-        transaction.date >= startDate && transaction.date <= endDate &&
-        (filterType === '' || transaction.type === filterType) &&
-        (filterDescription === '' || transaction.description.toLowerCase().includes(filterDescription))
-    );
-
-    const filteredTbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
-    filteredTbody.innerHTML = '';
-
-    filteredTransactions.forEach(transaction => {
-        if (transaction.type === 'receita') {
-            totalReceitas += transaction.amount;
-        } else if (transaction.type === 'despesa') {
-            totalDespesas += transaction.amount;
-        }
-
-        const row = filteredTbody.insertRow();
-        const cellDate = row.insertCell(0);
-        const cellDescription = row.insertCell(1);
-        const cellAmount = row.insertCell(2);
-        const cellType = row.insertCell(3);
-
-        cellDate.innerText = transaction.date;
-        cellDescription.innerHTML = `<div class="transaction-description">
-                                        <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
-                                        ${transaction.description}
-                                     </div>`;
-        cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
-        cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-    });
-
-    const totalSaldo = totalReceitas - totalDespesas;
-
-    const totalReceitasSpan = document.getElementById('totalReceitas');
-    const totalDespesasSpan = document.getElementById('totalDespesas');
-    const totalSaldoSpan = document.getElementById('totalSaldo');
-
-    totalReceitasSpan.innerText = formatCurrency(totalReceitas);
-    totalDespesasSpan.innerText = formatCurrency(totalDespesas);
-    totalSaldoSpan.innerText = formatCurrency(totalSaldo);
-
-    totalDespesasSpan.classList.add('negative');
-    totalSaldoSpan.classList.toggle('negative', totalSaldo < 0);
-}
-
-function clearFilter() {
-    document.getElementById('startDate').value = '';
-    document.getElementById('endDate').value = '';
-    document.getElementById('filterType').value = '';
-    document.getElementById('filterDescription').value = '';
-    document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
-    document.getElementById('totalReceitas').innerText = 'R$ 0,00';
-    document.getElementById('totalDespesas').innerText = 'R$ 0,00';
-    document.getElementById('totalSaldo').innerText = 'R$ 0,00';
-}
-
-const inputs = document.querySelectorAll('input, select');
-inputs.forEach(input => {
-    input.addEventListener('focus', function() {
-        this.classList.remove('highlight');
-    });
-});
-
-function validateAmount() {
-    const amountInput = document.getElementById('amount');
-    amountInput.value = amountInput.value.replace(/[^\d,]/g, '');
-    amountInput.value = amountInput.value.replace(/(,.*?),(.*?)/g, '$1');
-}
-
-function getCurrentDate() {
-    const now = new Date();
-    const offset = -3;
-    const brasiliaTime = new Date(now.getTime() + offset * 3600 * 1000);
-    return brasiliaTime.toISOString().split('T')[0];
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const dateInput = document.getElementById('date');
-    dateInput.value = getCurrentDate();
-    updateFilteredView();
-});
-
-function logout() {
-    auth.signOut().then(() => {
-        localStorage.removeItem('loggedIn');
-        localStorage.removeItem('username');
-        localStorage.removeItem('lastTransactionId');
-        window.location.href = 'index.html';
-    }).catch(error => {
-        console.error('Erro ao deslogar: ', error);
-    });
-}
-
-function toggleAdminSection() {
-    const adminSection = document.getElementById('adminSection');
-    adminSection.style.display = adminSection.style.display === 'block' ? 'none' : 'block';
-}
-
-function registerNewUser() {
-    const name = document.getElementById('newUserName').value;
-    const email = document.getElementById('newUserEmail').value;
-    const password = document.getElementById('newUserPassword').value;
-
-    auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            const user = userCredential.user;
-            database.ref('users/' + user.uid).set({
-                name: name,
-                email: email
-            }).then(() => {
-                alert('Novo usuário registrado com sucesso.');
-                document.getElementById('newUserName').value = '';
-                document.getElementById('newUserEmail').value = '';
-                document.getElementById('newUserPassword').value = '';
-                loadAllUsers();
-            });
-        })
-        .catch(error => {
-            alert('Erro ao registrar novo usuário: ' + error.message);
+function atualizarListaClientes() {
+    const listaClientes = document.getElementById('lista-clientes');
+    listaClientes.innerHTML = '';
+    db.collection("clientes").orderBy("nome").get().then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+            const cliente = doc.data();
+            const li = document.createElement('li');
+            li.innerHTML = 
+                <span>
+                    Nome: ${cliente.nome}<br>
+                    Carro: ${cliente.carro}<br>
+                    Cor: ${cliente.cor}<br>
+                    Placa: ${cliente.placa}
+                </span>
+                <div class="icon-actions">
+                    <i class="fas fa-history icon-history" onclick="abrirHistoricoOrcamentos('${cliente.nome}')"></i>
+                    <i class="fas fa-trash" onclick="abrirModalRemover('${doc.id}', event)"></i>
+                </div>
+            ;
+            listaClientes.appendChild(li);
         });
+    });
 }
 
-function openChangePasswordModal() {
-    const modal = document.getElementById('changePasswordModal');
+function abrirHistoricoOrcamentos(clienteNome) {
+    const historicoLista = document.getElementById('historico-orcamentos-lista');
+    historicoLista.innerHTML = '';
+    let totalOrcamentos = 0;
+    db.collection("orcamentos").where("nomeCliente", "==", clienteNome).get().then((querySnapshot) => {
+        if (querySnapshot.empty) {
+            historicoLista.innerHTML = '<p>Até o momento o cliente não tem orçamentos a serem exibidos.</p>';
+        } else {
+            querySnapshot.forEach((doc) => {
+                const orcamento = doc.data();
+                totalOrcamentos += orcamento.valorTotal;
+                const div = document.createElement('div');
+                div.className = 'orcamento-item';
+                div.innerHTML = 
+                    <span onclick="verDetalhesOrcamento('${doc.id}')">
+                        ${orcamento.descricaoServico} - R$ ${orcamento.valorTotal.toFixed(2)}
+                    </span>
+                    <div class="orcamento-info">
+                        <p>Data: ${new Date(orcamento.timestamp.toDate()).toLocaleDateString()}</p>
+                        <p>Serviço: ${orcamento.descricaoServico}</p>
+                        <p>Valor Total: R$ ${orcamento.valorTotal.toFixed(2)}</p>
+                    </div>
+                ;
+                div.style.cursor = 'pointer';  // Adiciona o cursor de mãozinha ao passar o mouse
+                historicoLista.appendChild(div);
+            });
+            document.getElementById('total-orcamentos').innerText = Total dos Orçamentos: R$ ${totalOrcamentos.toFixed(2)};
+        }
+    });
+    abrirModal('modalHistoricoOrcamentos');
+}
+
+async function verDetalhesOrcamento(id) {
+    const orcamentoDoc = await db.collection("orcamentos").doc(id).get();
+    if (orcamentoDoc.exists) {
+        const orcamento = orcamentoDoc.data();
+        const cliente = await obterCliente(orcamento.nomeCliente);
+        const produtosDetalhados = await Promise.all(orcamento.produtos.map(async item => {
+            const produto = await obterProduto(item.produto);
+            return {
+                ...item,
+                preco: produto ? parseFloat(produto.valor) : 0
+            };
+        }));
+
+        let dataConfirmacao = "";
+        if (orcamento.confirmado && orcamento.timestamp) {
+            const timestamp = orcamento.timestamp.toDate();
+            dataConfirmacao = ${timestamp.getDate().toString().padStart(2, '0')}/${(timestamp.getMonth() + 1).toString().padStart(2, '0')}/${timestamp.getFullYear()};
+        }
+
+        const detalhesModalBody = document.getElementById('detalhes-modal-body');
+        if (!detalhesModalBody) {
+            console.error("Elemento com o ID 'detalhes-modal-body' não encontrado.");
+            return;
+        }
+
+        detalhesModalBody.innerHTML = 
+            <div id="orcamento-detalhes">
+                <div class="details-header">
+                    <h2>Detalhes do Orçamento</h2>
+                    <p id="data-confirmacao">${dataConfirmacao ? Confirmado em: ${dataConfirmacao} : ''}</p>
+                </div>
+                <div class="details-section">
+                    <h2>Cliente</h2>
+                    <p><span>Nome:</span> ${orcamento.nomeCliente || ''}</p>
+                    <p><span>Carro:</span> ${cliente ? cliente.carro : ''}</p>
+                    <p><span>Placa:</span> ${cliente ? cliente.placa : ''}</p>
+                    <p><span>Ano do Veículo:</span> ${cliente ? cliente.ano : ''}</p>
+                    <p><span>Hodômetro:</span> ${orcamento.hodometro || ''}</p>
+                </div>
+                <div class="details-section">
+                    <h2>Produtos</h2>
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th>Quantidade</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${produtosDetalhados.map(produto => 
+                            <tr>
+                                <td>${produto.quantidade}</td>
+                                <td>${produto.produto}</td>
+                                <td>R$ ${produto.preco.toFixed(2)}</td>
+                                <td>R$ ${(produto.preco * produto.quantidade).toFixed(2)}</td>
+                            ).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="details-section">
+                    <h2>Mão de obra</h2>
+                    <p><span>Descrição:</span> ${orcamento.descricaoServico}</p>
+                    <p><span>Valor:</span> R$ ${orcamento.servico.toFixed(2)}</p>
+                </div>
+                <div class="details-section">
+                    <h2>Totais</h2>
+                    <p><span>Valor Total:</span> <span style="font-size: 18px; font-weight: bold;">R$ ${orcamento.valorTotal.toFixed(2)}</span></p>
+                </div>
+            </div>
+        ;
+        abrirModal('modalDetalhesOrcamento');
+    } else {
+        console.log("Orçamento não encontrado.");
+    }
+}
+
+async function obterCliente(nomeCliente) {
+    const clienteSnapshot = await db.collection("clientes").where("nome", "==", nomeCliente).get();
+    if (!clienteSnapshot.empty) {
+        return clienteSnapshot.docs[0].data();
+    }
+    return null;
+}
+
+async function obterProduto(produtoNome) {
+    const produtoSnapshot = await db.collection("produtos").where("produto", "==", produtoNome).get();
+    if (!produtoSnapshot.empty) {
+        return produtoSnapshot.docs[0].data();
+    }
+    return null;
+}
+
+function abrirModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.add('fade');
     modal.style.display = 'block';
-    modal.style.animation = 'fadein 0.5s';
+    setTimeout(() => {
+        modal.classList.add('in');
+    }, 10);
+    if (modalId === 'modalDetalhesOrcamento') {
+        modal.style.zIndex = 1002;  // Garante que a modal de detalhes fique na frente
+    }
 }
 
-function closeChangePasswordModal() {
-    const modal = document.getElementById('changePasswordModal');
-    modal.style.animation = 'fadeout 0.5s';
+function fecharModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('in');
     setTimeout(() => {
         modal.style.display = 'none';
+        modal.classList.remove('fade');
     }, 500);
+    if (modalId === 'modalDetalhesOrcamento') {
+        modal.style.zIndex = 1000;  // Reseta o z-index após fechar a modal de detalhes
+    }
 }
 
-function changePassword() {
-    const newPassword = document.getElementById('newPassword').value;
-    const user = auth.currentUser;
+function fecharModalHistorico() {
+    fecharModal('modalHistoricoOrcamentos');
+}
 
-    user.updatePassword(newPassword).then(() => {
-        alert('Senha alterada com sucesso.');
-        closeChangePasswordModal();
-    }).catch(error => {
-        alert('Erro ao alterar senha: ' + error.message);
+function abrirModalAdicionar() {
+    abrirModal('modalAdicionarCliente');
+}
+
+function fecharModalAdicionar() {
+    fecharModal('modalAdicionarCliente');
+}
+
+function abrirModalEditar(id) {
+    const docRef = db.collection("clientes").doc(id);
+    docRef.get().then((doc) => {
+        if (doc.exists) {
+            const cliente = doc.data();
+            document.getElementById('editar-index').value = id;
+            document.getElementById('editar-nome').value = cliente.nome;
+            document.getElementById('editar-carro').value = cliente.carro;
+            document.getElementById('editar-cor').value = cliente.cor;
+            document.getElementById('editar-placa').value = cliente.placa;
+            document.getElementById('editar-ano').value = cliente.ano;
+            abrirModal('modalEditarCliente');
+        } else {
+            console.log("No such document!");
+        }
+    }).catch((error) => {
+        console.log("Error getting document:", error);
     });
 }
 
-function goToLimitPage() {
-    window.location.href = 'definir_limite.html';
+function fecharModalEditar() {
+    fecharModal('modalEditarCliente');
 }
 
-function togglePasswordVisibility(inputId) {
-    const passwordField = document.getElementById(inputId);
-    const passwordToggle = passwordField.nextElementSibling;
-    if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        passwordToggle.classList.remove('fa-eye');
-        passwordToggle.classList.add('fa-eye-slash');
+function abrirModalRemover(id, event) {
+    event.stopPropagation();
+    clienteParaRemover = id;
+    abrirModal('modalRemoverCliente');
+}
+
+function fecharModalRemover() {
+    fecharModal('modalRemoverCliente');
+}
+
+function removerClienteConfirmado() {
+    db.collection("clientes").doc(clienteParaRemover).delete().then(() => {
+        atualizarListaClientes();
+        fecharModalRemover();
+    }).catch((error) => {
+        console.error("Error removing document: ", error);
+    });
+}
+
+function salvarCliente() {
+    const id = document.getElementById('editar-index').value;
+    const carro = document.getElementById('editar-carro').value;
+    const cor = document.getElementById('editar-cor').value;
+    const placa = document.getElementById('editar-placa').value;
+    const ano = document.getElementById('editar-ano').value;
+
+    if (carro && cor && placa && ano) {
+        db.collection("clientes").doc(id).update({
+            carro,
+            cor,
+            placa,
+            ano
+        }).then(() => {
+            atualizarListaClientes();
+            fecharModalEditar();
+        }).catch((error) => {
+            console.error("Error updating document: ", error);
+        });
     } else {
-        passwordField.type = 'password';
-        passwordToggle.classList.remove('fa-eye-slash');
-        passwordToggle.classList.add('fa-eye');
+        alert("Por favor, preencha todos os campos.");
     }
 }
+
+function filtrarClientes() {
+    const input = document.getElementById('buscar-cliente');
+    const filter = input.value.toUpperCase();
+    const ul = document.getElementById('lista-clientes');
+    const li = ul.getElementsByTagName('li');
+
+    for (let i = 0; i < li.length; i++) {
+        const txtValue = li[i].textContent || li[i].innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+        } else {
+            li[i].style.display = "none";
+        }
+    }
+}
+
+window.onclick = function(event) {
+    const modalAdicionar = document.getElementById('modalAdicionarCliente');
+    const modalEditar = document.getElementById('modalEditarCliente');
+    const modalRemover = document.getElementById('modalRemoverCliente');
+    const modalDetalhesOrcamento = document.getElementById('modalDetalhesOrcamento');
+    const modalHistoricoOrcamentos = document.getElementById('modalHistoricoOrcamentos');
+    if (event.target == modalAdicionar) {
+        fecharModalAdicionar();
+    }
+    if (event.target == modalEditar) {
+        fecharModalEditar();
+    }
+    if (event.target == modalRemover) {
+        fecharModalRemover();
+    }
+    if (event.target == modalDetalhesOrcamento) {
+        fecharModal('modalDetalhesOrcamento');
+    }
+    if (event.target == modalHistoricoOrcamentos) {
+        fecharModalHistorico();
+    }
+}
+
+window.onload = atualizarListaClientes;
 
     </script>
 </body>
