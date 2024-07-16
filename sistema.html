@@ -238,11 +238,21 @@
             0% { background-position: -200px; }
             100% { background-position: 200px; }
         }
-       .logo {
-    width: 200px; /* Aumenta a largura da logo */
+       .logo-container {
+    width: 300px; /* Ajusta a largura do fundo cinza */
     height: auto;
     margin: 0 auto;
-    display: block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #34495e;
+    border-radius: 10px;
+    padding: 10px; /* Adiciona padding para um efeito mais agradável */
+}
+
+.logo {
+    width: 150px; /* Mantém o tamanho do texto da logo */
+    height: auto;
     background: url('logo.png') no-repeat center;
     background-size: contain;
     animation: shine 2s infinite linear;
@@ -255,6 +265,7 @@
     transform: scale(1.1);
     box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
 }
+
 
         input[type="text"]:hover, input[type="number"]:hover, input[type="date"]:hover, select:hover, input[type="password"]:hover {
             border-color: #3498db;
