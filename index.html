@@ -32,7 +32,7 @@
             right: -15px;
             bottom: -15px;
             left: -15px;
-            background: linear-gradient(135deg, #ff007b, #007bff);
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             z-index: -1;
             filter: blur(30px);
             border-radius: 15px;
@@ -63,23 +63,25 @@
             transition: border 0.3s ease;
         }
         input[type="text"]:focus, input[type="password"]:focus {
-            border: 1px solid #007bff;
+            border: 1px solid #2575fc;
             outline: none;
         }
         button {
             padding: 12px 20px;
-            background: linear-gradient(135deg, #ff007b, #007bff);
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            transition: background 0.3s ease;
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
             margin-top: 10px;
             width: 100%;
         }
         button:hover {
-            background: linear-gradient(135deg, #007bff, #ff007b);
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         .show-password-container {
             position: relative;
@@ -90,7 +92,7 @@
             right: 10px;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #007bff;
+            color: #2575fc;
         }
         .logo {
             width: 100px;
