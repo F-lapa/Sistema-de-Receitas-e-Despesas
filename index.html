@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            background: linear-gradient(135deg, #f06b9a, #ab83f1);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,11 +24,16 @@
             position: relative;
             max-width: 400px;
             width: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
         }
         h1 {
             margin-bottom: 20px;
             color: #333;
-            font-size: 24px;
+            font-size: 28px;
         }
         .form-group {
             margin-bottom: 15px;
@@ -51,12 +56,12 @@
             transition: border 0.3s ease;
         }
         input[type="text"]:focus, input[type="password"]:focus {
-            border: 1px solid #0072ff;
+            border: 1px solid #ab83f1;
             outline: none;
         }
         button {
             padding: 12px 20px;
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            background: linear-gradient(135deg, #f06b9a, #ab83f1);
             color: white;
             border: none;
             border-radius: 5px;
@@ -67,7 +72,7 @@
             width: 100%;
         }
         button:hover {
-            background: linear-gradient(135deg, #0072ff, #00c6ff);
+            background: linear-gradient(135deg, #ab83f1, #f06b9a);
             transform: translateY(-3px);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
@@ -80,10 +85,10 @@
             right: 10px;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #0072ff;
+            color: #ab83f1;
         }
         .logo {
-            width: 100px;
+            width: 120px;
             margin-bottom: 20px;
             transition: transform 0.3s ease;
         }
