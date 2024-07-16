@@ -235,17 +235,17 @@
         }
         /* CSS para logo brilhando */
         @keyframes shine {
-            0% { background-position: -100px; }
-            100% { background-position: 100px; }
+            0% { background-position: -200px; }
+            100% { background-position: 200px; }
         }
         .logo {
             width: 150px; /* aumentado de 100px */
-            height: 150px; /* altura adicionada para manter proporção */
+            height: auto; /* ajuste conforme necessário */
             background: url('logo.png') no-repeat;
             background-size: contain;
             position: relative;
             animation: shine 2s infinite linear;
-            background-image: linear-gradient(to right, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.2) 100%);
+            background-image: linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.1) 100%);
             background-size: 200px 100%;
         }
     </style>
@@ -400,7 +400,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
     <script>
         // Configuração do Firebase
-        // Configuração do Firebase
+// Configuração do Firebase
 var firebaseConfig = {
     apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
     authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
