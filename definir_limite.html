@@ -5,24 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Definir Limite de Gastos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f9f9f9;
+            font-family: 'Roboto', sans-serif;
+            background-color: #2c3e50;
             margin: 0;
             padding: 0;
+            color: #ecf0f1;
         }
         .container {
             max-width: 600px;
             margin: 50px auto;
             padding: 30px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: #34495e;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             border-radius: 12px;
             text-align: center;
         }
         h1 {
-            color: #333;
+            color: #ecf0f1;
             margin-bottom: 20px;
             font-size: 2em;
             font-weight: 300;
@@ -34,16 +36,18 @@
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: #555;
+            color: #bdc3c7;
         }
         input[type="text"], input[type="date"] {
             width: 100%;
             padding: 12px;
             margin-bottom: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #444;
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 16px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
             transition: all 0.3s ease;
         }
         .buttons {
@@ -53,7 +57,7 @@
         button {
             width: 48%;
             padding: 12px;
-            background-color: #007bff;
+            background-color: #3498db;
             color: white;
             border: none;
             border-radius: 6px;
@@ -62,16 +66,20 @@
             transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #2980b9;
         }
         .current-limit, .remaining-limit {
             margin-top: 20px;
             font-size: 1.2em;
-            color: #333;
+            color: #ecf0f1;
         }
         .current-limit span, .remaining-limit span {
             font-weight: bold;
-            color: #007bff;
+            color: #3498db;
+        }
+        input[type="text"]:hover, input[type="date"]:hover {
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
     </style>
 </head>
@@ -106,13 +114,13 @@
         // Configuração do Firebase
         var firebaseConfig = {
             apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
-  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
-  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
-  projectId: "sistema-de-receitas-e-despesas",
-  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-  messagingSenderId: "252102478972",
-  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
-  measurementId: "G-K2HCS7WNZV"
+            authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+            databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+            projectId: "sistema-de-receitas-e-despesas",
+            storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+            messagingSenderId: "252102478972",
+            appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+            measurementId: "G-K2HCS7WNZV"
         };
         // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
