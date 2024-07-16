@@ -238,35 +238,17 @@
             0% { background-position: -200px; }
             100% { background-position: 200px; }
         }
-       .logo-container {
-    width: 300px; /* Ajusta a largura do fundo cinza */
-    height: auto;
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #34495e;
-    border-radius: 10px;
-    padding: 10px; /* Adiciona padding para um efeito mais agradável */
-}
-
-.logo {
-    width: 150px; /* Mantém o tamanho do texto da logo */
-    height: auto;
-    background: url('logo.png') no-repeat center;
-    background-size: contain;
-    animation: shine 2s infinite linear;
-    background-image: linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.1) 100%);
-    background-size: 200px 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.logo:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
-}
-
-
+        .logo {
+            width: 150px;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+            background: url('logo.png') no-repeat center;
+            background-size: contain;
+            animation: shine 2s infinite linear;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.1) 100%);
+            background-size: 200px 100%;
+        }
         input[type="text"]:hover, input[type="number"]:hover, input[type="date"]:hover, select:hover, input[type="password"]:hover {
             border-color: #3498db;
             box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
@@ -276,9 +258,8 @@
 <body>
     <div class="container">
         <div class="greeting" id="userGreeting"></div>
-        <img src="logo.png" alt="Logo do Sistema" class="logo">
         <div class="logo"></div>
-        <div class="logo-container">
+        <img src="logo.png" alt="Logo do Sistema" class="logo">
         <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
         <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
         <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
