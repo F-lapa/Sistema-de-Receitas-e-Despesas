@@ -12,34 +12,25 @@
             background-color: #f0f2f5;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 30px auto;
             padding: 20px;
             background-color: #ffffff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-radius: 12px;
             position: relative;
-            text-align: center;
-        }
-        .logo {
-            display: block;
-            margin: 20px auto;
-            width: 200px;
-            height: auto;
         }
         h1 {
+            text-align: center;
             color: #333;
             margin-bottom: 15px;
             font-size: 1.8em;
             font-weight: 500;
         }
         .greeting {
+            text-align: center;
             color: #555;
             margin-bottom: 15px;
             font-size: 1.2em;
@@ -68,7 +59,6 @@
         }
         .form-group {
             margin-bottom: 15px;
-            text-align: left;
         }
         label {
             display: block;
@@ -85,6 +75,9 @@
             box-sizing: border-box;
             font-size: 14px;
             transition: all 0.3s ease;
+        }
+        input[type="text"]:invalid, input[type="date"]:invalid {
+            border-color: red;
         }
         input.highlight, select.highlight {
             border: 2px solid #007bff;
@@ -239,13 +232,26 @@
             cursor: pointer;
             color: red;
         }
+        @keyframes shine {
+            0% { background-position: -200px; }
+            100% { background-position: 200px; }
+        }
+        .logo {
+            width: 150px;
+            height: auto;
+            background: url('logo.png') no-repeat;
+            background-size: contain;
+            position: relative;
+            animation: shine 2s infinite linear;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.1) 100%);
+            background-size: 200px 100%;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="greeting" id="userGreeting"></div>
-        <img src="logo.png" alt="Logo" class="logo">
-        <h1>Sistema de Receitas e Despesas</h1>
+        <h1><span class="logo"></span></h1>
         <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
         <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
         <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
