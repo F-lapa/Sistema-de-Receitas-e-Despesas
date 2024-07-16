@@ -233,12 +233,22 @@
             cursor: pointer;
             color: red;
         }
+        /* CSS para logo brilhando */
+        @keyframes shine {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        .logo {
+            width: 100px; /* ajuste conforme necessário */
+            animation: shine 2s infinite;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="greeting" id="userGreeting"></div>
-        <h1>Sistema de Receitas e Despesas</h1>
+        <h1><img src="logo.png" alt="Logo" class="logo"></h1>
         <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
         <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
         <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
@@ -384,7 +394,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
     <script>
-        // Configuração do Firebase
         // Configuração do Firebase
 var firebaseConfig = {
     apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
@@ -754,7 +763,6 @@ function togglePasswordVisibility(inputId) {
         passwordToggle.classList.add('fa-eye');
     }
 }
-
-    </script>
+</script>
 </body>
 </html>
