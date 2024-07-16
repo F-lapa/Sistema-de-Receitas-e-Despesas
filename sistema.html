@@ -88,7 +88,7 @@
             justify-content: space-between;
         }
         button {
-            width: 48%;
+            width: 32%;
             padding: 10px;
             background-color: #3498db;
             color: #ecf0f1;
@@ -239,22 +239,21 @@
             100% { background-position: 200px; }
         }
         .logo {
-    width: 200px; /* Aumenta a largura da logo */
-    height: auto;
-    margin: 0 auto;
-    display: block;
-    background: url('logo.png') no-repeat center;
-    background-size: contain;
-    animation: shine 2s infinite linear;
-    background-image: linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.1) 100%);
-    background-size: 200px 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.logo:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
-}
+            width: 200px; /* Aumenta a largura da logo */
+            height: auto;
+            margin: 0 auto;
+            display: block;
+            background: url('logo.png') no-repeat center;
+            background-size: contain;
+            animation: shine 2s infinite linear;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.1) 100%);
+            background-size: 200px 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .logo:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
+        }
 
         input[type="text"]:hover, input[type="number"]:hover, input[type="date"]:hover, select:hover, input[type="password"]:hover {
             border-color: #3498db;
@@ -295,6 +294,7 @@
         </div>
         <div class="buttons">
             <button onclick="addTransaction()">Adicionar</button>
+            <button onclick="openSpecificTransactionsModal()">Transações Específicas</button>
             <button onclick="goToLimitPage()">Definir Limite de Gastos</button>
         </div>
 
@@ -404,9 +404,34 @@
         </div>
     </div>
 
+    <div id="specificTransactionsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSpecificTransactionsModal()">&times;</span>
+            <h2>Transações Específicas</h2>
+            <div class="form-group">
+                <label for="specificStartDate">Data Inicial:</label>
+                <input type="date" id="specificStartDate" class="highlight">
+            </div>
+            <div class="form-group">
+                <label for="specificEndDate">Data Final:</label>
+                <input type="date" id="specificEndDate" class="highlight">
+            </div>
+            <div class="form-group">
+                <label for="specificType">Tipo:</label>
+                <select id="specificType" class="highlight">
+                    <option value="receita">Receita</option>
+                    <option value="despesa">Despesa</option>
+                </select>
+            </div>
+            <button onclick="generateSpecificTransactionsReport()">Gerar Relatório</button>
+            <canvas id="specificTransactionsChart" style="margin-top: 20px;"></canvas>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         var firebaseConfig = {
     apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
@@ -780,6 +805,68 @@ function togglePasswordVisibility(inputId) {
     }
 }
 
+function openSpecificTransactionsModal() {
+    const modal = document.getElementById('specificTransactionsModal');
+    modal.style.display = 'block';
+    modal.style.animation = 'fadein 0.5s';
+}
+
+function closeSpecificTransactionsModal() {
+    const modal = document.getElementById('specificTransactionsModal');
+    modal.style.animation = 'fadeout 0.5s';
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 500);
+}
+
+let specificTransactionsChart;
+
+function generateSpecificTransactionsReport() {
+    const startDate = document.getElementById('specificStartDate').value;
+    const endDate = document.getElementById('specificEndDate').value;
+    const specificType = document.getElementById('specificType').value;
+
+    const specificTransactions = transactions.filter(transaction => 
+        transaction.date >= startDate && transaction.date <= endDate && transaction.type === specificType
+    );
+
+    const descriptions = [...new Set(specificTransactions.map(t => t.description))];
+    const data = descriptions.map(description => {
+        return specificTransactions.filter(transaction => transaction.description === description)
+                                   .reduce((total, transaction) => total + transaction.amount, 0);
+    });
+
+    if (specificTransactionsChart) {
+        specificTransactionsChart.destroy();
+    }
+
+    const ctx = document.getElementById('specificTransactionsChart').getContext('2d');
+    specificTransactionsChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: descriptions,
+            datasets: [{
+                label: 'Transações Específicas',
+                data: data,
+                backgroundColor: descriptions.map(() => `#${Math.floor(Math.random()*16777215).toString(16)}`)
+            }]
+        },
+        options: {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            let total = tooltipItem.dataset.data.reduce((sum, value) => sum + value, 0);
+                            let currentValue = tooltipItem.raw;
+                            let percentage = ((currentValue / total) * 100).toFixed(2);
+                            return `${tooltipItem.label}: R$ ${currentValue.toFixed(2)} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
     </script>
 </body>
 </html>
