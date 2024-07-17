@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -866,7 +867,11 @@ function generateSpecificTransactionsReport() {
             datasets: [{
                 label: 'Transações Específicas',
                 data: data,
-                backgroundColor: descriptions.map(() => `#${Math.floor(Math.random()*16777215).toString(16)}`)
+                backgroundColor: descriptions.map(() => `#${Math.floor(Math.random()*16777215).toString(16)}`),
+                borderColor: '#fff',
+                borderWidth: 2,
+                hoverBorderWidth: 3,
+                hoverBorderColor: '#fff'
             }]
         },
         options: {
@@ -879,12 +884,31 @@ function generateSpecificTransactionsReport() {
                             let percentage = ((currentValue / total) * 100).toFixed(2);
                             return `${tooltipItem.label}: R$ ${currentValue.toFixed(2)} (${percentage}%)`;
                         }
+                    },
+                    backgroundColor: 'rgba(44, 62, 80, 0.8)',
+                    titleFont: { size: 16, weight: 'bold' },
+                    bodyFont: { size: 14 },
+                    footerFont: { size: 14 },
+                    displayColors: false,
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#3498db',
+                    borderWidth: 1
+                },
+                legend: {
+                    labels: {
+                        color: '#ecf0f1',
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
                     }
                 }
             }
         }
     });
 }
+
         
     </script>
 </body>
