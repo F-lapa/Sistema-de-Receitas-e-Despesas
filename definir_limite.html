@@ -7,12 +7,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --background-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --primary-color: #3498db;
+            --button-color: #3498db;
+            --input-border-color: #3498db;
+        }
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #2c3e50;
+            background-color: var(--background-color);
             margin: 0;
             padding: 0;
-            color: #ecf0f1;
+            color: var(--text-color);
         }
         .container {
             max-width: 600px;
@@ -24,7 +31,7 @@
             text-align: center;
         }
         h1 {
-            color: #ecf0f1;
+            color: var(--text-color);
             margin-bottom: 20px;
             font-size: 2em;
             font-weight: 300;
@@ -42,12 +49,12 @@
             width: 100%;
             padding: 12px;
             margin-bottom: 10px;
-            border: 1px solid #444;
+            border: 1px solid var(--input-border-color);
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 16px;
-            background-color: #2c3e50;
-            color: #ecf0f1;
+            background-color: var(--background-color);
+            color: var(--text-color);
             transition: all 0.3s ease;
         }
         .buttons {
@@ -57,7 +64,7 @@
         button {
             width: 48%;
             padding: 12px;
-            background-color: #3498db;
+            background-color: var(--button-color);
             color: white;
             border: none;
             border-radius: 6px;
@@ -66,19 +73,19 @@
             transition: background-color 0.3s ease;
         }
         button:hover {
-            background-color: #2980b9;
+            background-color: darken(var(--button-color), 10%);
         }
         .current-limit, .remaining-limit {
             margin-top: 20px;
             font-size: 1.2em;
-            color: #ecf0f1;
+            color: var(--text-color);
         }
         .current-limit span, .remaining-limit span {
             font-weight: bold;
-            color: #3498db;
+            color: var(--primary-color);
         }
-        input[type="text"]:hover, input[type="date"]:hover {
-            border-color: #3498db;
+        input[type="text"]:focus, input[type="date"]:focus {
+            border-color: var(--button-color);
             box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
     </style>
@@ -106,12 +113,10 @@
         </div>
     </div>
 
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
     <script>
-        // Configuração do Firebase
         var firebaseConfig = {
             apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
             authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
@@ -122,7 +127,6 @@
             appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
             measurementId: "G-K2HCS7WNZV"
         };
-        // Inicialize o Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const auth = firebase.auth();
@@ -132,8 +136,9 @@
         auth.onAuthStateChanged(user => {
             if (user) {
                 loadMonthlyLimit();
+                loadTheme();  // Carrega o tema salvo
             } else {
-                window.location.href = 'index.html';  // Redirecionar para a página de login se não estiver autenticado
+                window.location.href = 'index.html';
             }
         });
 
@@ -215,6 +220,69 @@
                 const remainingLimit = limit - totalExpenses;
                 document.getElementById('remainingLimit').innerText = formatCurrency(remainingLimit);
             });
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                changeTheme(savedTheme);
+            }
+        }
+
+        function changeTheme(theme) {
+            let buttonColor, inputBorderColor;
+            switch (theme) {
+                case 'dark':
+                    buttonColor = '#34495e';
+                    inputBorderColor = '#34495e';
+                    break;
+                case 'light':
+                    buttonColor = '#ecf0f1';
+                    inputBorderColor = '#ecf0f1';
+                    break;
+                case 'blue':
+                    buttonColor = '#2980b9';
+                    inputBorderColor = '#2980b9';
+                    break;
+                case 'green':
+                    buttonColor = '#27ae60';
+                    inputBorderColor = '#27ae60';
+                    break;
+                case 'red':
+                    buttonColor = '#c0392b';
+                    inputBorderColor = '#c0392b';
+                    break;
+                case 'purple':
+                    buttonColor = '#9b59b6';
+                    inputBorderColor = '#9b59b6';
+                    break;
+                case 'orange':
+                    buttonColor = '#d35400';
+                    inputBorderColor = '#d35400';
+                    break;
+                case 'pink':
+                    buttonColor = '#e91e63';
+                    inputBorderColor = '#e91e63';
+                    break;
+                case 'yellow':
+                    buttonColor = '#f1c40f';
+                    inputBorderColor = '#f1c40f';
+                    break;
+                case 'cyan':
+                    buttonColor = '#00bcd4';
+                    inputBorderColor = '#00bcd4';
+                    break;
+                case 'brown':
+                    buttonColor = '#8d6e63';
+                    inputBorderColor = '#8d6e63';
+                    break;
+                default:
+                    buttonColor = '#3498db';
+                    inputBorderColor = '#3498db';
+                    break;
+            }
+            document.documentElement.style.setProperty('--button-color', buttonColor);
+            document.documentElement.style.setProperty('--input-border-color', inputBorderColor);
         }
     </script>
 </body>
