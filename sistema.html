@@ -8,198 +8,284 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --background-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --primary-color: #3498db;
+            --button-color: #3498db;
+            --input-border-color: #3498db;
+        }
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #2c3e50;
+            background-color: var(--background-color);
             margin: 0;
             padding: 0;
-            color: #ecf0f1;
+            color: var(--text-color);
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 220px;
+            background-color: #34495e;
+            padding: 20px;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+            position: fixed;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+        .sidebar h3 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            font-weight: 500;
+        }
+        .sidebar .menu-icons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sidebar .menu-icons i {
+            margin: 0 5px;
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 1.5em;
+        }
+        .sidebar .buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .sidebar button {
+            width: 90%;
+            padding: 10px;
+            background-color: var(--button-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sidebar button i {
+            margin-right: 8px;
+        }
+        .sidebar button:hover {
+            background-color: darken(var(--button-color), 10%);
+            transform: scale(1.05);
+        }
+        .sidebar .theme-selector {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar .theme-selector label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+        .sidebar .theme-selector select {
+            width: 90%;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--text-color);
+            color: #34495e;
+            font-size: 14px;
         }
         .container {
-            max-width: 600px;
-            margin: 30px auto;
+            margin-left: 240px;
             padding: 20px;
-            background-color: #34495e;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            position: relative;
+            flex: 1;
         }
-        h1 {
+        .container h1 {
             text-align: center;
-            color: #ecf0f1;
+            color: var(--text-color);
             margin-bottom: 15px;
             font-size: 1.8em;
             font-weight: 500;
         }
-        .greeting {
+        .container .greeting {
             text-align: center;
-            color: #ecf0f1;
+            color: var(--text-color);
             margin-bottom: 15px;
             font-size: 1.2em;
         }
-        .logout, .change-password {
+        .container .form-header {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 500;
+        }
+        .container .logout, .container .change-password {
             position: absolute;
             top: 10px;
             cursor: pointer;
-            color: #ecf0f1;
+            color: var(--text-color);
             font-size: 1.2em;
         }
-        .logout {
+        .container .logout {
+            right: 50px;
+        }
+        .container .change-password {
             right: 10px;
         }
-        .change-password {
-            right: 40px;
-        }
-        .admin-icon {
+        .container .admin-icon {
             position: absolute;
             top: 10px;
             left: 10px;
             cursor: pointer;
-            color: #ecf0f1;
+            color: var(--text-color);
             font-size: 1.2em;
             display: none;
         }
-        .form-group {
-            margin-bottom: 15px;
+        .container .form-group {
+            margin-bottom: 10px;
+            width: 50%;
+            margin: 0 auto;
         }
-        label {
+        .container label {
             display: block;
             margin-bottom: 6px;
             font-weight: bold;
             color: #bdc3c7;
         }
-        input[type="text"], input[type="number"], input[type="date"], select, input[type="password"] {
+        .container input[type="text"], .container input[type="number"], .container input[type="date"], .container select, .container input[type="password"] {
             width: 100%;
-            padding: 10px;
+            padding: 8px;
             margin-bottom: 8px;
-            border: 1px solid #444;
-            border-radius: 6px;
+            border: 1px solid var(--input-border-color);
+            border-radius: 8px;
             box-sizing: border-box;
             font-size: 14px;
-            background-color: #2c3e50;
-            color: #ecf0f1;
+            background-color: var(--background-color);
+            color: var(--text-color);
             transition: all 0.3s ease;
         }
-        input.highlight, select.highlight {
-            border: 2px solid #3498db;
+        .container input:focus, .container select:focus, .container input:focus-visible, .container select:focus-visible {
+            border: 2px solid var(--button-color);
             box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        button {
-            width: 80%;
+        .container button {
+            width: 50%;
             padding: 10px;
-            background-color: #3498db;
-            color: #ecf0f1;
+            background-color: var(--button-color);
+            color: var(--text-color);
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
             transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-bottom: 10px;
+            margin: 10px auto;
+            display: block;
         }
-        button:hover {
-            background-color: #2980b9;
+        .container button:hover {
+            background-color: darken(var(--button-color), 10%);
             transform: scale(1.05);
         }
-        table {
+        .container table {
             width: 100%;
-            margin-top: 15px;
+            margin-top: 10px;
             border-collapse: separate;
             border-spacing: 0 8px;
         }
-        th, td {
+        .container th, .container td {
             padding: 10px;
             text-align: left;
             background-color: #34495e;
         }
-        th {
-            background-color: #2c3e50;
+        .container th {
+            background-color: var(--background-color);
             color: #bdc3c7;
         }
-        tbody tr {
+        .container tbody tr {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 6px;
             overflow: hidden;
         }
-        tbody tr:hover {
+        .container tbody tr:hover {
             background-color: #3b4b5e;
         }
-        .totals, .filter {
-            margin-top: 15px;
+        .container .totals, .container .filter {
+            margin-top: 10px;
             text-align: center;
         }
-        .totals p, .filter p {
-            font-size: 18px;
-            color: #ecf0f1;
+        .container .totals p, .container .filter p {
+            font-size: 16px;
+            color: var(--text-color);
         }
-        .totals span, .filter span {
+        .container .totals span, .container .filter span {
             font-weight: bold;
-            color: #3498db;
+            color: var(--primary-color);
         }
-        .negative {
+        .container .negative {
             color: red !important;
         }
-        .transaction-description {
+        .container .transaction-description {
             display: flex;
             align-items: center;
         }
-        .transaction-amount {
+        .container .transaction-amount {
             text-align: left;
             color: green;
         }
-        .transaction-amount.despesa {
+        .container .transaction-amount.despesa {
             color: red;
         }
-        .transaction-icon {
+        .container .transaction-icon {
             margin-right: 10px;
             font-size: 1.2em;
         }
-        .filter-results {
-            margin-top: 20px;
+        .container .filter-results {
+            margin-top: 10px;
         }
-        .admin-section {
+        .container .admin-section {
             display: none;
-            margin-top: 20px;
+            margin-top: 10px;
         }
-        .admin-section h2 {
+        .container .admin-section h2 {
             text-align: center;
-            color: #ecf0f1;
+            color: var(--text-color);
         }
-        .admin-section .form-group {
+        .container .admin-section .form-group {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        .admin-section input, .admin-section select {
+        .container .admin-section input, .container .admin-section select {
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
-        .admin-section .buttons {
+        .container .admin-section .buttons {
             flex-direction: column;
         }
-        .admin-section button {
+        .container .admin-section button {
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
-        .password-field {
+        .container .password-field {
             position: relative;
         }
-        .password-field input {
+        .container .password-field input {
             width: calc(100% - 40px);
             margin-bottom: 0;
         }
-        .password-field i {
+        .container .password-field i {
             position: absolute;
             right: 10px;
             top: 12px;
             cursor: pointer;
-            color: #3498db;
+            color: var(--button-color);
         }
-        .modal {
+        .container .modal {
             display: none;
             position: fixed;
             z-index: 1;
@@ -210,7 +296,7 @@
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.4);
         }
-        .modal-content {
+        .container .modal-content {
             background-color: #34495e;
             margin: 15% auto;
             padding: 15px;
@@ -219,21 +305,21 @@
             max-width: 400px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            color: #ecf0f1;
+            color: var(--text-color);
         }
-        .close {
-            color: #ecf0f1;
+        .container .close {
+            color: var(--text-color);
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
-        .close:hover,
-        .close:focus {
-            color: #3498db;
+        .container .close:hover,
+        .container .close:focus {
+            color: var(--button-color);
             text-decoration: none;
             cursor: pointer;
         }
-        .fa-trash-alt {
+        .container .fa-trash-alt {
             cursor: pointer;
             color: red;
         }
@@ -241,37 +327,60 @@
             0% { background-position: -200px; }
             100% { background-position: 200px; }
         }
-        .logo {
-            width: 200px; /* Aumenta a largura da logo */
-            height: auto;
-            margin: 0 auto;
-            display: block;
-            background: url('logo.png') no-repeat center;
-            background-size: contain;
-            animation: shine 2s infinite linear;
-            background-image: linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.1) 100%);
-            background-size: 200px 100%;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .logo:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(52, 152, 219, 0.7);
-        }
-
-        input[type="text"]:hover, input[type="number"]:hover, input[type="date"]:hover, select:hover, input[type="password"]:hover {
-            border-color: #3498db;
+        .container input[type="text"]:hover, .container input[type="number"]:hover, .container input[type="date"]:hover, .container select:hover, .container input[type="password"]:hover {
+            border-color: var(--input-border-color);
             box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            width: 100px;
+            height: auto;
         }
     </style>
 </head>
 <body>
+    <div class="sidebar">
+        <div class="menu-icons">
+            <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
+            <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
+        </div>
+        <h3>Menu</h3>
+        <div class="buttons">
+            <button onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i> Filtrar Período</button>
+            <button onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Definir Limite de Gastos</button>
+            <button onclick="openSpecificTransactionsModal()"><i class="fas fa-search-dollar"></i> Transações Específicas</button>
+            <button onclick="openFinancialPerformanceModal()"><i class="fas fa-chart-line"></i> Desempenho Financeiro</button>
+            <button onclick="openTrendAnalysisModal()"><i class="fas fa-chart-pie"></i> Análise de Tendências</button>
+            <button onclick="openPaymentReminderModal()"><i class="fas fa-bell"></i> Lembrete de Pagamento</button>
+            <button id="adminButton" onclick="toggleAdminSection()"><i class="fas fa-user-shield"></i> Área do Administrador</button>
+        </div>
+        <div class="theme-selector">
+            <label for="theme">Selecionar Tema:</label>
+            <select id="theme" onchange="changeTheme()">
+                <option value="default">Padrão</option>
+                <option value="dark">Escuro</option>
+                <option value="light">Claro</option>
+                <option value="blue">Azul</option>
+                <option value="green">Verde</option>
+                <option value="red">Vermelho</option>
+                <option value="purple">Roxo</option>
+                <option value="orange">Laranja</option>
+                <option value="pink">Rosa</option>
+                <option value="yellow">Amarelo</option>
+                <option value="cyan">Ciano</option>
+                <option value="brown">Marrom</option>
+            </select>
+        </div>
+    </div>
     <div class="container">
         <div class="greeting" id="userGreeting"></div>
-        <div class="logo"></div>
-        <img src="logo.png" alt="Logo do Sistema" class="logo">
-        <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
-        <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
-        <i class="fas fa-user-shield admin-icon" id="adminIcon" onclick="toggleAdminSection()" title="Admin"></i>
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo">
+        </div>
+        <div class="form-header">Nova Transação</div>
         
         <input type="text" style="display:none;" autocomplete="username">
         <input type="password" style="display:none;" autocomplete="new-password">
@@ -295,12 +404,7 @@
                 <option value="despesa">Despesa</option>
             </select>
         </div>
-        <div class="buttons">
-            <button onclick="addTransaction()">Adicionar Transação</button>
-            <button onclick="openFilterPeriodModal()">Filtrar Período</button>
-            <button onclick="goToLimitPage()">Definir Limite de Gastos</button>
-            <button onclick="openSpecificTransactionsModal()">Transações Específicas</button>
-        </div>
+        <button onclick="addTransaction()">Adicionar Transação</button>
 
         <table id="transactionsTable">
             <thead>
@@ -412,6 +516,43 @@
             </div>
         </div>
 
+        <div id="financialPerformanceModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeFinancialPerformanceModal()">&times;</span>
+                <h2>Desempenho Financeiro</h2>
+                <canvas id="financialPerformanceChart" style="margin-top: 20px;"></canvas>
+            </div>
+        </div>
+
+        <div id="trendAnalysisModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeTrendAnalysisModal()">&times;</span>
+                <h2>Análise de Tendências</h2>
+                <button onclick="analyzeSpendingPatterns()">Identificação de Padrões de Gasto</button>
+                <button onclick="forecastFinancialTrends()">Previsão Financeira</button>
+                <canvas id="trendAnalysisChart" style="margin-top: 20px;"></canvas>
+            </div>
+        </div>
+
+        <div id="paymentReminderModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePaymentReminderModal()">&times;</span>
+                <h2>Lembrete de Pagamento</h2>
+                <div class="form-group">
+                    <label for="reminderDescription">Descrição:</label>
+                    <input type="text" id="reminderDescription" class="highlight">
+                </div>
+                <div class="form-group">
+                    <label for="reminderDate">Dia do Mês:</label>
+                    <input type="number" id="reminderDate" class="highlight" min="1" max="31">
+                </div>
+                <button onclick="addPaymentReminder()">Adicionar Lembrete</button>
+                <div id="paymentReminders">
+                    <!-- Reminders will be displayed here -->
+                </div>
+            </div>
+        </div>
+
         <div class="admin-section" id="adminSection">
             <h2>Gerenciamento de Usuários</h2>
             <div class="form-group">
@@ -431,485 +572,838 @@
                 <button onclick="registerNewUser()">Registrar Novo Usuário</button>
             </div>
         </div>
+
+        <div id="alertModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAlertModal()">&times;</span>
+                <h2>Alerta</h2>
+                <p id="alertMessage"></p>
+            </div>
+        </div>
+
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
     <script>
         var firebaseConfig = {
-    apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
-    authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
-    databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
-    projectId: "sistema-de-receitas-e-despesas",
-    storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-    messagingSenderId: "252102478972",
-    appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
-    measurementId: "G-K2HCS7WNZV"
-};
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+            authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+            databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+            projectId: "sistema-de-receitas-e-despesas",
+            storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+            messagingSenderId: "252102478972",
+            appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+            measurementId: "G-K2HCS7WNZV"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const auth = firebase.auth();
-
-auth.onAuthStateChanged(user => {
-    if (user) {
-        const userId = user.uid;
-        database.ref('users/' + userId).once('value').then((snapshot) => {
-            const userData = snapshot.val();
-            const userName = userData ? userData.name : "Usuário";
-            localStorage.setItem('username', userName);
-            document.getElementById('userGreeting').innerHTML = user.email === 'fernandolapa1987@gmail.com' ? 
-                '<span>Olá, <strong>Administrador!</strong></span>' : 
-                '<span>Olá, <strong>' + userName + '</strong>!</span>';
-            loadTransactions();
-            checkAdmin(user.email);
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                const userId = user.uid;
+                database.ref('users/' + userId).once('value').then((snapshot) => {
+                    const userData = snapshot.val();
+                    const userName = userData ? userData.name : "Usuário";
+                    localStorage.setItem('username', userName);
+                    document.getElementById('userGreeting').innerHTML = user.email === 'fernandolapa1987@gmail.com' ? 
+                        '<span>Olá, <strong>Administrador!</strong></span>' : 
+                        '<span>Olá, <strong>' + userName + '</strong>!</span>';
+                    loadTransactions();
+                    checkAdmin(user.email);
+                    loadTheme(); // Carrega o tema salvo
+                });
+            } else {
+                window.location.href = 'index.html';  
+            }
         });
-    } else {
-        window.location.href = 'index.html';  
-    }
-});
 
-let transactions = [];
-let lastTransactionId = localStorage.getItem('lastTransactionId');
-let allUsers = [];
-let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
+        let transactions = [];
+        let paymentReminders = [];
+        let lastTransactionId = localStorage.getItem('lastTransactionId');
+        let allUsers = [];
+        let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
 
-function saveTransactions() {
-    const userId = auth.currentUser.uid;
-    database.ref('transactions/' + userId).set(transactions);
-}
+        function saveTransactions() {
+            const userId = auth.currentUser.uid;
+            database.ref('transactions/' + userId).set(transactions);
+        }
 
-function loadTransactions() {
-    const userId = auth.currentUser.uid;
-    database.ref('transactions/' + userId).once('value', function(snapshot) {
-        if (snapshot.val()) {
-            transactions = snapshot.val();
+        function loadTransactions() {
+            const userId = auth.currentUser.uid;
+            database.ref('transactions/' + userId).once('value', function(snapshot) {
+                if (snapshot.val()) {
+                    transactions = snapshot.val();
+                    updateDescriptionList();
+                    updateFilteredView();
+                    calculateBalances();
+                    checkMonthlyLimit();
+                }
+            });
+        }
+
+        function checkAdmin(email) {
+            const adminButton = document.getElementById('adminButton');
+            if (email === 'fernandolapa1987@gmail.com') {
+                adminButton.style.display = 'block';
+                loadAllUsers();
+            } else {
+                adminButton.style.display = 'none';
+            }
+        }
+
+        function loadAllUsers() {
+            database.ref('users').once('value').then((snapshot) => {
+                const users = snapshot.val();
+                for (let uid in users) {
+                    allUsers.push({ uid, name: users[uid].name });
+                }
+            });
+        }
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function parseCurrency(value) {
+            return parseFloat(value.replace(/\./g, '').replace(',', '.').replace('R$', '')) || 0;
+        }
+
+        function addTransaction() {
+            const date = document.getElementById('date').value;
+            const description = document.getElementById('description').value;
+            const amountInput = document.getElementById('amount');
+            const amount = parseCurrency(amountInput.value);
+            const type = document.getElementById('type').value;
+
+            const transaction = { id: generateTransactionId(), date, description, amount, type };
+            transactions.push(transaction);
+            lastTransactionId = transaction.id;
+            localStorage.setItem('lastTransactionId', lastTransactionId);
+
+            saveTransactions();
             updateDescriptionList();
             updateFilteredView();
             calculateBalances();
-        }
-    });
-}
+            checkMonthlyLimit();
 
-function checkAdmin(email) {
-    if (email === 'fernandolapa1987@gmail.com') {
-        document.getElementById('adminIcon').style.display = 'block';
-        loadAllUsers();
-    }
-}
-
-function loadAllUsers() {
-    database.ref('users').once('value').then((snapshot) => {
-        const users = snapshot.val();
-        for (let uid in users) {
-            allUsers.push({ uid, name: users[uid].name });
-        }
-    });
-}
-
-function formatCurrency(value) {
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-function parseCurrency(value) {
-    return parseFloat(value.replace(/\./g, '').replace(',', '.').replace('R$', '')) || 0;
-}
-
-function addTransaction() {
-    const date = document.getElementById('date').value;
-    const description = document.getElementById('description').value;
-    const amountInput = document.getElementById('amount');
-    const amount = parseCurrency(amountInput.value);
-    const type = document.getElementById('type').value;
-
-    const transaction = { id: generateTransactionId(), date, description, amount, type };
-    transactions.push(transaction);
-    lastTransactionId = transaction.id;
-    localStorage.setItem('lastTransactionId', lastTransactionId);
-
-    saveTransactions();
-    updateDescriptionList();
-    updateFilteredView();
-    calculateBalances();
-
-    document.getElementById('date').value = getCurrentDate();
-    document.getElementById('description').value = '';
-    amountInput.value = '0,00';
-    document.getElementById('type').value = 'receita';
-}
-
-function generateTransactionId() {
-    return '_' + Math.random().toString(36).substr(2, 9);
-}
-
-function updateDescriptionList() {
-    const filterDescription = document.getElementById('filterDescription');
-    filterDescription.innerHTML = '<option value="">Todos</option>';
-    const uniqueDescriptions = [...new Set(transactions.map(t => t.description))];
-    uniqueDescriptions.forEach(description => {
-        const option = document.createElement('option');
-        option.value = description;
-        option.text = description;
-        filterDescription.appendChild(option);
-    });
-}
-
-function updateFilteredView() {
-    const selectedDate = document.getElementById('date').value;
-    const tbody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
-    tbody.innerHTML = '';
-
-    transactions.forEach(transaction => {
-        if (transaction.date === selectedDate) {
-            const row = tbody.insertRow();
-            
-            const cellDate = row.insertCell(0);
-            const cellDescription = row.insertCell(1);
-            const cellAmount = row.insertCell(2);
-            const cellType = row.insertCell(3);
-            const cellAction = row.insertCell(4);
-
-            cellDate.innerText = transaction.date;
-            cellDescription.innerHTML = `<div class="transaction-description">
-                                            <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
-                                            ${transaction.description}
-                                         </div>`;
-            cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
-            cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-            cellAction.innerHTML = `<i class="fas fa-trash-alt" onclick="confirmRemoveTransaction('${transaction.id}')" style="cursor:pointer; color:red;"></i>`;
-        }
-    });
-
-    calculateBalances();
-}
-
-function confirmRemoveTransaction(transactionId) {
-    if (confirm('Tem certeza que deseja remover esta transação?')) {
-        removeTransaction(transactionId);
-    }
-}
-
-function removeTransaction(transactionId) {
-    transactions = transactions.filter(transaction => transaction.id !== transactionId);
-    saveTransactions();
-    updateDescriptionList();
-    updateFilteredView();
-    calculateBalances();
-}
-
-function calculateBalances() {
-    const selectedDate = document.getElementById('date').value;
-    const currentMonth = selectedDate.slice(0, 7);
-    const currentYear = selectedDate.slice(0, 4);
-
-    let dailyBalance = 0;
-    let monthlyBalance = 0;
-    let annualBalance = 0;
-
-    transactions.forEach(transaction => {
-        if (transaction.date === selectedDate) {
-            dailyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+            document.getElementById('date').value = getCurrentDate();
+            document.getElementById('description').value = '';
+            amountInput.value = '0,00';
+            document.getElementById('type').value = 'receita';
         }
 
-        if (transaction.date.startsWith(currentMonth)) {
-            monthlyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+        function generateTransactionId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
         }
 
-        if (transaction.date.startsWith(currentYear)) {
-            annualBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
-        }
-    });
-
-    const dailyBalanceSpan = document.getElementById('dailyBalance');
-    const monthlyBalanceSpan = document.getElementById('monthlyBalance');
-    const annualBalanceSpan = document.getElementById('annualBalance');
-
-    dailyBalanceSpan.innerText = formatCurrency(dailyBalance);
-    monthlyBalanceSpan.innerText = formatCurrency(monthlyBalance);
-    annualBalanceSpan.innerText = formatCurrency(annualBalance);
-
-    dailyBalanceSpan.classList.toggle('negative', dailyBalance < 0);
-    monthlyBalanceSpan.classList.toggle('negative', monthlyBalance < 0);
-    annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
-}
-
-function filterByPeriod() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    const filterType = document.getElementById('filterType').value;
-    const filterDescription = document.getElementById('filterDescription').value.toLowerCase();
-
-    let totalReceitas = 0;
-    let totalDespesas = 0;
-
-    const filteredTransactions = transactions.filter(transaction => 
-        transaction.date >= startDate && transaction.date <= endDate &&
-        (filterType === '' || transaction.type === filterType) &&
-        (filterDescription === '' || transaction.description.toLowerCase().includes(filterDescription))
-    );
-
-    const filteredTbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
-    filteredTbody.innerHTML = '';
-
-    filteredTransactions.forEach(transaction => {
-        if (transaction.type === 'receita') {
-            totalReceitas += transaction.amount;
-        } else if (transaction.type === 'despesa') {
-            totalDespesas += transaction.amount;
-        }
-
-        const row = filteredTbody.insertRow();
-        const cellDate = row.insertCell(0);
-        const cellDescription = row.insertCell(1);
-        const cellAmount = row.insertCell(2);
-        const cellType = row.insertCell(3);
-
-        cellDate.innerText = transaction.date;
-        cellDescription.innerHTML = `<div class="transaction-description">
-                                        <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
-                                        ${transaction.description}
-                                     </div>`;
-        cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
-        cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-    });
-
-    const totalSaldo = totalReceitas - totalDespesas;
-
-    const totalReceitasSpan = document.getElementById('totalReceitas');
-    const totalDespesasSpan = document.getElementById('totalDespesas');
-    const totalSaldoSpan = document.getElementById('totalSaldo');
-
-    totalReceitasSpan.innerText = formatCurrency(totalReceitas);
-    totalDespesasSpan.innerText = formatCurrency(totalDespesas);
-    totalSaldoSpan.innerText = formatCurrency(totalSaldo);
-
-    totalDespesasSpan.classList.add('negative');
-    totalSaldoSpan.classList.toggle('negative', totalSaldo < 0);
-}
-
-function clearFilter() {
-    document.getElementById('startDate').value = '';
-    document.getElementById('endDate').value = '';
-    document.getElementById('filterType').value = '';
-    document.getElementById('filterDescription').value = '';
-    document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
-    document.getElementById('totalReceitas').innerText = 'R$ 0,00';
-    document.getElementById('totalDespesas').innerText = 'R$ 0,00';
-    document.getElementById('totalSaldo').innerText = 'R$ 0,00';
-}
-
-const inputs = document.querySelectorAll('input, select');
-inputs.forEach(input => {
-    input.addEventListener('focus', function() {
-        this.classList.remove('highlight');
-    });
-});
-
-function validateAmount() {
-    const amountInput = document.getElementById('amount');
-    amountInput.value = amountInput.value.replace(/[^\d,]/g, '');
-    amountInput.value = amountInput.value.replace(/(,.*?),(.*?)/g, '$1');
-}
-
-function getCurrentDate() {
-    const now = new Date();
-    const offset = -3;
-    const brasiliaTime = new Date(now.getTime() + offset * 3600 * 1000);
-    return brasiliaTime.toISOString().split('T')[0];
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const dateInput = document.getElementById('date');
-    dateInput.value = getCurrentDate();
-    updateFilteredView();
-});
-
-function logout() {
-    auth.signOut().then(() => {
-        localStorage.removeItem('loggedIn');
-        localStorage.removeItem('username');
-        localStorage.removeItem('lastTransactionId');
-        window.location.href = 'index.html';
-    }).catch(error => {
-        console.error('Erro ao deslogar: ', error);
-    });
-}
-
-function toggleAdminSection() {
-    const adminSection = document.getElementById('adminSection');
-    adminSection.style.display = adminSection.style.display === 'block' ? 'none' : 'block';
-}
-
-function registerNewUser() {
-    const name = document.getElementById('newUserName').value;
-    const email = document.getElementById('newUserEmail').value;
-    const password = document.getElementById('newUserPassword').value;
-
-    auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            const user = userCredential.user;
-            database.ref('users/' + user.uid).set({
-                name: name,
-                email: email
-            }).then(() => {
-                alert('Novo usuário registrado com sucesso.');
-                document.getElementById('newUserName').value = '';
-                document.getElementById('newUserEmail').value = '';
-                document.getElementById('newUserPassword').value = '';
-                loadAllUsers();
+        function updateDescriptionList() {
+            const filterDescription = document.getElementById('filterDescription');
+            filterDescription.innerHTML = '<option value="">Todos</option>';
+            const uniqueDescriptions = [...new Set(transactions.map(t => t.description))];
+            uniqueDescriptions.forEach(description => {
+                const option = document.createElement('option');
+                option.value = description;
+                option.text = description;
+                filterDescription.appendChild(option);
             });
-        })
-        .catch(error => {
-            alert('Erro ao registrar novo usuário: ' + error.message);
+        }
+
+        function updateFilteredView() {
+            const selectedDate = document.getElementById('date').value;
+            const tbody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+
+            transactions.forEach(transaction => {
+                if (transaction.date === selectedDate) {
+                    const row = tbody.insertRow();
+                    
+                    const cellDate = row.insertCell(0);
+                    const cellDescription = row.insertCell(1);
+                    const cellAmount = row.insertCell(2);
+                    const cellType = row.insertCell(3);
+                    const cellAction = row.insertCell(4);
+
+                    cellDate.innerText = transaction.date;
+                    cellDescription.innerHTML = `<div class="transaction-description">
+                                                    <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
+                                                    ${transaction.description}
+                                                </div>`;
+                    cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                    cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                    cellAction.innerHTML = `<i class="fas fa-trash-alt" onclick="confirmRemoveTransaction('${transaction.id}')" style="cursor:pointer; color:red;"></i>`;
+                }
+            });
+
+            calculateBalances();
+        }
+
+        function confirmRemoveTransaction(transactionId) {
+            if (confirm('Tem certeza que deseja remover esta transação?')) {
+                removeTransaction(transactionId);
+            }
+        }
+
+        function removeTransaction(transactionId) {
+            transactions = transactions.filter(transaction => transaction.id !== transactionId);
+            saveTransactions();
+            updateDescriptionList();
+            updateFilteredView();
+            calculateBalances();
+            checkMonthlyLimit();
+        }
+
+        function calculateBalances() {
+            const selectedDate = document.getElementById('date').value;
+            const currentMonth = selectedDate.slice(0, 7);
+            const currentYear = selectedDate.slice(0, 4);
+
+            let dailyBalance = 0;
+            let monthlyBalance = 0;
+            let annualBalance = 0;
+
+            transactions.forEach(transaction => {
+                if (transaction.date === selectedDate) {
+                    dailyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                }
+
+                if (transaction.date.startsWith(currentMonth)) {
+                    monthlyBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                }
+
+                if (transaction.date.startsWith(currentYear)) {
+                    annualBalance += transaction.type === 'receita' ? transaction.amount : -transaction.amount;
+                }
+            });
+
+            const dailyBalanceSpan = document.getElementById('dailyBalance');
+            const monthlyBalanceSpan = document.getElementById('monthlyBalance');
+            const annualBalanceSpan = document.getElementById('annualBalance');
+
+            dailyBalanceSpan.innerText = formatCurrency(dailyBalance);
+            monthlyBalanceSpan.innerText = formatCurrency(monthlyBalance);
+            annualBalanceSpan.innerText = formatCurrency(annualBalance);
+
+            dailyBalanceSpan.classList.toggle('negative', dailyBalance < 0);
+            monthlyBalanceSpan.classList.toggle('negative', monthlyBalance < 0);
+            annualBalanceSpan.classList.toggle('negative', annualBalance < 0);
+        }
+
+        function filterByPeriod() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const filterType = document.getElementById('filterType').value;
+            const filterDescription = document.getElementById('filterDescription').value.toLowerCase();
+
+            let totalReceitas = 0;
+            let totalDespesas = 0;
+
+            const filteredTransactions = transactions.filter(transaction => 
+                transaction.date >= startDate && transaction.date <= endDate &&
+                (filterType === '' || transaction.type === filterType) &&
+                (filterDescription === '' || transaction.description.toLowerCase().includes(filterDescription))
+            );
+
+            const filteredTbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
+            filteredTbody.innerHTML = '';
+
+            filteredTransactions.forEach(transaction => {
+                if (transaction.type === 'receita') {
+                    totalReceitas += transaction.amount;
+                } else if (transaction.type === 'despesa') {
+                    totalDespesas += transaction.amount;
+                }
+
+                const row = filteredTbody.insertRow();
+                const cellDate = row.insertCell(0);
+                const cellDescription = row.insertCell(1);
+                const cellAmount = row.insertCell(2);
+                const cellType = row.insertCell(3);
+
+                cellDate.innerText = transaction.date;
+                cellDescription.innerHTML = `<div class="transaction-description">
+                                                <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'green' : 'red'};"></i>
+                                                ${transaction.description}
+                                            </div>`;
+                cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+            });
+
+            const totalSaldo = totalReceitas - totalDespesas;
+
+            const totalReceitasSpan = document.getElementById('totalReceitas');
+            const totalDespesasSpan = document.getElementById('totalDespesas');
+            const totalSaldoSpan = document.getElementById('totalSaldo');
+
+            totalReceitasSpan.innerText = formatCurrency(totalReceitas);
+            totalDespesasSpan.innerText = formatCurrency(totalDespesas);
+            totalSaldoSpan.innerText = formatCurrency(totalSaldo);
+
+            totalDespesasSpan.classList.add('negative');
+            totalSaldoSpan.classList.toggle('negative', totalSaldo < 0);
+        }
+
+        function clearFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterDescription').value = '';
+            document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0].innerHTML = '';
+            document.getElementById('totalReceitas').innerText = 'R$ 0,00';
+            document.getElementById('totalDespesas').innerText = 'R$ 0,00';
+            document.getElementById('totalSaldo').innerText = 'R$ 0,00';
+        }
+
+        const inputs = document.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.classList.remove('highlight');
+            });
         });
-}
 
-function openChangePasswordModal() {
-    const modal = document.getElementById('changePasswordModal');
-    modal.style.display = 'block';
-    modal.style.animation = 'fadein 0.5s';
-}
+        function validateAmount() {
+            const amountInput = document.getElementById('amount');
+            amountInput.value = amountInput.value.replace(/[^\d,]/g, '');
+            amountInput.value = amountInput.value.replace(/(,.*?),(.*?)/g, '$1');
+        }
 
-function closeChangePasswordModal() {
-    const modal = document.getElementById('changePasswordModal');
-    modal.style.animation = 'fadeout 0.5s';
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 500);
-}
+        function getCurrentDate() {
+            const now = new Date();
+            const offset = -3;
+            const brasiliaTime = new Date(now.getTime() + offset * 3600 * 1000);
+            return brasiliaTime.toISOString().split('T')[0];
+        }
 
-function changePassword() {
-    const newPassword = document.getElementById('newPassword').value;
-    const user = auth.currentUser;
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('date');
+            dateInput.value = getCurrentDate();
+            updateFilteredView();
+            loadPaymentReminders();
+            checkReminders();
+        });
 
-    user.updatePassword(newPassword).then(() => {
-        alert('Senha alterada com sucesso.');
-        closeChangePasswordModal();
-    }).catch(error => {
-        alert('Erro ao alterar senha: ' + error.message);
-    });
-}
+        function logout() {
+            auth.signOut().then(() => {
+                localStorage.removeItem('loggedIn');
+                localStorage.removeItem('username');
+                localStorage.removeItem('lastTransactionId');
+                window.location.href = 'index.html';
+            }).catch(error => {
+                console.error('Erro ao deslogar: ', error);
+            });
+        }
 
-function goToLimitPage() {
-    window.location.href = 'definir_limite.html';
-}
+        function toggleAdminSection() {
+            const adminSection = document.getElementById('adminSection');
+            adminSection.style.display = adminSection.style.display === 'block' ? 'none' : 'block';
+        }
 
-function togglePasswordVisibility(inputId) {
-    const passwordField = document.getElementById(inputId);
-    const passwordToggle = passwordField.nextElementSibling;
-    if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        passwordToggle.classList.remove('fa-eye');
-        passwordToggle.classList.add('fa-eye-slash');
-    } else {
-        passwordField.type = 'password';
-        passwordToggle.classList.remove('fa-eye-slash');
-        passwordToggle.classList.add('fa-eye');
-    }
-}
+        function registerNewUser() {
+            const name = document.getElementById('newUserName').value;
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
 
-function openSpecificTransactionsModal() {
-    const modal = document.getElementById('specificTransactionsModal');
-    modal.style.display = 'block';
-    modal.style.animation = 'fadein 0.5s';
-}
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    const user = userCredential.user;
+                    database.ref('users/' + user.uid).set({
+                        name: name,
+                        email: email
+                    }).then(() => {
+                        alert('Novo usuário registrado com sucesso.');
+                        document.getElementById('newUserName').value = '';
+                        document.getElementById('newUserEmail').value = '';
+                        document.getElementById('newUserPassword').value = '';
+                        loadAllUsers();
+                    });
+                })
+                .catch(error => {
+                    alert('Erro ao registrar novo usuário: ' + error.message);
+                });
+        }
 
-function closeSpecificTransactionsModal() {
-    const modal = document.getElementById('specificTransactionsModal');
-    modal.style.animation = 'fadeout 0.5s';
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 500);
-}
+        function openChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'fadein 0.5s';
+        }
 
-function openFilterPeriodModal() {
-    const modal = document.getElementById('filterPeriodModal');
-    modal.style.display = 'block';
-    modal.style.animation = 'fadein 0.5s';
-}
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
 
-function closeFilterPeriodModal() {
-    const modal = document.getElementById('filterPeriodModal');
-    modal.style.animation = 'fadeout 0.5s';
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 500);
-}
+        function changePassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            const user = auth.currentUser;
 
-let specificTransactionsChart;
+            user.updatePassword(newPassword).then(() => {
+                alert('Senha alterada com sucesso.');
+                closeChangePasswordModal();
+            }).catch(error => {
+                alert('Erro ao alterar senha: ' + error.message);
+            });
+        }
 
-function generateSpecificTransactionsReport() {
-    const startDate = document.getElementById('specificStartDate').value;
-    const endDate = document.getElementById('specificEndDate').value;
-    const specificType = document.getElementById('specificType').value;
+        function goToLimitPage() {
+            window.location.href = 'definir_limite.html';
+        }
 
-    const specificTransactions = transactions.filter(transaction => 
-        transaction.date >= startDate && transaction.date <= endDate && transaction.type === specificType
-    );
+        function togglePasswordVisibility(inputId) {
+            const passwordField = document.getElementById(inputId);
+            const passwordToggle = passwordField.nextElementSibling;
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                passwordToggle.classList.remove('fa-eye');
+                passwordToggle.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                passwordToggle.classList.remove('fa-eye-slash');
+                passwordToggle.classList.add('fa-eye');
+            }
+        }
 
-    const descriptions = [...new Set(specificTransactions.map(t => t.description))];
-    const data = descriptions.map(description => {
-        return specificTransactions.filter(transaction => transaction.description === description)
-                                   .reduce((total, transaction) => total + transaction.amount, 0);
-    });
+        function openSpecificTransactionsModal() {
+            const modal = document.getElementById('specificTransactionsModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'fadein 0.5s';
+        }
 
-    if (specificTransactionsChart) {
-        specificTransactionsChart.destroy();
-    }
+        function closeSpecificTransactionsModal() {
+            const modal = document.getElementById('specificTransactionsModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
 
-    const ctx = document.getElementById('specificTransactionsChart').getContext('2d');
-    specificTransactionsChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: descriptions,
-            datasets: [{
-                label: 'Transações Específicas',
-                data: data,
-                backgroundColor: descriptions.map(() => `#${Math.floor(Math.random()*16777215).toString(16)}`),
-                borderColor: '#fff',
-                borderWidth: 2,
-                hoverBorderWidth: 3,
-                hoverBorderColor: '#fff'
-            }]
-        },
-        options: {
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(tooltipItem) {
-                            let total = tooltipItem.dataset.data.reduce((sum, value) => sum + value, 0);
-                            let currentValue = tooltipItem.raw;
-                            let percentage = ((currentValue / total) * 100).toFixed(2);
-                            return `${tooltipItem.label}: R$ ${currentValue.toFixed(2)} (${percentage}%)`;
-                        }
-                    },
-                    backgroundColor: 'rgba(44, 62, 80, 0.8)',
-                    titleFont: { size: 16, weight: 'bold' },
-                    bodyFont: { size: 14 },
-                    footerFont: { size: 14 },
-                    displayColors: false,
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    borderColor: '#3498db',
-                    borderWidth: 1
+        function openFilterPeriodModal() {
+            const modal = document.getElementById('filterPeriodModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'fadein 0.5s';
+        }
+
+        function closeFilterPeriodModal() {
+            const modal = document.getElementById('filterPeriodModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
+
+        let specificTransactionsChart;
+
+        function generateSpecificTransactionsReport() {
+            const startDate = document.getElementById('specificStartDate').value;
+            const endDate = document.getElementById('specificEndDate').value;
+            const specificType = document.getElementById('specificType').value;
+
+            const specificTransactions = transactions.filter(transaction => 
+                transaction.date >= startDate && transaction.date <= endDate && transaction.type === specificType
+            );
+
+            const descriptions = [...new Set(specificTransactions.map(t => t.description))];
+            const data = descriptions.map(description => {
+                return specificTransactions.filter(transaction => transaction.description === description)
+                                           .reduce((total, transaction) => total + transaction.amount, 0);
+            });
+
+            if (specificTransactionsChart) {
+                specificTransactionsChart.destroy();
+            }
+
+            const ctx = document.getElementById('specificTransactionsChart').getContext('2d');
+            specificTransactionsChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: descriptions,
+                    datasets: [{
+                        label: 'Transações Específicas',
+                        data: data,
+                        backgroundColor: descriptions.map(() => `#${Math.floor(Math.random()*16777215).toString(16)}`),
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        hoverBorderWidth: 3,
+                        hoverBorderColor: '#fff'
+                    }]
                 },
-                legend: {
-                    labels: {
-                        color: '#ecf0f1',
-                        font: {
-                            size: 14,
-                            weight: 'bold'
+                options: {
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    let total = tooltipItem.dataset.data.reduce((sum, value) => sum + value, 0);
+                                    let currentValue = tooltipItem.raw;
+                                    let percentage = ((currentValue / total) * 100).toFixed(2);
+                                    return `${tooltipItem.label}: R$ ${currentValue.toFixed(2)} (${percentage}%)`;
+                                }
+                            },
+                            backgroundColor: 'rgba(44, 62, 80, 0.8)',
+                            titleFont: { size: 16, weight: 'bold' },
+                            bodyFont: { size: 14 },
+                            footerFont: { size: 14 },
+                            displayColors: false,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#3498db',
+                            borderWidth: 1
+                        },
+                        legend: {
+                            labels: {
+                                color: '#ecf0f1',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
                         }
                     }
                 }
+            });
+        }
+
+        function checkMonthlyLimit() {
+            const currentMonth = getCurrentDate().slice(0, 7);
+            let monthlyExpenses = transactions
+                .filter(transaction => transaction.type === 'despesa' && transaction.date.startsWith(currentMonth))
+                .reduce((sum, transaction) => sum + transaction.amount, 0);
+
+            if (monthlyLimit > 0 && monthlyExpenses > monthlyLimit) {
+                showAlert(`Você ultrapassou seu limite de gastos mensais! Limite: ${formatCurrency(monthlyLimit)}, Gastos: ${formatCurrency(monthlyExpenses)}`);
             }
         }
-    });
-}
 
-        
+        function showAlert(message) {
+            const modal = document.getElementById('alertModal');
+            document.getElementById('alertMessage').innerText = message;
+            modal.style.display = 'block';
+            modal.style.animation = 'fadein 0.5s';
+        }
+
+        function closeAlertModal() {
+            const modal = document.getElementById('alertModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
+
+        function openFinancialPerformanceModal() {
+            const modal = document.getElementById('financialPerformanceModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'fadein 0.5s';
+            generateFinancialPerformanceChart();
+        }
+
+        function closeFinancialPerformanceModal() {
+            const modal = document.getElementById('financialPerformanceModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
+
+        let financialPerformanceChart;
+
+        function generateFinancialPerformanceChart() {
+            const monthlyData = {};
+            transactions.forEach(transaction => {
+                const month = transaction.date.slice(0, 7);
+                if (!monthlyData[month]) {
+                    monthlyData[month] = { receitas: 0, despesas: 0 };
+                }
+                if (transaction.type === 'receita') {
+                    monthlyData[month].receitas += transaction.amount;
+                } else {
+                    monthlyData[month].despesas += transaction.amount;
+                }
+            });
+
+            const labels = Object.keys(monthlyData);
+            const receitasData = labels.map(month => monthlyData[month].receitas);
+            const despesasData = labels.map(month => monthlyData[month].despesas);
+
+            if (financialPerformanceChart) {
+                financialPerformanceChart.destroy();
+            }
+
+            const ctx = document.getElementById('financialPerformanceChart').getContext('2d');
+            financialPerformanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Receitas',
+                            data: receitasData,
+                            backgroundColor: 'rgba(52, 152, 219, 0.5)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Despesas',
+                            data: despesasData,
+                            backgroundColor: 'rgba(231, 76, 60, 0.5)',
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: R$ ${context.raw.toFixed(2)}`;
+                                }
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                color: '#ecf0f1'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#ecf0f1'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#ecf0f1'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function openTrendAnalysisModal() {
+            const modal = document.getElementById('trendAnalysisModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'fadein 0.5s';
+            analyzeSpendingPatterns();  // Execute pattern analysis when opening modal
+        }
+
+        function closeTrendAnalysisModal() {
+            const modal = document.getElementById('trendAnalysisModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
+
+        function analyzeSpendingPatterns() {
+            // Here you would implement the machine learning model to identify spending patterns.
+            // For now, we will just simulate the analysis.
+            let despesas = transactions.filter(t => t.type === 'despesa');
+            let categorias = {};
+
+            despesas.forEach(despesa => {
+                if (!categorias[despesa.description]) {
+                    categorias[despesa.description] = 0;
+                }
+                categorias[despesa.description] += despesa.amount;
+            });
+
+            let data = Object.keys(categorias).map(key => ({
+                categoria: key,
+                total: categorias[key]
+            }));
+
+            console.log('Padrões de gastos identificados:', data);
+            alert('Análise de padrões de gastos concluída. Verifique o console para mais detalhes.');
+        }
+
+        function forecastFinancialTrends() {
+            // Here you would implement the time series analysis for financial trend forecasting.
+            // For now, we will just simulate the forecast.
+            let receitas = transactions.filter(t => t.type === 'receita');
+            let despesas = transactions.filter(t => t.type === 'despesa');
+
+            let receitasPorMes = {};
+            let despesasPorMes = {};
+
+            receitas.forEach(receita => {
+                let mes = receita.date.slice(0, 7);
+                if (!receitasPorMes[mes]) {
+                    receitasPorMes[mes] = 0;
+                }
+                receitasPorMes[mes] += receita.amount;
+            });
+
+            despesas.forEach(despesa => {
+                let mes = despesa.date.slice(0, 7);
+                if (!despesasPorMes[mes]) {
+                    despesasPorMes[mes] = 0;
+                }
+                despesasPorMes[mes] += despesa.amount;
+            });
+
+            let totalReceitas = Object.values(receitasPorMes).reduce((sum, value) => sum + value, 0);
+            let totalDespesas = Object.values(despesasPorMes).reduce((sum, value) => sum + value, 0);
+
+            let mediaMensalReceitas = totalReceitas / Object.keys(receitasPorMes).length;
+            let mediaMensalDespesas = totalDespesas / Object.keys(despesasPorMes).length;
+
+            console.log('Previsão de receitas futuras:', mediaMensalReceitas);
+            console.log('Previsão de despesas futuras:', mediaMensalDespesas);
+            alert('Previsão financeira concluída. Verifique o console para mais detalhes.');
+        }
+
+        function openPaymentReminderModal() {
+            const modal = document.getElementById('paymentReminderModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'fadein 0.5s';
+        }
+
+        function closePaymentReminderModal() {
+            const modal = document.getElementById('paymentReminderModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
+
+        function addPaymentReminder() {
+            const description = document.getElementById('reminderDescription').value;
+            const date = document.getElementById('reminderDate').value;
+            const reminder = { id: generateTransactionId(), description, date };
+            paymentReminders.push(reminder);
+            saveReminders();
+            loadPaymentReminders();
+            clearReminderForm();
+        }
+
+        function clearReminderForm() {
+            document.getElementById('reminderDescription').value = '';
+            document.getElementById('reminderDate').value = '';
+        }
+
+        function saveReminders() {
+            const userId = auth.currentUser.uid;
+            database.ref('reminders/' + userId).set(paymentReminders);
+        }
+
+        function loadPaymentReminders() {
+            const userId = auth.currentUser.uid;
+            database.ref('reminders/' + userId).once('value', function(snapshot) {
+                if (snapshot.val()) {
+                    paymentReminders = snapshot.val();
+                    displayReminders();
+                }
+            });
+        }
+
+        function displayReminders() {
+            const remindersDiv = document.getElementById('paymentReminders');
+            remindersDiv.innerHTML = '';
+            paymentReminders.forEach(reminder => {
+                const reminderDiv = document.createElement('div');
+                reminderDiv.className = 'reminder';
+                reminderDiv.innerHTML = `
+                    <p><strong>Descrição:</strong> ${reminder.description}</p>
+                    <p><strong>Dia do Mês:</strong> ${reminder.date}</p>
+                    <button onclick="removeReminder('${reminder.id}')">Remover</button>
+                `;
+                remindersDiv.appendChild(reminderDiv);
+            });
+        }
+
+        function removeReminder(id) {
+            paymentReminders = paymentReminders.filter(reminder => reminder.id !== id);
+            saveReminders();
+            displayReminders();
+        }
+
+        function checkReminders() {
+            const today = new Date();
+            paymentReminders.forEach(reminder => {
+                const reminderDate = new Date(today.getFullYear(), today.getMonth(), reminder.date);
+                const differenceInTime = reminderDate.getTime() - today.getTime();
+                const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+                if (differenceInDays === 2) {
+                    alert(`Lembrete: ${reminder.description} está próximo da data de pagamento.`);
+                }
+            });
+        }
+
+        function changeTheme() {
+            const theme = document.getElementById('theme').value;
+            let buttonColor, inputBorderColor;
+            switch (theme) {
+                case 'dark':
+                    buttonColor = '#34495e';
+                    inputBorderColor = '#34495e';
+                    break;
+                case 'light':
+                    buttonColor = '#ecf0f1';
+                    inputBorderColor = '#ecf0f1';
+                    break;
+                case 'blue':
+                    buttonColor = '#2980b9';
+                    inputBorderColor = '#2980b9';
+                    break;
+                case 'green':
+                    buttonColor = '#27ae60';
+                    inputBorderColor = '#27ae60';
+                    break;
+                case 'red':
+                    buttonColor = '#c0392b';
+                    inputBorderColor = '#c0392b';
+                    break;
+                case 'purple':
+                    buttonColor = '#9b59b6';
+                    inputBorderColor = '#9b59b6';
+                    break;
+                case 'orange':
+                    buttonColor = '#d35400';
+                    inputBorderColor = '#d35400';
+                    break;
+                case 'pink':
+                    buttonColor = '#e91e63';
+                    inputBorderColor = '#e91e63';
+                    break;
+                case 'yellow':
+                    buttonColor = '#f1c40f';
+                    inputBorderColor = '#f1c40f';
+                    break;
+                case 'cyan':
+                    buttonColor = '#00bcd4';
+                    inputBorderColor = '#00bcd4';
+                    break;
+                case 'brown':
+                    buttonColor = '#8d6e63';
+                    inputBorderColor = '#8d6e63';
+                    break;
+                default:
+                    buttonColor = '#3498db';
+                    inputBorderColor = '#3498db';
+                    break;
+            }
+            document.documentElement.style.setProperty('--button-color', buttonColor);
+            document.documentElement.style.setProperty('--input-border-color', inputBorderColor);
+            localStorage.setItem('theme', theme);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.getElementById('theme').value = savedTheme;
+                changeTheme();
+            }
+        }
     </script>
 </body>
 </html>
