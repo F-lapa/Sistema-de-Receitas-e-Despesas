@@ -306,6 +306,8 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             color: var(--text-color);
+            text-align: center;
+            animation: fadein 0.5s;
         }
         .container .close {
             color: var(--text-color);
@@ -323,6 +325,14 @@
             cursor: pointer;
             color: red;
         }
+        @keyframes fadein {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeout {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
         @keyframes shine {
             0% { background-position: -200px; }
             100% { background-position: 200px; }
@@ -339,6 +349,18 @@
             width: 100px;
             height: auto;
         }
+        .color-box {
+            width: 40px;
+            height: 40px;
+            display: inline-block;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        .color-box:hover {
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -353,26 +375,12 @@
             <button onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Definir Limite de Gastos</button>
             <button onclick="openSpecificTransactionsModal()"><i class="fas fa-search-dollar"></i> Transações Específicas</button>
             <button onclick="openFinancialPerformanceModal()"><i class="fas fa-chart-line"></i> Desempenho Financeiro</button>
-            <button onclick="openTrendAnalysisModal()"><i class="fas fa-chart-pie"></i> Análise de Tendências</button>
-            <button onclick="openPaymentReminderModal()"><i class="fas fa-bell"></i> Lembrete de Pagamento</button>
             <button id="adminButton" onclick="toggleAdminSection()"><i class="fas fa-user-shield"></i> Área do Administrador</button>
+            <button onclick="openPaymentRemindersPage()"><i class="fas fa-bell"></i> Lembrete de Pagamentos</button>
         </div>
         <div class="theme-selector">
             <label for="theme">Selecionar Tema:</label>
-            <select id="theme" onchange="changeTheme()">
-                <option value="default">Padrão</option>
-                <option value="dark">Escuro</option>
-                <option value="light">Claro</option>
-                <option value="blue">Azul</option>
-                <option value="green">Verde</option>
-                <option value="red">Vermelho</option>
-                <option value="purple">Roxo</option>
-                <option value="orange">Laranja</option>
-                <option value="pink">Rosa</option>
-                <option value="yellow">Amarelo</option>
-                <option value="cyan">Ciano</option>
-                <option value="brown">Marrom</option>
-            </select>
+            <button id="themeButton" onclick="openThemeSelectorModal()">Clique para escolher</button>
         </div>
     </div>
     <div class="container">
@@ -524,35 +532,6 @@
             </div>
         </div>
 
-        <div id="trendAnalysisModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeTrendAnalysisModal()">&times;</span>
-                <h2>Análise de Tendências</h2>
-                <button onclick="analyzeSpendingPatterns()">Identificação de Padrões de Gasto</button>
-                <button onclick="forecastFinancialTrends()">Previsão Financeira</button>
-                <canvas id="trendAnalysisChart" style="margin-top: 20px;"></canvas>
-            </div>
-        </div>
-
-        <div id="paymentReminderModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closePaymentReminderModal()">&times;</span>
-                <h2>Lembrete de Pagamento</h2>
-                <div class="form-group">
-                    <label for="reminderDescription">Descrição:</label>
-                    <input type="text" id="reminderDescription" class="highlight">
-                </div>
-                <div class="form-group">
-                    <label for="reminderDate">Dia do Mês:</label>
-                    <input type="number" id="reminderDate" class="highlight" min="1" max="31">
-                </div>
-                <button onclick="addPaymentReminder()">Adicionar Lembrete</button>
-                <div id="paymentReminders">
-                    <!-- Reminders will be displayed here -->
-                </div>
-            </div>
-        </div>
-
         <div class="admin-section" id="adminSection">
             <h2>Gerenciamento de Usuários</h2>
             <div class="form-group">
@@ -573,14 +552,26 @@
             </div>
         </div>
 
-        <div id="alertModal" class="modal">
+        <div id="themeSelectorModal" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closeAlertModal()">&times;</span>
-                <h2>Alerta</h2>
-                <p id="alertMessage"></p>
+                <span class="close" onclick="closeThemeSelectorModal()">&times;</span>
+                <h2>Selecionar Tema</h2>
+                <div class="color-grid">
+                    <!-- As cores serão inseridas aqui -->
+                </div>
             </div>
         </div>
 
+        <div id="reminderAlertModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeReminderAlertModal()">&times;</span>
+                <div id="reminderAlertMessage"></div>
+                <button onclick="markAsPaid()">Já foi Pago</button>
+                <button onclick="snoozeReminder()">Não foi Pago</button>
+            </div>
+        </div>
+
+        <audio id="alertSound" src="alert.mp3" preload="auto"></audio>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
@@ -603,6 +594,8 @@
         const database = firebase.database();
         const auth = firebase.auth();
 
+        let reminderAlertDay;
+
         auth.onAuthStateChanged(user => {
             if (user) {
                 const userId = user.uid;
@@ -610,12 +603,11 @@
                     const userData = snapshot.val();
                     const userName = userData ? userData.name : "Usuário";
                     localStorage.setItem('username', userName);
-                    document.getElementById('userGreeting').innerHTML = user.email === 'fernandolapa1987@gmail.com' ? 
-                        '<span>Olá, <strong>Administrador!</strong></span>' : 
-                        '<span>Olá, <strong>' + userName + '</strong>!</span>';
+                    document.getElementById('userGreeting').innerHTML = '<span>Olá, <strong>' + userName + '</strong>!</span>';
                     loadTransactions();
                     checkAdmin(user.email);
                     loadTheme(); // Carrega o tema salvo
+                    loadPaymentReminders(); // Carrega lembretes de pagamento
                 });
             } else {
                 window.location.href = 'index.html';  
@@ -882,7 +874,6 @@
             const dateInput = document.getElementById('date');
             dateInput.value = getCurrentDate();
             updateFilteredView();
-            loadPaymentReminders();
             checkReminders();
         });
 
@@ -1189,219 +1180,111 @@
             });
         }
 
-        function openTrendAnalysisModal() {
-            const modal = document.getElementById('trendAnalysisModal');
-            modal.style.display = 'block';
-            modal.style.animation = 'fadein 0.5s';
-            analyzeSpendingPatterns();  // Execute pattern analysis when opening modal
+        function checkReminders() {
+            const currentDate = new Date();
+            const reminders = paymentReminders.filter(reminder => {
+                const reminderDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), reminder.day);
+                const differenceInDays = Math.floor((reminderDate - currentDate) / (1000 * 60 * 60 * 24));
+                console.log(`Reminder for ${reminder.description} is due in ${differenceInDays} days.`);
+                return (differenceInDays === 2 || (differenceInDays < 0 && differenceInDays >= -7)) && !reminder.paid;
+            });
+
+            if (reminders.length > 0) {
+                reminderAlertDay = reminders[0].day;
+                const modal = document.getElementById('reminderAlertModal');
+                document.getElementById('reminderAlertMessage').innerHTML = `
+                    Você tem um pagamento de <strong>${reminders[0].description}</strong> com vencimento no dia <strong>${reminders[0].day}</strong>.
+                `;
+                modal.style.display = 'block';
+                modal.style.animation = 'fadein 0.5s';
+                document.getElementById('alertSound').play();
+            }
         }
 
-        function closeTrendAnalysisModal() {
-            const modal = document.getElementById('trendAnalysisModal');
+        function closeReminderAlertModal() {
+            const modal = document.getElementById('reminderAlertModal');
             modal.style.animation = 'fadeout 0.5s';
             setTimeout(() => {
                 modal.style.display = 'none';
             }, 500);
-        }
-
-        function analyzeSpendingPatterns() {
-            // Here you would implement the machine learning model to identify spending patterns.
-            // For now, we will just simulate the analysis.
-            let despesas = transactions.filter(t => t.type === 'despesa');
-            let categorias = {};
-
-            despesas.forEach(despesa => {
-                if (!categorias[despesa.description]) {
-                    categorias[despesa.description] = 0;
-                }
-                categorias[despesa.description] += despesa.amount;
-            });
-
-            let data = Object.keys(categorias).map(key => ({
-                categoria: key,
-                total: categorias[key]
-            }));
-
-            console.log('Padrões de gastos identificados:', data);
-            alert('Análise de padrões de gastos concluída. Verifique o console para mais detalhes.');
-        }
-
-        function forecastFinancialTrends() {
-            // Here you would implement the time series analysis for financial trend forecasting.
-            // For now, we will just simulate the forecast.
-            let receitas = transactions.filter(t => t.type === 'receita');
-            let despesas = transactions.filter(t => t.type === 'despesa');
-
-            let receitasPorMes = {};
-            let despesasPorMes = {};
-
-            receitas.forEach(receita => {
-                let mes = receita.date.slice(0, 7);
-                if (!receitasPorMes[mes]) {
-                    receitasPorMes[mes] = 0;
-                }
-                receitasPorMes[mes] += receita.amount;
-            });
-
-            despesas.forEach(despesa => {
-                let mes = despesa.date.slice(0, 7);
-                if (!despesasPorMes[mes]) {
-                    despesasPorMes[mes] = 0;
-                }
-                despesasPorMes[mes] += despesa.amount;
-            });
-
-            let totalReceitas = Object.values(receitasPorMes).reduce((sum, value) => sum + value, 0);
-            let totalDespesas = Object.values(despesasPorMes).reduce((sum, value) => sum + value, 0);
-
-            let mediaMensalReceitas = totalReceitas / Object.keys(receitasPorMes).length;
-            let mediaMensalDespesas = totalDespesas / Object.keys(despesasPorMes).length;
-
-            console.log('Previsão de receitas futuras:', mediaMensalReceitas);
-            console.log('Previsão de despesas futuras:', mediaMensalDespesas);
-            alert('Previsão financeira concluída. Verifique o console para mais detalhes.');
-        }
-
-        function openPaymentReminderModal() {
-            const modal = document.getElementById('paymentReminderModal');
-            modal.style.display = 'block';
-            modal.style.animation = 'fadein 0.5s';
-        }
-
-        function closePaymentReminderModal() {
-            const modal = document.getElementById('paymentReminderModal');
-            modal.style.animation = 'fadeout 0.5s';
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 500);
-        }
-
-        function addPaymentReminder() {
-            const description = document.getElementById('reminderDescription').value;
-            const date = document.getElementById('reminderDate').value;
-            const reminder = { id: generateTransactionId(), description, date };
-            paymentReminders.push(reminder);
-            saveReminders();
-            loadPaymentReminders();
-            clearReminderForm();
-        }
-
-        function clearReminderForm() {
-            document.getElementById('reminderDescription').value = '';
-            document.getElementById('reminderDate').value = '';
-        }
-
-        function saveReminders() {
-            const userId = auth.currentUser.uid;
-            database.ref('reminders/' + userId).set(paymentReminders);
         }
 
         function loadPaymentReminders() {
             const userId = auth.currentUser.uid;
-            database.ref('reminders/' + userId).once('value', function(snapshot) {
-                if (snapshot.val()) {
-                    paymentReminders = snapshot.val();
-                    displayReminders();
+            database.ref('paymentReminders/' + userId).once('value').then((snapshot) => {
+                paymentReminders = snapshot.val() || [];
+                checkReminders();
+            });
+        }
+
+        function savePaymentReminders() {
+            const userId = auth.currentUser.uid;
+            database.ref('paymentReminders/' + userId).set(paymentReminders);
+        }
+
+        function markAsPaid() {
+            const reminder = paymentReminders.find(r => r.day === reminderAlertDay);
+            reminder.paid = true;
+            savePaymentReminders();
+            closeReminderAlertModal();
+        }
+
+        function snoozeReminder() {
+            closeReminderAlertModal();
+        }
+
+        function openPaymentRemindersPage() {
+            window.location.href = 'payment_reminders.html';
+        }
+
+        function openThemeSelectorModal() {
+            const modal = document.getElementById('themeSelectorModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'fadein 0.5s';
+            const colorGrid = document.querySelector('.color-grid');
+            colorGrid.innerHTML = ''; // Limpar cores anteriores
+            const colors = generateColorArray();
+            colors.forEach(color => {
+                const colorBox = document.createElement('div');
+                colorBox.classList.add('color-box');
+                colorBox.style.backgroundColor = color;
+                colorBox.onclick = () => selectThemeColor(color);
+                colorGrid.appendChild(colorBox);
+            });
+        }
+
+        function closeThemeSelectorModal() {
+            const modal = document.getElementById('themeSelectorModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
+
+        function generateColorArray() {
+            const colors = [];
+            for (let r = 0; r <= 255; r += 51) {
+                for (let g = 0; r <= 255; g += 51) {
+                    for (let b = 0; r <= 255; b += 51) {
+                        colors.push(`rgb(${r},${g},${b})`);
+                    }
                 }
-            });
-        }
-
-        function displayReminders() {
-            const remindersDiv = document.getElementById('paymentReminders');
-            remindersDiv.innerHTML = '';
-            paymentReminders.forEach(reminder => {
-                const reminderDiv = document.createElement('div');
-                reminderDiv.className = 'reminder';
-                reminderDiv.innerHTML = `
-                    <p><strong>Descrição:</strong> ${reminder.description}</p>
-                    <p><strong>Dia do Mês:</strong> ${reminder.date}</p>
-                    <button onclick="removeReminder('${reminder.id}')">Remover</button>
-                `;
-                remindersDiv.appendChild(reminderDiv);
-            });
-        }
-
-        function removeReminder(id) {
-            paymentReminders = paymentReminders.filter(reminder => reminder.id !== id);
-            saveReminders();
-            displayReminders();
-        }
-
-        function checkReminders() {
-            const today = new Date();
-            paymentReminders.forEach(reminder => {
-                const reminderDate = new Date(today.getFullYear(), today.getMonth(), reminder.date);
-                const differenceInTime = reminderDate.getTime() - today.getTime();
-                const differenceInDays = differenceInTime / (1000 * 3600 * 24);
-                if (differenceInDays === 2) {
-                    alert(`Lembrete: ${reminder.description} está próximo da data de pagamento.`);
-                }
-            });
-        }
-
-        function changeTheme() {
-            const theme = document.getElementById('theme').value;
-            let buttonColor, inputBorderColor;
-            switch (theme) {
-                case 'dark':
-                    buttonColor = '#34495e';
-                    inputBorderColor = '#34495e';
-                    break;
-                case 'light':
-                    buttonColor = '#ecf0f1';
-                    inputBorderColor = '#ecf0f1';
-                    break;
-                case 'blue':
-                    buttonColor = '#2980b9';
-                    inputBorderColor = '#2980b9';
-                    break;
-                case 'green':
-                    buttonColor = '#27ae60';
-                    inputBorderColor = '#27ae60';
-                    break;
-                case 'red':
-                    buttonColor = '#c0392b';
-                    inputBorderColor = '#c0392b';
-                    break;
-                case 'purple':
-                    buttonColor = '#9b59b6';
-                    inputBorderColor = '#9b59b6';
-                    break;
-                case 'orange':
-                    buttonColor = '#d35400';
-                    inputBorderColor = '#d35400';
-                    break;
-                case 'pink':
-                    buttonColor = '#e91e63';
-                    inputBorderColor = '#e91e63';
-                    break;
-                case 'yellow':
-                    buttonColor = '#f1c40f';
-                    inputBorderColor = '#f1c40f';
-                    break;
-                case 'cyan':
-                    buttonColor = '#00bcd4';
-                    inputBorderColor = '#00bcd4';
-                    break;
-                case 'brown':
-                    buttonColor = '#8d6e63';
-                    inputBorderColor = '#8d6e63';
-                    break;
-                default:
-                    buttonColor = '#3498db';
-                    inputBorderColor = '#3498db';
-                    break;
             }
-            document.documentElement.style.setProperty('--button-color', buttonColor);
-            document.documentElement.style.setProperty('--input-border-color', inputBorderColor);
-            localStorage.setItem('theme', theme);
+            return colors;
+        }
+
+        function selectThemeColor(color) {
+            document.documentElement.style.setProperty('--button-color', color);
+            document.documentElement.style.setProperty('--input-border-color', color);
+            localStorage.setItem('theme', color);
+            closeThemeSelectorModal();
         }
 
         function loadTheme() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme) {
-                document.getElementById('theme').value = savedTheme;
-                changeTheme();
+                document.documentElement.style.setProperty('--button-color', savedTheme);
+                document.documentElement.style.setProperty('--input-border-color', savedTheme);
             }
         }
     </script>
