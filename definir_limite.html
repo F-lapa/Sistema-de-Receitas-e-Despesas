@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -230,59 +231,8 @@
         }
 
         function changeTheme(theme) {
-            let buttonColor, inputBorderColor;
-            switch (theme) {
-                case 'dark':
-                    buttonColor = '#34495e';
-                    inputBorderColor = '#34495e';
-                    break;
-                case 'light':
-                    buttonColor = '#ecf0f1';
-                    inputBorderColor = '#ecf0f1';
-                    break;
-                case 'blue':
-                    buttonColor = '#2980b9';
-                    inputBorderColor = '#2980b9';
-                    break;
-                case 'green':
-                    buttonColor = '#27ae60';
-                    inputBorderColor = '#27ae60';
-                    break;
-                case 'red':
-                    buttonColor = '#c0392b';
-                    inputBorderColor = '#c0392b';
-                    break;
-                case 'purple':
-                    buttonColor = '#9b59b6';
-                    inputBorderColor = '#9b59b6';
-                    break;
-                case 'orange':
-                    buttonColor = '#d35400';
-                    inputBorderColor = '#d35400';
-                    break;
-                case 'pink':
-                    buttonColor = '#e91e63';
-                    inputBorderColor = '#e91e63';
-                    break;
-                case 'yellow':
-                    buttonColor = '#f1c40f';
-                    inputBorderColor = '#f1c40f';
-                    break;
-                case 'cyan':
-                    buttonColor = '#00bcd4';
-                    inputBorderColor = '#00bcd4';
-                    break;
-                case 'brown':
-                    buttonColor = '#8d6e63';
-                    inputBorderColor = '#8d6e63';
-                    break;
-                default:
-                    buttonColor = '#3498db';
-                    inputBorderColor = '#3498db';
-                    break;
-            }
-            document.documentElement.style.setProperty('--button-color', buttonColor);
-            document.documentElement.style.setProperty('--input-border-color', inputBorderColor);
+            document.documentElement.style.setProperty('--button-color', theme);
+            document.documentElement.style.setProperty('--input-border-color', theme);
         }
     </script>
 </body>
