@@ -1185,8 +1185,12 @@
             const reminders = paymentReminders.filter(reminder => {
                 const reminderDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), reminder.day);
                 const differenceInDays = Math.floor((reminderDate - currentDate) / (1000 * 60 * 60 * 24));
-                console.log(`Reminder for ${reminder.description} is due in ${differenceInDays} days.`);
-                return (differenceInDays === 2 || (differenceInDays < 0 && differenceInDays >= -7)) && !reminder.paid;
+                const lastPaidDate = new Date(reminder.lastPaidDate || 0);
+                const daysSinceLastPaid = Math.floor((currentDate - lastPaidDate) / (1000 * 60 * 60 * 24));
+
+                // Verifica se o lembrete deve ser exibido
+                return (differenceInDays === 2 || (differenceInDays < 0 && differenceInDays >= -7)) &&
+                    (!reminder.paid || daysSinceLastPaid >= 30);
             });
 
             if (reminders.length > 0) {
@@ -1225,6 +1229,7 @@
         function markAsPaid() {
             const reminder = paymentReminders.find(r => r.day === reminderAlertDay);
             reminder.paid = true;
+            reminder.lastPaidDate = getCurrentDate(); // Adiciona a data do pagamento
             savePaymentReminders();
             closeReminderAlertModal();
         }
@@ -1262,14 +1267,11 @@
         }
 
         function generateColorArray() {
-            const colors = [];
-            for (let r = 0; r <= 255; r += 51) {
-                for (let g = 0; r <= 255; g += 51) {
-                    for (let b = 0; r <= 255; b += 51) {
-                        colors.push(`rgb(${r},${g},${b})`);
-                    }
-                }
-            }
+            const colors = [
+                '#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#f1c40f', '#e67e22', '#e74c3c',
+                '#ecf0f1', '#95a5a6', '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#2c3e50', '#f39c12',
+                '#d35400', '#c0392b', '#bdc3c7', '#7f8c8d'
+            ];
             return colors;
         }
 
