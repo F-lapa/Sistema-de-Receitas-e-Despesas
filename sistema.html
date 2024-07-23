@@ -583,19 +583,19 @@
     <script>
         var firebaseConfig = {
             apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
-  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
-  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
-  projectId: "sistema-de-receitas-e-despesas",
-  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-  messagingSenderId: "252102478972",
-  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
-  measurementId: "G-K2HCS7WNZV"
+            authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+            databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+            projectId: "sistema-de-receitas-e-despesas",
+            storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+            messagingSenderId: "252102478972",
+            appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+            measurementId: "G-K2HCS7WNZV"
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const auth = firebase.auth();
 
-        let reminderAlertDay;
+        let currentReminderId;
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -1183,15 +1183,16 @@
 
         function checkReminders() {
             const currentDate = new Date();
+            const currentMonth = currentDate.getMonth();
             const reminders = paymentReminders.filter(reminder => {
                 const reminderDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), reminder.day);
                 const differenceInDays = Math.floor((reminderDate - currentDate) / (1000 * 60 * 60 * 24));
-                console.log(`Reminder for ${reminder.description} is due in ${differenceInDays} days.`);
-                return (differenceInDays === 2 || (differenceInDays < 0 && differenceInDays >= -7)) && !reminder.paid;
+                return (differenceInDays === 2 || (differenceInDays < 0 && differenceInDays >= -7)) &&
+                        !reminder.paid && new Date(reminder.lastPaidDate).getMonth() !== currentMonth;
             });
 
             if (reminders.length > 0) {
-                reminderAlertDay = reminders[0].day;
+                currentReminderId = reminders[0].id;
                 const modal = document.getElementById('reminderAlertModal');
                 document.getElementById('reminderAlertMessage').innerHTML = `
                     Você tem um pagamento de <strong>${reminders[0].description}</strong> com vencimento no dia <strong>${reminders[0].day}</strong>.
@@ -1224,15 +1225,35 @@
         }
 
         function markAsPaid() {
-            const reminder = paymentReminders.find(r => r.day === reminderAlertDay);
-            reminder.paid = true;
-            reminder.lastPaidDate = getCurrentDate();
-            savePaymentReminders();
-            closeReminderAlertModal();
+            const reminderIndex = paymentReminders.findIndex(r => r.id === currentReminderId);
+            if (reminderIndex > -1) {
+                const reminder = paymentReminders[reminderIndex];
+                reminder.paid = true;
+                reminder.lastPaidDate = getCurrentDate();
+                addTransactionFromReminder(reminder);
+                savePaymentReminders();
+                closeReminderAlertModal();
+            }
         }
 
         function snoozeReminder() {
             closeReminderAlertModal();
+        }
+
+        function addTransactionFromReminder(reminder) {
+            const transaction = {
+                id: generateTransactionId(),
+                date: getCurrentDate(),
+                description: reminder.description,
+                amount: reminder.amount,
+                type: 'despesa'
+            };
+            transactions.push(transaction);
+            saveTransactions();
+            updateDescriptionList();
+            updateFilteredView();
+            calculateBalances();
+            checkMonthlyLimit();
         }
 
         function openPaymentRemindersPage() {
