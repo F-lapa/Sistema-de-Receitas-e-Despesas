@@ -22,6 +22,7 @@
             color: var(--text-color);
             display: flex;
             min-height: 100vh;
+            flex-direction: column;
         }
         .sidebar {
             width: 220px;
@@ -33,6 +34,14 @@
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            width: 100px;
+            height: auto;
         }
         .sidebar h3 {
             text-align: center;
@@ -247,30 +256,6 @@
         .container .filter-results {
             margin-top: 10px;
         }
-        .container .admin-section {
-            display: none;
-            margin-top: 10px;
-        }
-        .container .admin-section h2 {
-            text-align: center;
-            color: var(--text-color);
-        }
-        .container .admin-section .form-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container .admin-section input, .container .admin-section select {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-        .container .admin-section .buttons {
-            flex-direction: column;
-        }
-        .container .admin-section button {
-            width: 100%;
-            margin-bottom: 8px;
-        }
         .container .password-field {
             position: relative;
         }
@@ -341,14 +326,6 @@
             border-color: var(--input-border-color);
             box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
-        .logo-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .logo-container img {
-            width: 100px;
-            height: auto;
-        }
         .color-box {
             width: 40px;
             height: 40px;
@@ -361,22 +338,96 @@
         .color-box:hover {
             transform: scale(1.1);
         }
+
+        /* Media Queries for Mobile Devices */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                box-shadow: none;
+                flex-direction: column;
+                justify-content: flex-start;
+                padding: 10px;
+                margin-bottom: 20px;
+            }
+            .sidebar .menu-icons {
+                order: -1;
+                margin-bottom: 0;
+                text-align: right;
+            }
+            .sidebar .menu-icons i {
+                font-size: 1.2em;
+                margin: 0 3px;
+            }
+            .sidebar h3 {
+                display: none;
+            }
+            .sidebar .buttons {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                width: 100%;
+                margin-bottom: 0;
+            }
+            .sidebar button {
+                width: 48%;
+                padding: 5px 10px;
+                font-size: 12px;
+                margin-bottom: 5px;
+            }
+            .sidebar .theme-selector {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-top: 10px;
+            }
+            .container {
+                margin-left: 0;
+                padding: 10px;
+            }
+            .container .form-group {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            .container button {
+                width: 100%;
+                padding: 8px;
+                font-size: 12px;
+                margin: 8px auto;
+            }
+            .container table th, .container table td {
+                padding: 5px;
+                font-size: 12px;
+            }
+            .container .totals p {
+                font-size: 14px;
+            }
+            .container .modal-content {
+                width: 90%;
+                margin: 30% auto;
+            }
+        }
+
     </style>
 </head>
 <body>
     <div class="sidebar">
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo">
+        </div>
+        <h3>Menu</h3>
         <div class="menu-icons">
             <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
             <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
         </div>
-        <h3>Menu</h3>
         <div class="buttons">
             <button onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i> Filtrar Período</button>
             <button onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Definir Limite de Gastos</button>
             <button onclick="openSpecificTransactionsModal()"><i class="fas fa-search-dollar"></i> Transações Específicas</button>
             <button onclick="openFinancialPerformanceModal()"><i class="fas fa-chart-line"></i> Desempenho Financeiro</button>
-            <button id="adminButton" onclick="toggleAdminSection()"><i class="fas fa-user-shield"></i> Área do Administrador</button>
-            <button onclick="openPaymentRemindersPage()"><i class="fas fa-bell"></i> Lembrete de Pagamentos</button>
+            <button id="adminButton" style="display: none;" onclick="openAdminModal()"><i class="fas fa-user-shield"></i> Área do Administrador</button>
+            <button id="reminderButton" style="display: none;" onclick="openPaymentRemindersPage()"><i class="fas fa-bell"></i> Lembrete de Pagamentos</button>
         </div>
         <div class="theme-selector">
             <label for="theme">Selecionar Tema:</label>
@@ -385,9 +436,6 @@
     </div>
     <div class="container">
         <div class="greeting" id="userGreeting"></div>
-        <div class="logo-container">
-            <img src="logo.png" alt="Logo">
-        </div>
         <div class="form-header">Nova Transação</div>
         
         <input type="text" style="display:none;" autocomplete="username">
@@ -532,23 +580,26 @@
             </div>
         </div>
 
-        <div class="admin-section" id="adminSection">
-            <h2>Gerenciamento de Usuários</h2>
-            <div class="form-group">
-                <label for="newUserName">Nome do Novo Usuário:</label>
-                <input type="text" id="newUserName" class="highlight">
-            </div>
-            <div class="form-group">
-                <label for="newUserEmail">Email do Novo Usuário:</label>
-                <input type="text" id="newUserEmail" class="highlight">
-            </div>
-            <div class="form-group password-field">
-                <label for="newUserPassword">Senha do Novo Usuário:</label>
-                <input type="password" id="newUserPassword" class="highlight" value="">
-                <i class="fas fa-eye" id="togglePassword" onclick="togglePasswordVisibility('newUserPassword')"></i>
-            </div>
-            <div class="buttons">
-                <button onclick="registerNewUser()">Registrar Novo Usuário</button>
+        <div id="adminModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeAdminModal()">&times;</span>
+                <h2>Gerenciamento de Usuários</h2>
+                <div class="form-group">
+                    <label for="newUserName">Nome do Novo Usuário:</label>
+                    <input type="text" id="newUserName" class="highlight">
+                </div>
+                <div class="form-group">
+                    <label for="newUserEmail">Email do Novo Usuário:</label>
+                    <input type="text" id="newUserEmail" class="highlight">
+                </div>
+                <div class="form-group password-field">
+                    <label for="newUserPassword">Senha do Novo Usuário:</label>
+                    <input type="password" id="newUserPassword" class="highlight" value="">
+                    <i class="fas fa-eye" id="togglePassword" onclick="togglePasswordVisibility('newUserPassword')"></i>
+                </div>
+                <div class="buttons">
+                    <button onclick="registerNewUser()">Registrar Novo Usuário</button>
+                </div>
             </div>
         </div>
 
@@ -640,11 +691,14 @@
 
         function checkAdmin(email) {
             const adminButton = document.getElementById('adminButton');
+            const reminderButton = document.getElementById('reminderButton');
             if (email === 'fernandolapa1987@gmail.com') {
                 adminButton.style.display = 'block';
+                reminderButton.style.display = 'block';
                 loadAllUsers();
             } else {
                 adminButton.style.display = 'none';
+                reminderButton.style.display = 'block';
             }
         }
 
@@ -888,9 +942,18 @@
             });
         }
 
-        function toggleAdminSection() {
-            const adminSection = document.getElementById('adminSection');
-            adminSection.style.display = adminSection.style.display === 'block' ? 'none' : 'block';
+        function openAdminModal() {
+            const modal = document.getElementById('adminModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'fadein 0.5s';
+        }
+
+        function closeAdminModal() {
+            const modal = document.getElementById('adminModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
         }
 
         function registerNewUser() {
