@@ -294,7 +294,7 @@
                 cellAmount.innerText = reminder.amount.toFixed(2);
                 cellStatus.innerText = reminder.paid ? "Já foi pago" : "Em Aberto";
                 cellAction.innerHTML = `
-                    <i class="fas fa-check-circle" onclick="openConfirmationModal('${reminder.id}')"></i>
+                    <i class="fas fa-check-circle" onclick="openConfirmationModal('${reminder.id}')" ${reminder.paid ? 'style="display:none;"' : ''}></i>
                     <i class="fas fa-edit" onclick="editReminder('${reminder.id}')"></i>
                     <i class="fas fa-trash-alt" onclick="removeReminder('${reminder.id}')"></i>`;
             });
