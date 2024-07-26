@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -654,6 +655,11 @@
         const auth = firebase.auth();
 
         let currentReminderId;
+        let transactions = [];
+        let paymentReminders = [];
+        let lastTransactionId = localStorage.getItem('lastTransactionId');
+        let allUsers = [];
+        let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -673,11 +679,10 @@
             }
         });
 
-        let transactions = [];
-        let paymentReminders = [];
-        let lastTransactionId = localStorage.getItem('lastTransactionId');
-        let allUsers = [];
-        let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
+        document.addEventListener('click', function enableSound() {
+            document.getElementById('alertSound').play().catch(() => {});
+            document.removeEventListener('click', enableSound);
+        });
 
         function saveTransactions() {
             const userId = auth.currentUser.uid;
@@ -688,7 +693,8 @@
             const userId = auth.currentUser.uid;
             database.ref('transactions/' + userId).once('value', function(snapshot) {
                 if (snapshot.val()) {
-                    transactions = snapshot.val();
+                    const data = snapshot.val();
+                    transactions = Array.isArray(data) ? data : Object.values(data);
                     updateDescriptionList();
                     updateFilteredView();
                     calculateBalances();
