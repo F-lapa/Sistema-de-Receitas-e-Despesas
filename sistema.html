@@ -1314,7 +1314,6 @@ function markAsPaid() {
 
 function snoozeReminder() {
     closeReminderAlertModal();
-    setTimeout(checkReminders, 24 * 60 * 60 * 1000); // Recheck reminders in 24 hours
 }
 
 function addTransactionFromReminder(reminder) {
@@ -1387,21 +1386,6 @@ function loadTheme() {
         document.documentElement.style.setProperty('--input-border-color', savedTheme);
     }
 }
-
-// Listener to handle paid reminders
-window.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'paymentReminderPaid') {
-        const reminderId = event.data.reminderId;
-        const reminderIndex = paymentReminders.findIndex(r => r.id === reminderId);
-        if (reminderIndex > -1) {
-            paymentReminders[reminderIndex].paid = true;
-            paymentReminders[reminderIndex].lastPaidDate = getCurrentDate();
-            savePaymentReminders();
-            checkReminders();
-        }
-    }
-});
-
-    </script>
+</script>
 </body>
 </html>
