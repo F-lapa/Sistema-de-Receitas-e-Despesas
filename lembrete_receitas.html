@@ -1,0 +1,489 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lembretes de Receitas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --primary-color: #3498db;
+            --button-color: #3498db;
+            --input-border-color: #3498db;
+            --negative-color: #e74c3c;
+            --positive-color: #2ecc71;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+            background-color: #34495e;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #bdc3c7;
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid var(--input-border-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            border: 2px solid var(--button-color);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--button-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: darken(var(--button-color), 10%);
+            transform: scale(1.05);
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            background-color: #34495e;
+        }
+
+        th {
+            background-color: var(--background-color);
+            color: #bdc3c7;
+        }
+
+        tbody tr {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        tbody tr:hover {
+            background-color: #3b4b5e;
+        }
+
+        .fa-trash-alt, .fa-edit, .fa-check-circle {
+            cursor: pointer;
+        }
+
+        .fa-edit {
+            color: #3498db;
+            margin-right: 10px;
+        }
+
+        .fa-trash-alt {
+            color: red;
+        }
+
+        .fa-check-circle {
+            color: green;
+            margin-right: 10px;
+        }
+
+        .totals {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .totals p {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: var(--text-color);
+        }
+
+        .total-pendente {
+            background-color: var(--negative-color);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.4);
+        }
+
+        .total-recebido {
+            background-color: var(--positive-color);
+            box-shadow: 0 4px 8px rgba(46, 204, 113, 0.4);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background-color: #34495e;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            animation: slideIn 0.3s;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        @keyframes slideIn {
+            from {transform: translateY(-50px);}
+            to {transform: translateY(0);}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lembretes de Receitas</h1>
+        <div class="form-group">
+            <label for="reminderDay">Dia do Mês:</label>
+            <input type="number" id="reminderDay" class="highlight" min="1" max="31">
+        </div>
+        <div class="form-group">
+            <label for="reminderDescription">Descrição:</label>
+            <input type="text" id="reminderDescription" class="highlight">
+        </div>
+        <div class="form-group">
+            <label for="reminderAmount">Valor (R$):</label>
+            <input type="number" id="reminderAmount" class="highlight" step="0.01" min="0">
+        </div>
+        <button onclick="addReminder()">Adicionar Lembrete</button>
+
+        <table id="remindersTable">
+            <thead>
+                <tr>
+                    <th>Dia</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Reminders will be added here -->
+            </tbody>
+        </table>
+
+        <div class="totals">
+            <p id="totalPendente" class="total-pendente">Total Pendente: R$ 0,00</p>
+            <p id="totalRecebido" class="total-recebido">Total Recebido: R$ 0,00</p>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Editar Lembrete</h2>
+            <div class="form-group">
+                <label for="editReminderDay">Dia do Mês:</label>
+                <input type="number" id="editReminderDay" min="1" max="31">
+            </div>
+            <div class="form-group">
+                <label for="editReminderDescription">Descrição:</label>
+                <input type="text" id="editReminderDescription">
+            </div>
+            <div class="form-group">
+                <label for="editReminderAmount">Valor (R$):</label>
+                <input type="number" id="editReminderAmount" step="0.01" min="0">
+            </div>
+            <button onclick="saveReminder()">Salvar Alterações</button>
+        </div>
+    </div>
+
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeConfirmationModal()">&times;</span>
+            <h2>Confirmar Recebimento</h2>
+            <p>Você tem certeza que deseja marcar este lembrete como "Recebido"?</p>
+            <button onclick="confirmRecebimento()">Confirmar</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+            authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+            databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+            projectId: "sistema-de-receitas-e-despesas",
+            storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+            messagingSenderId: "252102478972",
+            appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+            measurementId: "G-K2HCS7WNZV"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                const userId = user.uid;
+                loadReceitasReminders();
+                loadTheme();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        let receitasReminders = [];
+        let currentEditId = null;
+        let currentConfirmationId = null;
+
+        function addReminder() {
+            const day = document.getElementById('reminderDay').value;
+            const description = document.getElementById('reminderDescription').value;
+            const amount = parseFloat(document.getElementById('reminderAmount').value);
+
+            const reminder = { id: generateReminderId(), day, description, amount, received: false, lastReceivedDate: '' };
+            receitasReminders.push(reminder);
+
+            saveReceitasReminders();
+            updateReceitasRemindersTable();
+
+            document.getElementById('reminderDay').value = '';
+            document.getElementById('reminderDescription').value = '';
+            document.getElementById('reminderAmount').value = '';
+        }
+
+        function generateReminderId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function updateReceitasRemindersTable() {
+            const tbody = document.getElementById('remindersTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+
+            let totalPendente = 0;
+            let totalRecebido = 0;
+
+            receitasReminders.forEach(reminder => {
+                const row = tbody.insertRow();
+                const cellDay = row.insertCell(0);
+                const cellDescription = row.insertCell(1);
+                const cellAmount = row.insertCell(2);
+                const cellStatus = row.insertCell(3);
+                const cellAction = row.insertCell(4);
+
+                cellDay.innerText = reminder.day;
+                cellDescription.innerText = reminder.description;
+                cellAmount.innerText = `R$ ${reminder.amount.toFixed(2)}`;
+                cellStatus.innerText = reminder.received ? "Recebido" : "Pendente";
+
+                if (reminder.received) {
+                    totalRecebido += reminder.amount;
+                } else {
+                    totalPendente += reminder.amount;
+                }
+
+                cellAction.innerHTML = `
+                    <i class="fas fa-check-circle" onclick="openConfirmationModal('${reminder.id}')" ${reminder.received ? 'style="display:none;"' : ''}></i>
+                    <i class="fas fa-edit" onclick="editReminder('${reminder.id}')"></i>
+                    <i class="fas fa-trash-alt" onclick="removeReminder('${reminder.id}')"></i>`;
+            });
+
+            document.getElementById('totalPendente').innerText = `Total Pendente: R$ ${totalPendente.toFixed(2)}`;
+            document.getElementById('totalRecebido').innerText = `Total Recebido: R$ ${totalRecebido.toFixed(2)}`;
+        }
+
+        function removeReminder(reminderId) {
+            if (confirm('Tem certeza que deseja remover este lembrete?')) {
+                receitasReminders = receitasReminders.filter(reminder => reminder.id !== reminderId);
+                saveReceitasReminders();
+                updateReceitasRemindersTable();
+            }
+        }
+
+        function editReminder(reminderId) {
+            const reminder = receitasReminders.find(r => r.id === reminderId);
+            document.getElementById('editReminderDay').value = reminder.day;
+            document.getElementById('editReminderDescription').value = reminder.description;
+            document.getElementById('editReminderAmount').value = reminder.amount;
+            currentEditId = reminderId;
+            openModal();
+        }
+
+        function openModal() {
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveReminder() {
+            const day = document.getElementById('editReminderDay').value;
+            const description = document.getElementById('editReminderDescription').value;
+            const amount = parseFloat(document.getElementById('editReminderAmount').value);
+
+            receitasReminders = receitasReminders.map(reminder => {
+                if (reminder.id === currentEditId) {
+                    return { ...reminder, day, description, amount };
+                }
+                return reminder;
+            });
+
+            saveReceitasReminders();
+            updateReceitasRemindersTable();
+            closeModal();
+        }
+
+        function openConfirmationModal(reminderId) {
+            currentConfirmationId = reminderId;
+            document.getElementById('confirmationModal').style.display = 'block';
+        }
+
+        function closeConfirmationModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+
+        function confirmRecebimento() {
+            receitasReminders = receitasReminders.map(reminder => {
+                if (reminder.id === currentConfirmationId) {
+                    addReceita(reminder);
+                    return { ...reminder, received: true, lastReceivedDate: getCurrentDate() };
+                }
+                return reminder;
+            });
+
+            saveReceitasReminders();
+            updateReceitasRemindersTable();
+            closeConfirmationModal();
+        }
+
+        function addReceita(reminder) {
+            const userId = auth.currentUser.uid;
+            const newReceitaRef = database.ref('transactions/' + userId).push();
+            newReceitaRef.set({
+                date: getCurrentDate(),
+                description: reminder.description,
+                amount: reminder.amount,
+                type: 'receita'
+            });
+        }
+
+        function saveReceitasReminders() {
+            const userId = auth.currentUser.uid;
+            database.ref('receitasReminders/' + userId).set(receitasReminders);
+        }
+
+        function loadReceitasReminders() {
+            const userId = auth.currentUser.uid;
+            database.ref('receitasReminders/' + userId).once('value').then((snapshot) => {
+                receitasReminders = snapshot.val() || [];
+                updateReceitasRemindersTable();
+            });
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.style.setProperty('--button-color', savedTheme);
+                document.documentElement.style.setProperty('--input-border-color', savedTheme);
+            }
+        }
+
+        function getCurrentDate() {
+            const now = new Date();
+            const offset = -3;
+            const brasiliaTime = new Date(now.getTime() + offset * 3600 * 1000);
+            return brasiliaTime.toISOString().split('T')[0];
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            const confirmationModal = document.getElementById('confirmationModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+            if (event.target === confirmationModal) {
+                closeConfirmationModal();
+            }
+        }
+    </script>
+</body>
+</html>
