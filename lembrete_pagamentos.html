@@ -14,7 +14,10 @@
             --primary-color: #3498db;
             --button-color: #3498db;
             --input-border-color: #3498db;
+            --paid-color: #2ecc71;
+            --pending-color: #e74c3c;
         }
+
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--background-color);
@@ -25,7 +28,9 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            flex-direction: column;
         }
+
         .container {
             width: 90%;
             max-width: 600px;
@@ -33,7 +38,9 @@
             background-color: #34495e;
             border-radius: 10px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
         }
+
         h1 {
             text-align: center;
             color: var(--text-color);
@@ -41,15 +48,18 @@
             font-size: 1.8em;
             font-weight: 500;
         }
+
         .form-group {
             margin-bottom: 15px;
         }
+
         label {
             display: block;
             margin-bottom: 6px;
             font-weight: bold;
             color: #bdc3c7;
         }
+
         input[type="text"], input[type="number"], select {
             width: 100%;
             padding: 10px;
@@ -62,10 +72,12 @@
             color: var(--text-color);
             transition: all 0.3s ease;
         }
+
         input:focus, select:focus {
             border: 2px solid var(--button-color);
             box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
+
         button {
             width: 100%;
             padding: 10px;
@@ -78,47 +90,81 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
             margin-top: 10px;
         }
+
         button:hover {
             background-color: darken(var(--button-color), 10%);
             transform: scale(1.05);
         }
+
         table {
             width: 100%;
             margin-top: 20px;
             border-collapse: separate;
             border-spacing: 0 8px;
         }
+
         th, td {
             padding: 10px;
             text-align: left;
             background-color: #34495e;
         }
+
         th {
             background-color: var(--background-color);
             color: #bdc3c7;
         }
+
         tbody tr {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: 6px;
             overflow: hidden;
         }
+
         tbody tr:hover {
             background-color: #3b4b5e;
         }
+
         .fa-trash-alt, .fa-edit, .fa-check-circle {
             cursor: pointer;
         }
+
         .fa-edit {
             color: #3498db;
             margin-right: 10px;
         }
+
         .fa-trash-alt {
             color: red;
         }
+
         .fa-check-circle {
             color: green;
             margin-right: 10px;
         }
+
+        .totals-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .total-box {
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .total-pending {
+            background-color: var(--pending-color);
+        }
+
+        .total-paid {
+            background-color: var(--paid-color);
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -131,6 +177,7 @@
             background-color: rgba(0, 0, 0, 0.5);
             animation: fadeIn 0.3s;
         }
+
         .modal-content {
             background-color: #34495e;
             margin: 15% auto;
@@ -141,22 +188,26 @@
             border-radius: 10px;
             animation: slideIn 0.3s;
         }
+
         .close {
             color: #aaa;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
+
         .close:hover,
         .close:focus {
             color: #000;
             text-decoration: none;
             cursor: pointer;
         }
+
         @keyframes fadeIn {
             from {opacity: 0;}
             to {opacity: 1;}
         }
+
         @keyframes slideIn {
             from {transform: translateY(-50px);}
             to {transform: translateY(0);}
@@ -196,6 +247,15 @@
         </table>
     </div>
 
+    <div class="totals-container">
+        <div class="total-box total-pending">
+            Total em Aberto: <span id="totalEmAberto">R$ 0,00</span>
+        </div>
+        <div class="total-box total-paid">
+            Total Pago: <span id="totalPago">R$ 0,00</span>
+        </div>
+    </div>
+
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
@@ -231,13 +291,13 @@
     <script>
         var firebaseConfig = {
             apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
-            authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
-            databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
-            projectId: "sistema-de-receitas-e-despesas",
-            storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-            messagingSenderId: "252102478972",
-            appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
-            measurementId: "G-K2HCS7WNZV"
+  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+  projectId: "sistema-de-receitas-e-despesas",
+  storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
+  messagingSenderId: "252102478972",
+  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+  measurementId: "G-K2HCS7WNZV"
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -247,7 +307,7 @@
             if (user) {
                 const userId = user.uid;
                 loadPaymentReminders();
-                loadTheme(); // Carregar o tema salvo
+                loadTheme();
             } else {
                 window.location.href = 'index.html';
             }
@@ -267,6 +327,7 @@
 
             savePaymentReminders();
             updateRemindersTable();
+            calculateTotals();
 
             document.getElementById('reminderDay').value = '';
             document.getElementById('reminderDescription').value = '';
@@ -291,13 +352,31 @@
 
                 cellDay.innerText = reminder.day;
                 cellDescription.innerText = reminder.description;
-                cellAmount.innerText = reminder.amount.toFixed(2);
+                cellAmount.innerText = `R$ ${reminder.amount.toFixed(2)}`;
                 cellStatus.innerText = reminder.paid ? "Já foi pago" : "Em Aberto";
                 cellAction.innerHTML = `
                     <i class="fas fa-check-circle" onclick="openConfirmationModal('${reminder.id}')" ${reminder.paid ? 'style="display:none;"' : ''}></i>
                     <i class="fas fa-edit" onclick="editReminder('${reminder.id}')"></i>
                     <i class="fas fa-trash-alt" onclick="removeReminder('${reminder.id}')"></i>`;
             });
+
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            let totalEmAberto = 0;
+            let totalPago = 0;
+
+            paymentReminders.forEach(reminder => {
+                if (reminder.paid) {
+                    totalPago += reminder.amount;
+                } else {
+                    totalEmAberto += reminder.amount;
+                }
+            });
+
+            document.getElementById('totalEmAberto').innerText = totalEmAberto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('totalPago').innerText = totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
         function removeReminder(reminderId) {
