@@ -1516,6 +1516,51 @@ function normalizeText(text) {
             // Formatando como moeda brasileira
             return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
         }
+        auth.onAuthStateChanged(user => {
+    if (user) {
+        const userId = user.uid;
+        loadTheme(userId);
+        database.ref('users/' + userId).once('value').then((snapshot) => {
+            const userData = snapshot.val();
+            const userName = userData ? userData.name : "Usuário";
+            localStorage.setItem('username', userName);
+            document.getElementById('userGreeting').innerHTML = '<span>Olá, <strong>' + userName + '</strong>!</span>';
+            loadTransactions();
+            checkAdmin(user.email); // Verifica se o usuário é administrador
+            loadPaymentReminders();
+        });
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+
+function checkAdmin(email) {
+    const adminIcon = document.querySelector('.admin-icon');
+    if (email === 'fernandolapa1987@gmail.com') {
+        adminIcon.style.display = 'inline-block'; // Exibe o ícone do administrador
+    } else {
+        adminIcon.style.display = 'none'; // Oculta o ícone do administrador
+    }
+}
+
+function openAdminModal() {
+    const user = auth.currentUser;
+    if (user && user.email === 'fernandolapa1987@gmail.com') {
+        const modal = document.getElementById('adminModal');
+        modal.style.display = 'block';
+        modal.style.animation = 'fadein 0.5s';
+    } else {
+        alert('Acesso restrito ao administrador.');
+    }
+}
+
+function closeAdminModal() {
+    const modal = document.getElementById('adminModal');
+    modal.style.animation = 'fadeout 0.5s';
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 500);
+}
     </script>
 </body>
 </html>
