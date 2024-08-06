@@ -8,8 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-      
-        :root {
+      :root {
             --background-color: #2c3e50;
             --text-color: #ecf0f1;
             --primary-color: #3498db;
@@ -105,7 +104,7 @@
         }
 
         .sidebar .icon-button {
-            display: none; /* Escondido por padrão */
+            display: none;
             width: 48px;
             height: 48px;
             background-color: var(--button-color);
@@ -127,6 +126,21 @@
         .sidebar .icon-button:hover {
             background-color: #2980b9;
             transform: scale(1.05);
+        }
+
+        .sidebar .icon-button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .sidebar .icon-button-container span {
+            margin-top: 5px;
+            font-size: 12px;
+            color: var(--text-color);
+            text-align: center;
         }
 
         .sidebar .theme-selector {
@@ -432,8 +446,21 @@
                 padding: 10px;
             }
 
-            .sidebar .buttons .button-text {
+            .sidebar .buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .sidebar .button-text {
                 display: none; /* Esconde os botões de texto */
+            }
+
+            .sidebar .icon-button-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 70px;
             }
 
             .sidebar .icon-button {
@@ -472,7 +499,7 @@
 
         /* Estilos para desktop */
         @media (min-width: 769px) {
-            .sidebar .icon-button {
+            .sidebar .icon-button-container {
                 display: none; /* Esconde os ícones em telas maiores */
             }
 
@@ -533,13 +560,34 @@
         </div>
         <div class="buttons">
             <!-- Botões com Ícones (Mobile) -->
-            <button class="icon-button" onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i></button>
-            <button class="icon-button" onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i></button>
-            <button class="icon-button" onclick="openSpecificTransactionsModal()"><i class="fas fa-search-dollar"></i></button>
-            <button class="icon-button" onclick="openPaymentRemindersPage()"><i class="fas fa-bell"></i></button>
-            <button class="icon-button" onclick="openReminderReceitasPage()"><i class="fas fa-bell"></i></button>
-            <button class="icon-button" onclick="openPerformanceFromDateModal()"><i class="fas fa-chart-line"></i></button>
-            <button class="icon-button" onclick="openCompoundInterestModal()"><i class="fas fa-calculator"></i></button>
+            <div class="icon-button-container">
+                <button class="icon-button" onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i></button>
+                <span>Filtrar</span>
+            </div>
+            <div class="icon-button-container">
+                <button class="icon-button" onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i></button>
+                <span>Limite</span>
+            </div>
+            <div class="icon-button-container">
+                <button class="icon-button" onclick="openSpecificTransactionsModal()"><i class="fas fa-search-dollar"></i></button>
+                <span>Transações</span>
+            </div>
+            <div class="icon-button-container">
+                <button class="icon-button" onclick="openPaymentRemindersPage()"><i class="fas fa-bell"></i></button>
+                <span>Lembretes</span>
+            </div>
+            <div class="icon-button-container">
+                <button class="icon-button" onclick="openReminderReceitasPage()"><i class="fas fa-bell"></i></button>
+                <span>Receitas</span>
+            </div>
+            <div class="icon-button-container">
+                <button class="icon-button" onclick="openPerformanceFromDateModal()"><i class="fas fa-chart-line"></i></button>
+                <span>Desempenho</span>
+            </div>
+            <div class="icon-button-container">
+                <button class="icon-button" onclick="openCompoundInterestModal()"><i class="fas fa-calculator"></i></button>
+                <span>Juros</span>
+            </div>
             <!-- Botões com Texto (Desktop) -->
             <button class="button-text" onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i> Filtrar Período</button>
             <button class="button-text" onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Definir Limite de Gastos</button>
@@ -787,7 +835,7 @@
             </div>
         </div> 
     </div>
-
+        
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
