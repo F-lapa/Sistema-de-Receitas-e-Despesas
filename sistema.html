@@ -439,11 +439,11 @@
                 gap: 10px;
             }
 
-            .sidebar button {
+            .sidebar button:not(.icon-button) {
                 display: none; /* Esconde os botões padrão */
             }
 
-            .sidebar button.icon-button {
+            .sidebar .icon-button {
                 display: flex; /* Mostra os botões com ícones */
                 flex: none;
                 width: auto;
@@ -543,6 +543,14 @@
             <button class="icon-button" onclick="openReminderReceitasPage()"><i class="fas fa-bell"></i></button>
             <button class="icon-button" onclick="openPerformanceFromDateModal()"><i class="fas fa-chart-line"></i></button>
             <button class="icon-button" onclick="openCompoundInterestModal()"><i class="fas fa-calculator"></i></button>
+            <!-- Botões normais -->
+            <button onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i> Filtrar Período</button>
+            <button onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Definir Limite de Gastos</button>
+            <button onclick="openSpecificTransactionsModal()"><i class="fas fa-search-dollar"></i> Transações Detalhadas</button>
+            <button onclick="openPaymentRemindersPage()"><i class="fas fa-bell"></i> Lembrete de Pagamentos</button>
+            <button onclick="openReminderReceitasPage()"><i class="fas fa-bell"></i> Lembrete de Receitas</button>
+            <button onclick="openPerformanceFromDateModal()"><i class="fas fa-chart-line"></i> Acompanhar Desempenho</button>
+            <button onclick="openCompoundInterestModal()">Calculadora de Juros Compostos</button>
         </div>
         <div class="theme-selector">
             <label for="theme">Selecionar Tema:</label>
@@ -781,7 +789,7 @@
                 <button>Não foi Pago</button>
             </div>
         </div> 
-    </div> 
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
