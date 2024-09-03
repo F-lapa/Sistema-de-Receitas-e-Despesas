@@ -1425,8 +1425,16 @@ function calculateCompoundInterest() {
         amount = (amount + monthlyContribution) * (1 + monthlyRate);
     }
 
-    const formattedAmount = formatCurrency(amount.toFixed(2));
+    // Formatar o resultado final como moeda
+    const formattedAmount = formatCurrency(amount);
+
     document.getElementById('compoundInterestResult').innerHTML = `Montante Final: <span class="highlight-amount">${formattedAmount}</span>`;
+}
+
+// Função para formatar valores de moeda
+function formatCurrency(value) {
+    // Formatando como moeda brasileira
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
 // Função para abrir o seletor de temas
