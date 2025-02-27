@@ -314,6 +314,14 @@
             margin: 10px auto;
         }
 
+        .modal-content canvas {
+            max-width: 100%;
+            margin-top: 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+        }
+
         .close {
             float: right;
             font-size: 2rem;
@@ -676,7 +684,7 @@
                 if (themeColor) {
                     document.documentElement.style.setProperty('--button-color', themeColor);
                     document.documentElement.style.setProperty('--input-border-color', themeColor);
-                    document.getElementById('colorPicker').value = themeColor; // Atualiza o seletor
+                    document.getElementById('colorPicker').value = themeColor;
                 }
             }).catch(error => {
                 console.error('Erro ao carregar tema:', error);
@@ -748,7 +756,7 @@
         }
 
         function validateAmount(input) {
-            let value = input.value.replace(/[^0-9,]/g, ''); // Remove tudo exceto números e vírgula
+            let value = input.value.replace(/[^0-9,]/g, '');
             const parts = value.split(',');
             if (parts.length > 2) {
                 value = parts[0] + ',' + parts.slice(1).join('');
@@ -1026,69 +1034,95 @@
                 return;
             }
 
+            // Filtrar transações pelo período e tipo
             const specificTransactions = transactions.filter(transaction => 
                 transaction.date >= startDate && transaction.date <= endDate && transaction.type === specificType
             );
 
+            // Consolidar transações por descrição
             const groupedTransactions = {};
             specificTransactions.forEach(transaction => {
-                const normalizedDescription = normalizeText(transaction.description);
-                if (groupedTransactions[normalizedDescription]) {
-                    groupedTransactions[normalizedDescription] += transaction.amount;
-                } else {
-                    groupedTransactions[normalizedDescription] = transaction.amount;
+                const desc = transaction.description;
+                if (!groupedTransactions[desc]) {
+                    groupedTransactions[desc] = { receita: 0, despesa: 0 };
+                }
+                if (transaction.type === 'receita') {
+                    groupedTransactions[desc].receita += transaction.amount;
+                } else if (transaction.type === 'despesa') {
+                    groupedTransactions[desc].despesa += transaction.amount;
                 }
             });
 
-            const descriptions = Object.keys(groupedTransactions);
-            const data = Object.values(groupedTransactions);
+            // Preparar dados para o gráfico
+            const labels = Object.keys(groupedTransactions);
+            const data = labels.map(desc => specificType === 'receita' ? groupedTransactions[desc].receita : groupedTransactions[desc].despesa);
 
+            // Cores gradientes modernas
+            const gradientColors = labels.map((_, i) => {
+                const ctx = document.getElementById('specificTransactionsChart').getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, specificType === 'receita' ? 'rgba(78, 205, 196, 0.8)' : 'rgba(255, 107, 107, 0.8)');
+                gradient.addColorStop(1, specificType === 'receita' ? 'rgba(78, 205, 196, 0.4)' : 'rgba(255, 107, 107, 0.4)');
+                return gradient;
+            });
+
+            // Destruir gráfico existente, se houver
             if (specificTransactionsChart && specificTransactionsChart instanceof Chart) {
                 specificTransactionsChart.destroy();
             }
 
+            // Criar o gráfico moderno
             const ctx = document.getElementById('specificTransactionsChart').getContext('2d');
             specificTransactionsChart = new Chart(ctx, {
-                type: 'pie',
+                type: 'doughnut', // Usando doughnut para um visual mais moderno
                 data: {
-                    labels: descriptions,
+                    labels: labels,
                     datasets: [{
-                        label: 'Transações Específicas',
+                        label: specificType === 'receita' ? 'Receitas' : 'Despesas',
                         data: data,
-                        backgroundColor: descriptions.map(() => `#${Math.floor(Math.random()*16777215).toString(16)}`),
+                        backgroundColor: gradientColors,
                         borderColor: '#fff',
                         borderWidth: 2,
-                        hoverBorderWidth: 3,
-                        hoverBorderColor: '#fff'
+                        hoverOffset: 20 // Efeito de destaque ao passar o mouse
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%', // Faz o doughnut parecer mais fino e moderno
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    },
                     plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    let total = tooltipItem.dataset.data.reduce((sum, value) => sum + value, 0);
-                                    let currentValue = tooltipItem.raw;
-                                    let percentage = ((currentValue / total) * 100).toFixed(2);
-                                    return `${tooltipItem.label}: R$ ${currentValue.toFixed(2)} (${percentage}%)`;
-                                }
-                            },
-                            backgroundColor: 'rgba(44, 62, 80, 0.8)',
-                            titleFont: { size: 16, weight: 'bold' },
-                            bodyFont: { size: 14 },
-                            footerFont: { size: 14 },
-                            displayColors: false,
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            borderColor: '#3498db',
-                            borderWidth: 1
-                        },
                         legend: {
+                            position: 'bottom',
                             labels: {
-                                color: '#ecf0f1',
+                                color: 'rgba(255, 255, 255, 0.9)',
                                 font: {
                                     size: 14,
-                                    weight: 'bold'
+                                    weight: '600'
+                                },
+                                padding: 20,
+                                boxWidth: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(26, 26, 46, 0.9)',
+                            titleFont: { size: 16, weight: 'bold' },
+                            bodyFont: { size: 14 },
+                            borderColor: 'var(--input-border-color)',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const total = tooltipItem.dataset.data.reduce((sum, val) => sum + val, 0);
+                                    const value = tooltipItem.raw;
+                                    const percentage = ((value / total) * 100).toFixed(2);
+                                    return `${tooltipItem.label}: ${formatCurrency(value)} (${percentage}%)`;
                                 }
                             }
                         }
