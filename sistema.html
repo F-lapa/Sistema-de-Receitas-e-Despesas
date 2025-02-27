@@ -422,7 +422,7 @@
         </div>
         <div class="form-group">
             <label for="amount">Valor (R$):</label>
-            <input type="text" id="amount" name="amount_field" placeholder="0,00" value="0,00" class="highlight" autocomplete="off" oninput="validateAmount(this)">
+            <input type="text" id="amount" name="amount_field" placeholder="0,00" value="0,00" class="highlight" inputmode="decimal" autocomplete="off" onclick="this.value = ''" oninput="validateAmount(this)">
         </div>
         <div class="form-group">
             <label for="type">Tipo:</label>
@@ -764,7 +764,7 @@
             if (parts[1] && parts[1].length > 2) {
                 value = parts[0] + ',' + parts[1].slice(0, 2);
             }
-            input.value = value || '0,00';
+            input.value = value || '';
         }
 
         function addTransaction() {
@@ -1029,17 +1029,28 @@
             const endDate = document.getElementById('specificEndDate').value;
             const specificType = document.getElementById('specificType').value;
 
+            console.log('Gerando relatório...');
+            console.log('Start Date:', startDate);
+            console.log('End Date:', endDate);
+            console.log('Type:', specificType);
+            console.log('Transactions:', transactions);
+
             if (!startDate || !endDate || !specificType) {
                 alert('Por favor, preencha todos os campos corretamente.');
                 return;
             }
 
-            // Filtrar transações pelo período e tipo
             const specificTransactions = transactions.filter(transaction => 
                 transaction.date >= startDate && transaction.date <= endDate && transaction.type === specificType
             );
 
-            // Consolidar transações por descrição
+            console.log('Filtered Transactions:', specificTransactions);
+
+            if (specificTransactions.length === 0) {
+                alert('Nenhuma transação encontrada para o período e tipo selecionados.');
+                return;
+            }
+
             const groupedTransactions = {};
             specificTransactions.forEach(transaction => {
                 const desc = transaction.description;
@@ -1053,11 +1064,17 @@
                 }
             });
 
-            // Preparar dados para o gráfico
             const labels = Object.keys(groupedTransactions);
             const data = labels.map(desc => specificType === 'receita' ? groupedTransactions[desc].receita : groupedTransactions[desc].despesa);
 
-            // Cores gradientes modernas
+            console.log('Labels:', labels);
+            console.log('Data:', data);
+
+            if (data.every(val => val === 0)) {
+                alert('Nenhum valor encontrado para o tipo selecionado.');
+                return;
+            }
+
             const gradientColors = labels.map((_, i) => {
                 const ctx = document.getElementById('specificTransactionsChart').getContext('2d');
                 const gradient = ctx.createLinearGradient(0, 0, 0, 400);
@@ -1066,15 +1083,19 @@
                 return gradient;
             });
 
-            // Destruir gráfico existente, se houver
             if (specificTransactionsChart && specificTransactionsChart instanceof Chart) {
                 specificTransactionsChart.destroy();
             }
 
-            // Criar o gráfico moderno
             const ctx = document.getElementById('specificTransactionsChart').getContext('2d');
+            if (!ctx) {
+                console.error('Erro: Não foi possível obter o contexto do canvas.');
+                alert('Erro ao gerar o gráfico. Verifique o console para mais detalhes.');
+                return;
+            }
+
             specificTransactionsChart = new Chart(ctx, {
-                type: 'doughnut', // Usando doughnut para um visual mais moderno
+                type: 'doughnut',
                 data: {
                     labels: labels,
                     datasets: [{
@@ -1083,13 +1104,13 @@
                         backgroundColor: gradientColors,
                         borderColor: '#fff',
                         borderWidth: 2,
-                        hoverOffset: 20 // Efeito de destaque ao passar o mouse
+                        hoverOffset: 20
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '60%', // Faz o doughnut parecer mais fino e moderno
+                    cutout: '60%',
                     animation: {
                         animateScale: true,
                         animateRotate: true,
@@ -1129,6 +1150,7 @@
                     }
                 }
             });
+            console.log('Gráfico gerado com sucesso.');
         }
 
         function normalizeText(text) {
