@@ -809,29 +809,37 @@
             });
         }
 
+        function formatDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
         function updateFilteredView() {
             const selectedDate = document.getElementById('date').value;
             const tbody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
             tbody.innerHTML = '';
 
-            transactions.forEach(transaction => {
-                if (transaction.date === selectedDate) {
-                    const row = tbody.insertRow();
-                    const cellDate = row.insertCell(0);
-                    const cellDescription = row.insertCell(1);
-                    const cellAmount = row.insertCell(2);
-                    const cellType = row.insertCell(3);
-                    const cellAction = row.insertCell(4);
+            // Ordenar transações por data (crescente)
+            const filteredTransactions = transactions
+                .filter(transaction => transaction.date === selectedDate)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-                    cellDate.innerText = transaction.date;
-                    cellDescription.innerHTML = `<div class="transaction-description">
-                                                    <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'var(--positive-color)' : 'var(--negative-color)'};"></i>
-                                                    ${transaction.description}
-                                                </div>`;
-                    cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
-                    cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-                    cellAction.innerHTML = `<i class="fas fa-trash-alt remove-icon" onclick="confirmRemoveTransaction('${transaction.id}')" style="cursor:pointer;"></i>`;
-                }
+            filteredTransactions.forEach(transaction => {
+                const row = tbody.insertRow();
+                const cellDate = row.insertCell(0);
+                const cellDescription = row.insertCell(1);
+                const cellAmount = row.insertCell(2);
+                const cellType = row.insertCell(3);
+                const cellAction = row.insertCell(4);
+
+                cellDate.innerText = formatDate(transaction.date);
+                cellDescription.innerHTML = `<div class="transaction-description">
+                                                <i class="transaction-icon ${transaction.type === 'receita' ? 'fas fa-arrow-circle-up' : 'fas fa-arrow-circle-down'}" style="color: ${transaction.type === 'receita' ? 'var(--positive-color)' : 'var(--negative-color)'};"></i>
+                                                ${transaction.description}
+                                            </div>`;
+                cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
+                cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
+                cellAction.innerHTML = `<i class="fas fa-trash-alt remove-icon" onclick="confirmRemoveTransaction('${transaction.id}')" style="cursor:pointer;"></i>`;
             });
 
             calculateBalances();
@@ -1029,25 +1037,29 @@
             const endDate = document.getElementById('specificEndDate').value;
             const specificType = document.getElementById('specificType').value;
 
-            console.log('Gerando relatório...');
+            console.log('Iniciando geração do relatório...');
             console.log('Start Date:', startDate);
             console.log('End Date:', endDate);
             console.log('Type:', specificType);
-            console.log('Transactions:', transactions);
+            console.log('Todas as transações:', transactions);
 
             if (!startDate || !endDate || !specificType) {
                 alert('Por favor, preencha todos os campos corretamente.');
+                console.log('Campos obrigatórios não preenchidos.');
                 return;
             }
 
-            const specificTransactions = transactions.filter(transaction => 
-                transaction.date >= startDate && transaction.date <= endDate && transaction.type === specificType
-            );
+            const specificTransactions = transactions.filter(transaction => {
+                const isWithinDateRange = transaction.date >= startDate && transaction.date <= endDate;
+                const isCorrectType = transaction.type === specificType;
+                return isWithinDateRange && isCorrectType;
+            });
 
-            console.log('Filtered Transactions:', specificTransactions);
+            console.log('Transações filtradas:', specificTransactions);
 
             if (specificTransactions.length === 0) {
                 alert('Nenhuma transação encontrada para o período e tipo selecionados.');
+                console.log('Nenhuma transação encontrada.');
                 return;
             }
 
@@ -1071,12 +1083,27 @@
             console.log('Data:', data);
 
             if (data.every(val => val === 0)) {
-                alert('Nenhum valor encontrado para o tipo selecionado.');
+                alert('Nenhum valor encontrado para o tipo selecionado no período especificado.');
+                console.log('Todos os valores são zero.');
+                return;
+            }
+
+            // Verificar se o canvas existe e está acessível
+            const canvas = document.getElementById('specificTransactionsChart');
+            if (!canvas) {
+                console.error('Erro: Elemento canvas não encontrado.');
+                alert('Erro interno: Canvas não encontrado.');
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error('Erro: Não foi possível obter o contexto 2D do canvas.');
+                alert('Erro interno: Não foi possível inicializar o gráfico.');
                 return;
             }
 
             const gradientColors = labels.map((_, i) => {
-                const ctx = document.getElementById('specificTransactionsChart').getContext('2d');
                 const gradient = ctx.createLinearGradient(0, 0, 0, 400);
                 gradient.addColorStop(0, specificType === 'receita' ? 'rgba(78, 205, 196, 0.8)' : 'rgba(255, 107, 107, 0.8)');
                 gradient.addColorStop(1, specificType === 'receita' ? 'rgba(78, 205, 196, 0.4)' : 'rgba(255, 107, 107, 0.4)');
@@ -1085,72 +1112,71 @@
 
             if (specificTransactionsChart && specificTransactionsChart instanceof Chart) {
                 specificTransactionsChart.destroy();
+                console.log('Gráfico anterior destruído.');
             }
 
-            const ctx = document.getElementById('specificTransactionsChart').getContext('2d');
-            if (!ctx) {
-                console.error('Erro: Não foi possível obter o contexto do canvas.');
-                alert('Erro ao gerar o gráfico. Verifique o console para mais detalhes.');
-                return;
-            }
-
-            specificTransactionsChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: specificType === 'receita' ? 'Receitas' : 'Despesas',
-                        data: data,
-                        backgroundColor: gradientColors,
-                        borderColor: '#fff',
-                        borderWidth: 2,
-                        hoverOffset: 20
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '60%',
-                    animation: {
-                        animateScale: true,
-                        animateRotate: true,
-                        duration: 1000,
-                        easing: 'easeOutQuart'
+            try {
+                specificTransactionsChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: specificType === 'receita' ? 'Receitas' : 'Despesas',
+                            data: data,
+                            backgroundColor: gradientColors,
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                            hoverOffset: 20
+                        }]
                     },
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: 'rgba(255, 255, 255, 0.9)',
-                                font: {
-                                    size: 14,
-                                    weight: '600'
-                                },
-                                padding: 20,
-                                boxWidth: 20,
-                                usePointStyle: true
-                            }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true,
+                            duration: 1000,
+                            easing: 'easeOutQuart'
                         },
-                        tooltip: {
-                            backgroundColor: 'rgba(26, 26, 46, 0.9)',
-                            titleFont: { size: 16, weight: 'bold' },
-                            bodyFont: { size: 14 },
-                            borderColor: 'var(--input-border-color)',
-                            borderWidth: 1,
-                            padding: 12,
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    const total = tooltipItem.dataset.data.reduce((sum, val) => sum + val, 0);
-                                    const value = tooltipItem.raw;
-                                    const percentage = ((value / total) * 100).toFixed(2);
-                                    return `${tooltipItem.label}: ${formatCurrency(value)} (${percentage}%)`;
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: {
+                                        size: 14,
+                                        weight: '600'
+                                    },
+                                    padding: 20,
+                                    boxWidth: 20,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(26, 26, 46, 0.9)',
+                                titleFont: { size: 16, weight: 'bold' },
+                                bodyFont: { size: 14 },
+                                borderColor: 'var(--input-border-color)',
+                                borderWidth: 1,
+                                padding: 12,
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        const total = tooltipItem.dataset.data.reduce((sum, val) => sum + val, 0);
+                                        const value = tooltipItem.raw;
+                                        const percentage = ((value / total) * 100).toFixed(2);
+                                        return `${tooltipItem.label}: ${formatCurrency(value)} (${percentage}%)`;
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            });
-            console.log('Gráfico gerado com sucesso.');
+                });
+                console.log('Gráfico gerado com sucesso.');
+            } catch (error) {
+                console.error('Erro ao criar o gráfico:', error);
+                alert('Erro ao gerar o gráfico. Verifique o console para mais detalhes.');
+            }
         }
 
         function normalizeText(text) {
