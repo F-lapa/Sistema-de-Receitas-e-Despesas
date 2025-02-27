@@ -535,7 +535,7 @@
                     </select>
                 </div>
                 <button onclick="generateSpecificTransactionsReport()">Gerar Relatório</button>
-                <canvas id="specificTransactionsChart" style="margin-top: 20px;"></canvas>
+                <canvas id="specificTransactionsChart" height="300"></canvas>
             </div>
         </div>
 
@@ -819,7 +819,6 @@
             const tbody = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
             tbody.innerHTML = '';
 
-            // Ordenar transações por data (crescente)
             const filteredTransactions = transactions
                 .filter(transaction => transaction.date === selectedDate)
                 .sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -1022,6 +1021,11 @@
             const modal = document.getElementById('specificTransactionsModal');
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
+            // Garantir que o canvas esteja visível antes de tentar renderizar
+            setTimeout(() => {
+                const canvas = document.getElementById('specificTransactionsChart');
+                if (canvas) canvas.style.display = 'block';
+            }, 100);
         }
 
         function closeSpecificTransactionsModal() {
@@ -1029,19 +1033,19 @@
             modal.style.animation = 'fadeout 0.5s';
             setTimeout(() => {
                 modal.style.display = 'none';
+                if (specificTransactionsChart) {
+                    specificTransactionsChart.destroy();
+                    specificTransactionsChart = null;
+                }
             }, 500);
         }
 
         function generateSpecificTransactionsReport() {
+            console.log('Iniciando geração do relatório...');
+
             const startDate = document.getElementById('specificStartDate').value;
             const endDate = document.getElementById('specificEndDate').value;
             const specificType = document.getElementById('specificType').value;
-
-            console.log('Iniciando geração do relatório...');
-            console.log('Start Date:', startDate);
-            console.log('End Date:', endDate);
-            console.log('Type:', specificType);
-            console.log('Todas as transações:', transactions);
 
             if (!startDate || !endDate || !specificType) {
                 alert('Por favor, preencha todos os campos corretamente.');
@@ -1049,96 +1053,79 @@
                 return;
             }
 
-            const specificTransactions = transactions.filter(transaction => {
-                const isWithinDateRange = transaction.date >= startDate && transaction.date <= endDate;
-                const isCorrectType = transaction.type === specificType;
-                return isWithinDateRange && isCorrectType;
-            });
+            const filteredTransactions = transactions.filter(t => 
+                t.date >= startDate && t.date <= endDate && t.type === specificType
+            );
 
-            console.log('Transações filtradas:', specificTransactions);
+            console.log('Transações filtradas:', filteredTransactions);
 
-            if (specificTransactions.length === 0) {
+            if (filteredTransactions.length === 0) {
                 alert('Nenhuma transação encontrada para o período e tipo selecionados.');
                 console.log('Nenhuma transação encontrada.');
                 return;
             }
 
-            const groupedTransactions = {};
-            specificTransactions.forEach(transaction => {
-                const desc = transaction.description;
-                if (!groupedTransactions[desc]) {
-                    groupedTransactions[desc] = { receita: 0, despesa: 0 };
+            // Consolidar transações por descrição
+            const groupedData = {};
+            filteredTransactions.forEach(t => {
+                const desc = t.description;
+                if (!groupedData[desc]) {
+                    groupedData[desc] = 0;
                 }
-                if (transaction.type === 'receita') {
-                    groupedTransactions[desc].receita += transaction.amount;
-                } else if (transaction.type === 'despesa') {
-                    groupedTransactions[desc].despesa += transaction.amount;
-                }
+                groupedData[desc] += t.amount;
             });
 
-            const labels = Object.keys(groupedTransactions);
-            const data = labels.map(desc => specificType === 'receita' ? groupedTransactions[desc].receita : groupedTransactions[desc].despesa);
+            const labels = Object.keys(groupedData);
+            const data = labels.map(desc => groupedData[desc]);
 
             console.log('Labels:', labels);
             console.log('Data:', data);
 
-            if (data.every(val => val === 0)) {
-                alert('Nenhum valor encontrado para o tipo selecionado no período especificado.');
-                console.log('Todos os valores são zero.');
-                return;
-            }
-
-            // Verificar se o canvas existe e está acessível
             const canvas = document.getElementById('specificTransactionsChart');
             if (!canvas) {
-                console.error('Erro: Elemento canvas não encontrado.');
+                console.error('Canvas não encontrado.');
                 alert('Erro interno: Canvas não encontrado.');
                 return;
             }
 
             const ctx = canvas.getContext('2d');
             if (!ctx) {
-                console.error('Erro: Não foi possível obter o contexto 2D do canvas.');
-                alert('Erro interno: Não foi possível inicializar o gráfico.');
+                console.error('Não foi possível obter o contexto 2D do canvas.');
+                alert('Erro interno: Falha ao inicializar o gráfico.');
                 return;
             }
 
+            // Limpar gráfico anterior
+            if (specificTransactionsChart) {
+                specificTransactionsChart.destroy();
+                specificTransactionsChart = null;
+            }
+
+            // Criar gradientes para as cores
             const gradientColors = labels.map((_, i) => {
-                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, specificType === 'receita' ? 'rgba(78, 205, 196, 0.8)' : 'rgba(255, 107, 107, 0.8)');
-                gradient.addColorStop(1, specificType === 'receita' ? 'rgba(78, 205, 196, 0.4)' : 'rgba(255, 107, 107, 0.4)');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                gradient.addColorStop(0, specificType === 'receita' ? 'rgba(78, 205, 196, 0.9)' : 'rgba(255, 107, 107, 0.9)');
+                gradient.addColorStop(1, specificType === 'receita' ? 'rgba(78, 205, 196, 0.5)' : 'rgba(255, 107, 107, 0.5)');
                 return gradient;
             });
 
-            if (specificTransactionsChart && specificTransactionsChart instanceof Chart) {
-                specificTransactionsChart.destroy();
-                console.log('Gráfico anterior destruído.');
-            }
-
             try {
                 specificTransactionsChart = new Chart(ctx, {
-                    type: 'doughnut',
+                    type: 'pie',
                     data: {
                         labels: labels,
                         datasets: [{
                             label: specificType === 'receita' ? 'Receitas' : 'Despesas',
                             data: data,
                             backgroundColor: gradientColors,
-                            borderColor: '#fff',
-                            borderWidth: 2,
-                            hoverOffset: 20
+                            borderColor: 'rgba(255, 255, 255, 0.8)',
+                            borderWidth: 1,
+                            hoverOffset: 10
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        cutout: '60%',
-                        animation: {
-                            animateScale: true,
-                            animateRotate: true,
-                            duration: 1000,
-                            easing: 'easeOutQuart'
-                        },
                         plugins: {
                             legend: {
                                 position: 'bottom',
@@ -1148,7 +1135,7 @@
                                         size: 14,
                                         weight: '600'
                                     },
-                                    padding: 20,
+                                    padding: 15,
                                     boxWidth: 20,
                                     usePointStyle: true
                                 }
@@ -1169,10 +1156,14 @@
                                     }
                                 }
                             }
+                        },
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeInOutQuad'
                         }
                     }
                 });
-                console.log('Gráfico gerado com sucesso.');
+                console.log('Gráfico de pizza gerado com sucesso.');
             } catch (error) {
                 console.error('Erro ao criar o gráfico:', error);
                 alert('Erro ao gerar o gráfico. Verifique o console para mais detalhes.');
