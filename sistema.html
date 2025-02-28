@@ -345,6 +345,61 @@
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
+        .reminders-list {
+            width: 100%;
+            max-width: 900px;
+            margin: 25px auto;
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+        }
+
+        .reminders-list h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .reminders-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .reminders-list li {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .reminders-list li:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .reminders-list li .reminder-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reminders-list li .reminder-info span {
+            font-size: 1rem;
+        }
+
+        .reminders-list li .reminder-amount {
+            font-weight: 600;
+            color: var(--positive-color);
+        }
+
+        .reminders-list li .reminder-amount.payment { color: var(--negative-color); }
+
         .modal {
             display: none;
             position: fixed;
@@ -449,6 +504,11 @@
             .totals p {
                 min-width: 100%;
                 max-width: 300px;
+            }
+
+            .reminders-list li {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
 
@@ -559,6 +619,11 @@
             </p>
         </div>
 
+        <div class="reminders-list">
+            <h3>Lembretes</h3>
+            <ul id="remindersList"></ul>
+        </div>
+
         <div id="filterPeriodModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeFilterPeriodModal()">×</span>
@@ -662,6 +727,16 @@
             </div>
         </div>
 
+        <div id="reminderConfirmModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeReminderConfirmModal()">×</span>
+                <h2 id="reminderConfirmTitle"></h2>
+                <p id="reminderConfirmMessage"></p>
+                <button onclick="confirmReminder(true)">Sim</button>
+                <button onclick="confirmReminder(false)">Não</button>
+            </div>
+        </div>
+
         <div id="compoundInterestModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeCompoundInterestModal()">×</span>
@@ -760,7 +835,9 @@
 
         let transactions = [];
         let allUsers = [];
+        let reminders = [];
         let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
+        let selectedReminder = null;
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -773,7 +850,7 @@
                     document.getElementById('userGreeting').innerHTML = '<span>Olá, <strong>' + userName + '</strong>!</span>';
                     loadTransactions();
                     checkAdmin(user.email);
-                    loadReminders(userId); // Carregar lembretes ao logar
+                    loadReminders(userId);
                 }).catch(error => {
                     console.error('Erro ao carregar dados do usuário:', error);
                 });
@@ -1092,12 +1169,47 @@
             }, 500);
         }
 
-        // Reporte: "Filtrar Período" não está funcionando
-        console.warn('A função "Filtrar Período" não está funcionando como esperado. A função filterByPeriod() precisa ser implementada ou revisada.');
-
         function filterByPeriod() {
-            alert('Função "Filtrar Período" não implementada. Por favor, contate o suporte para corrigir este problema.');
-            // Aqui deveria haver uma lógica para filtrar transações por período, tipo e descrição
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const filterType = document.getElementById('filterType').value;
+            const filterDescription = document.getElementById('filterDescription').value;
+
+            if (!startDate || !endDate) {
+                alert('Por favor, preencha as datas inicial e final.');
+                return;
+            }
+
+            const filteredTransactions = transactions.filter(t => {
+                const withinDateRange = t.date >= startDate && t.date <= endDate;
+                const matchesType = !filterType || t.type === filterType;
+                const matchesDescription = !filterDescription || t.description === filterDescription;
+                return withinDateRange && matchesType && matchesDescription;
+            });
+
+            const tbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+
+            filteredTransactions.forEach(t => {
+                const row = tbody.insertRow();
+                row.insertCell(0).innerText = formatDate(t.date);
+                row.insertCell(1).innerText = t.description;
+                row.insertCell(2).innerHTML = `<span class="${t.type}">${formatCurrency(t.amount)}</span>`;
+                row.insertCell(3).innerText = t.type.charAt(0).toUpperCase() + t.type.slice(1);
+            });
+
+            const totalReceitas = filteredTransactions
+                .filter(t => t.type === 'receita')
+                .reduce((sum, t) => sum + t.amount, 0);
+            const totalDespesas = filteredTransactions
+                .filter(t => t.type === 'despesa')
+                .reduce((sum, t) => sum + t.amount, 0);
+            const totalSaldo = totalReceitas - totalDespesas;
+
+            document.getElementById('totalReceitas').innerText = formatCurrency(totalReceitas);
+            document.getElementById('totalDespesas').innerText = formatCurrency(totalDespesas);
+            document.getElementById('totalSaldo').innerText = formatCurrency(totalSaldo);
+            document.getElementById('totalSaldo').style.color = totalSaldo >= 0 ? 'var(--positive-color)' : 'var(--negative-color)';
         }
 
         function clearFilter() {
@@ -1105,7 +1217,13 @@
             document.getElementById('endDate').value = '';
             document.getElementById('filterType').value = '';
             document.getElementById('filterDescription').value = '';
-            updateFilteredView(); // Volta à visualização padrão
+            const tbody = document.getElementById('filteredTransactionsTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+            document.getElementById('totalReceitas').innerText = formatCurrency(0);
+            document.getElementById('totalDespesas').innerText = formatCurrency(0);
+            document.getElementById('totalSaldo').innerText = formatCurrency(0);
+            document.getElementById('totalSaldo').style.color = 'var(--text-color)';
+            updateFilteredView();
         }
 
         function openPaymentReminderModal() {
@@ -1210,19 +1328,79 @@
 
         function loadReminders(userId) {
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
+                const remindersList = document.getElementById('remindersList');
+                remindersList.innerHTML = '';
                 if (snapshot.val()) {
-                    const reminders = Object.values(snapshot.val());
-                    const today = getCurrentDate();
-                    const todayReminders = reminders.filter(r => r.date === today);
-                    if (todayReminders.length > 0) {
-                        todayReminders.forEach(reminder => {
-                            showAlert(`Lembrete de ${reminder.type === 'payment' ? 'Pagamento' : 'Receita'}: ${reminder.description} - ${formatCurrency(reminder.amount)} hoje!`);
-                        });
-                    }
+                    reminders = Object.values(snapshot.val());
+                    reminders.sort((a, b) => a.date.localeCompare(b.date));
+                    reminders.forEach(reminder => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <div class="reminder-info">
+                                <span>${formatDate(reminder.date)}</span>
+                                <span>${reminder.description}</span>
+                            </div>
+                            <span class="reminder-amount ${reminder.type}">${formatCurrency(reminder.amount)}</span>
+                        `;
+                        li.onclick = () => openReminderConfirmModal(reminder);
+                        remindersList.appendChild(li);
+                    });
+                } else {
+                    reminders = [];
+                    remindersList.innerHTML = '<li>Nenhum lembrete cadastrado.</li>';
                 }
             }).catch(error => {
                 console.error('Erro ao carregar lembretes:', error);
             });
+        }
+
+        function openReminderConfirmModal(reminder) {
+            selectedReminder = reminder;
+            const modal = document.getElementById('reminderConfirmModal');
+            const title = document.getElementById('reminderConfirmTitle');
+            const message = document.getElementById('reminderConfirmMessage');
+            title.innerText = `Confirmar ${reminder.type === 'payment' ? 'Pagamento' : 'Receita'}`;
+            message.innerText = `${reminder.description} - ${formatCurrency(reminder.amount)} em ${formatDate(reminder.date)}\nJá foi ${reminder.type === 'payment' ? 'pago' : 'recebido'}?`;
+            modal.style.display = 'block';
+            modal.style.animation = 'slideIn 0.4s';
+        }
+
+        function closeReminderConfirmModal() {
+            const modal = document.getElementById('reminderConfirmModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                selectedReminder = null;
+            }, 500);
+        }
+
+        function confirmReminder(confirmed) {
+            if (!selectedReminder) return;
+
+            const userId = auth.currentUser.uid;
+            if (confirmed) {
+                const transaction = {
+                    id: generateTransactionId(),
+                    date: selectedReminder.date,
+                    description: selectedReminder.description,
+                    amount: selectedReminder.amount,
+                    type: selectedReminder.type === 'payment' ? 'despesa' : 'receita'
+                };
+                transactions.push(transaction);
+                saveTransactions();
+                database.ref(`reminders/${userId}/${selectedReminder.id}`).remove()
+                    .then(() => {
+                        alert(`Transação de ${transaction.type} adicionada com sucesso!`);
+                        loadReminders(userId);
+                        updateFilteredView();
+                        calculateBalances();
+                    })
+                    .catch(error => {
+                        console.error('Erro ao remover lembrete:', error);
+                        alert('Erro ao processar o lembrete. Tente novamente.');
+                    });
+            }
+            closeReminderConfirmModal();
         }
 
         function openCompoundInterestModal() {
