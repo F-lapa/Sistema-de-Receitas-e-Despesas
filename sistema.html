@@ -391,15 +391,6 @@
             margin: 15px auto;
         }
 
-        .modal-content canvas {
-            max-width: 100%;
-            margin-top: 25px;
-            border-radius: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            box-shadow: var(--shadow);
-        }
-
         .close {
             float: right;
             font-size: 2.2rem;
@@ -503,7 +494,8 @@
         <div class="buttons">
             <button onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i> Filtrar Período</button>
             <button onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Limite de Gastos</button>
-            <button onclick="openPerformanceFromDateModal()"><i class="fas fa-chart-line"></i> Desempenho</button>
+            <button onclick="openPaymentReminderModal()"><i class="fas fa-bell"></i> Lembrete de Pagamento</button>
+            <button onclick="openRevenueReminderModal()"><i class="fas fa-bell"></i> Lembrete de Receita</button>
             <button onclick="openCompoundInterestModal()">Juros Compostos</button>
         </div>
         <div class="theme-selector">
@@ -630,16 +622,43 @@
             </div>
         </div>
 
-        <div id="performanceFromDateModal" class="modal">
+        <div id="paymentReminderModal" class="modal">
             <div class="modal-content">
-                <span class="close" onclick="closePerformanceFromDateModal()">×</span>
-                <h2>Acompanhamento de Desempenho</h2>
+                <span class="close" onclick="closePaymentReminderModal()">×</span>
+                <h2>Lembrete de Pagamento</h2>
                 <div class="form-group">
-                    <label for="performanceFromStartDate">Data Inicial:</label>
-                    <input type="date" id="performanceFromStartDate" class="highlight">
+                    <label for="paymentReminderDate">Data do Lembrete:</label>
+                    <input type="date" id="paymentReminderDate" class="highlight">
                 </div>
-                <button onclick="generatePerformanceFromSelectedDateChart()">Gerar Gráfico</button>
-                <canvas id="performanceFromSelectedDateChart" style="margin-top: 20px;"></canvas>
+                <div class="form-group">
+                    <label for="paymentReminderDescription">Descrição:</label>
+                    <input type="text" id="paymentReminderDescription" class="highlight" placeholder="Ex: Conta de Luz">
+                </div>
+                <div class="form-group">
+                    <label for="paymentReminderAmount">Valor (R$):</label>
+                    <input type="text" id="paymentReminderAmount" class="highlight" placeholder="0,00" inputmode="decimal" oninput="validateAmount(this)">
+                </div>
+                <button onclick="addPaymentReminder()">Adicionar Lembrete</button>
+            </div>
+        </div>
+
+        <div id="revenueReminderModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeRevenueReminderModal()">×</span>
+                <h2>Lembrete de Receita</h2>
+                <div class="form-group">
+                    <label for="revenueReminderDate">Data do Lembrete:</label>
+                    <input type="date" id="revenueReminderDate" class="highlight">
+                </div>
+                <div class="form-group">
+                    <label for="revenueReminderDescription">Descrição:</label>
+                    <input type="text" id="revenueReminderDescription" class="highlight" placeholder="Ex: Salário">
+                </div>
+                <div class="form-group">
+                    <label for="revenueReminderAmount">Valor (R$):</label>
+                    <input type="text" id="revenueReminderAmount" class="highlight" placeholder="0,00" inputmode="decimal" oninput="validateAmount(this)">
+                </div>
+                <button onclick="addRevenueReminder()">Adicionar Lembrete</button>
             </div>
         </div>
 
@@ -723,9 +742,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0"></script>
     <script>
         var firebaseConfig = {
             apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
@@ -757,6 +773,7 @@
                     document.getElementById('userGreeting').innerHTML = '<span>Olá, <strong>' + userName + '</strong>!</span>';
                     loadTransactions();
                     checkAdmin(user.email);
+                    loadReminders(userId); // Carregar lembretes ao logar
                 }).catch(error => {
                     console.error('Erro ao carregar dados do usuário:', error);
                 });
@@ -1075,154 +1092,137 @@
             }, 500);
         }
 
-        function openPerformanceFromDateModal() {
-            const modal = document.getElementById('performanceFromDateModal');
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
+        // Reporte: "Filtrar Período" não está funcionando
+        console.warn('A função "Filtrar Período" não está funcionando como esperado. A função filterByPeriod() precisa ser implementada ou revisada.');
+
+        function filterByPeriod() {
+            alert('Função "Filtrar Período" não implementada. Por favor, contate o suporte para corrigir este problema.');
+            // Aqui deveria haver uma lógica para filtrar transações por período, tipo e descrição
         }
 
-        function closePerformanceFromDateModal() {
-            const modal = document.getElementById('performanceFromDateModal');
+        function clearFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterDescription').value = '';
+            updateFilteredView(); // Volta à visualização padrão
+        }
+
+        function openPaymentReminderModal() {
+            const modal = document.getElementById('paymentReminderModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'slideIn 0.4s';
+            document.getElementById('paymentReminderDate').value = getCurrentDate();
+        }
+
+        function closePaymentReminderModal() {
+            const modal = document.getElementById('paymentReminderModal');
             modal.style.animation = 'fadeout 0.5s';
             setTimeout(() => {
                 modal.style.display = 'none';
-                if (performanceFromSelectedDateChart) {
-                    performanceFromSelectedDateChart.destroy();
-                    performanceFromSelectedDateChart = null;
-                }
             }, 500);
         }
 
-        let performanceFromSelectedDateChart;
+        function addPaymentReminder() {
+            const date = document.getElementById('paymentReminderDate').value;
+            const description = document.getElementById('paymentReminderDescription').value;
+            const amountInput = document.getElementById('paymentReminderAmount');
+            const amount = parseCurrency(amountInput.value);
 
-        function generatePerformanceFromSelectedDateChart() {
-            const startDateInput = document.getElementById('performanceFromStartDate').value;
-            const endDate = getCurrentDate();
-
-            if (!startDateInput) {
-                alert('Por favor, selecione a data inicial.');
+            if (!date || !description || isNaN(amount) || amount <= 0) {
+                alert('Por favor, preencha todos os campos corretamente com valores válidos.');
                 return;
             }
 
-            const filteredTransactions = transactions
-                .filter(t => t.date >= startDateInput && t.date <= endDate)
-                .sort((a, b) => a.date.localeCompare(b.date)); // Ordenação por data como string
+            const userId = auth.currentUser.uid;
+            const reminder = {
+                id: generateTransactionId(),
+                date,
+                description,
+                amount,
+                type: 'payment'
+            };
 
-            if (filteredTransactions.length === 0) {
-                alert('Nenhuma transação encontrada no período selecionado.');
-                return;
-            }
-
-            const dateMap = new Map();
-            let cumulativeBalance = 0;
-
-            filteredTransactions.forEach(t => {
-                if (!dateMap.has(t.date)) {
-                    dateMap.set(t.date, 0);
-                }
-                const currentDayBalance = dateMap.get(t.date) + (t.type === 'receita' ? t.amount : -t.amount);
-                dateMap.set(t.date, currentDayBalance);
-                cumulativeBalance += t.type === 'receita' ? t.amount : -t.amount;
-            });
-
-            const dates = Array.from(dateMap.keys());
-            const balances = dates.map(date => {
-                const dailyBalance = dateMap.get(date);
-                cumulativeBalance = cumulativeBalance - dailyBalance + dailyBalance; // Acumula corretamente
-                return cumulativeBalance;
-            });
-
-            if (performanceFromSelectedDateChart) {
-                performanceFromSelectedDateChart.destroy();
-            }
-
-            const ctx = document.getElementById('performanceFromSelectedDateChart').getContext('2d');
-            if (!ctx) {
-                console.error('Erro ao obter o contexto do canvas.');
-                alert('Erro ao gerar o gráfico.');
-                return;
-            }
-
-            try {
-                performanceFromSelectedDateChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: dates.map(date => formatDate(date)),
-                        datasets: [{
-                            label: 'Saldo Acumulado',
-                            data: balances,
-                            borderColor: 'var(--positive-color)',
-                            backgroundColor: 'rgba(0, 255, 204, 0.2)',
-                            fill: true,
-                            borderWidth: 3,
-                            tension: 0.3,
-                            pointBackgroundColor: 'var(--text-color)',
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Data',
-                                    font: { size: 14, weight: 'bold', family: 'Orbitron' },
-                                    color: 'var(--text-color)'
-                                },
-                                ticks: {
-                                    color: 'var(--text-color)',
-                                    font: { size: 12 },
-                                    maxRotation: 45,
-                                    minRotation: 45
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Saldo (R$)',
-                                    font: { size: 14, weight: 'bold', family: 'Orbitron' },
-                                    color: 'var(--text-color)'
-                                },
-                                ticks: {
-                                    callback: value => formatCurrency(value),
-                                    color: 'var(--text-color)',
-                                    font: { size: 12 }
-                                },
-                                beginAtZero: true
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: 'var(--text-color)',
-                                    font: { size: 14, weight: 'bold', family: 'Orbitron' }
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(26, 26, 46, 0.9)',
-                                titleFont: { size: 14, weight: 'bold', family: 'Orbitron' },
-                                bodyFont: { size: 12 },
-                                borderColor: 'var(--input-border-color)',
-                                borderWidth: 1,
-                                padding: 12,
-                                callbacks: {
-                                    label: tooltipItem => `Saldo: ${formatCurrency(tooltipItem.raw)}`
-                                }
-                            }
-                        },
-                        animation: {
-                            duration: 1000,
-                            easing: 'easeInOutQuad'
-                        }
-                    }
+            database.ref(`reminders/${userId}/${reminder.id}`).set(reminder)
+                .then(() => {
+                    alert('Lembrete de pagamento adicionado com sucesso!');
+                    closePaymentReminderModal();
+                    loadReminders(userId);
+                })
+                .catch(error => {
+                    console.error('Erro ao adicionar lembrete de pagamento:', error);
+                    alert('Erro ao salvar o lembrete. Tente novamente.');
                 });
-            } catch (error) {
-                console.error('Erro ao criar o gráfico:', error);
-                alert('Erro ao gerar o gráfico de desempenho.');
+
+            document.getElementById('paymentReminderDescription').value = '';
+            amountInput.value = '0,00';
+        }
+
+        function openRevenueReminderModal() {
+            const modal = document.getElementById('revenueReminderModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'slideIn 0.4s';
+            document.getElementById('revenueReminderDate').value = getCurrentDate();
+        }
+
+        function closeRevenueReminderModal() {
+            const modal = document.getElementById('revenueReminderModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
+
+        function addRevenueReminder() {
+            const date = document.getElementById('revenueReminderDate').value;
+            const description = document.getElementById('revenueReminderDescription').value;
+            const amountInput = document.getElementById('revenueReminderAmount');
+            const amount = parseCurrency(amountInput.value);
+
+            if (!date || !description || isNaN(amount) || amount <= 0) {
+                alert('Por favor, preencha todos os campos corretamente com valores válidos.');
+                return;
             }
+
+            const userId = auth.currentUser.uid;
+            const reminder = {
+                id: generateTransactionId(),
+                date,
+                description,
+                amount,
+                type: 'revenue'
+            };
+
+            database.ref(`reminders/${userId}/${reminder.id}`).set(reminder)
+                .then(() => {
+                    alert('Lembrete de receita adicionado com sucesso!');
+                    closeRevenueReminderModal();
+                    loadReminders(userId);
+                })
+                .catch(error => {
+                    console.error('Erro ao adicionar lembrete de receita:', error);
+                    alert('Erro ao salvar o lembrete. Tente novamente.');
+                });
+
+            document.getElementById('revenueReminderDescription').value = '';
+            amountInput.value = '0,00';
+        }
+
+        function loadReminders(userId) {
+            database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
+                if (snapshot.val()) {
+                    const reminders = Object.values(snapshot.val());
+                    const today = getCurrentDate();
+                    const todayReminders = reminders.filter(r => r.date === today);
+                    if (todayReminders.length > 0) {
+                        todayReminders.forEach(reminder => {
+                            showAlert(`Lembrete de ${reminder.type === 'payment' ? 'Pagamento' : 'Receita'}: ${reminder.description} - ${formatCurrency(reminder.amount)} hoje!`);
+                        });
+                    }
+                }
+            }).catch(error => {
+                console.error('Erro ao carregar lembretes:', error);
+            });
         }
 
         function openCompoundInterestModal() {
