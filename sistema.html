@@ -310,23 +310,40 @@
         }
 
         .totals p {
-            background: var(--card-bg);
-            padding: 18px 30px;
-            border-radius: 12px;
+            background: linear-gradient(135deg, var(--card-bg), #1e1e3f);
+            padding: 20px 35px;
+            border-radius: 15px;
             font-weight: 600;
             box-shadow: var(--shadow);
             color: var(--text-color);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 200px;
         }
 
         .totals p:hover {
             transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
         }
 
-        .totals p.negative { color: var(--negative-color); }
-        .totals p.positive { color: var(--positive-color); }
+        .totals p.negative .balance-value { color: var(--negative-color); }
+        .totals p.positive .balance-value { color: var(--positive-color); }
+
+        .totals p .balance-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .totals p .balance-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
 
         .modal {
             display: none;
@@ -432,6 +449,16 @@
                 padding: 25px;
                 margin: 10% auto;
             }
+
+            .totals {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .totals p {
+                min-width: 100%;
+                max-width: 300px;
+            }
         }
 
         @media (min-width: 769px) {
@@ -467,7 +494,7 @@
                 </circle>
             </svg>
         </div>
-        <h3>Dashboard</h3>
+        <h3>Finanças Pessoais</h3>
         <div class="menu-icons">
             <i class="fas fa-user-shield admin-icon" onclick="openAdminModal()" title="Área do Administrador"></i>
             <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
@@ -476,8 +503,6 @@
         <div class="buttons">
             <button onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i> Filtrar Período</button>
             <button onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Limite de Gastos</button>
-            <button onclick="openPaymentRemindersPage()"><i class="fas fa-bell"></i> Lembrete Pagamentos</button>
-            <button onclick="openReminderReceitasPage()"><i class="fas fa-bell"></i> Lembrete Receitas</button>
             <button onclick="openPerformanceFromDateModal()"><i class="fas fa-chart-line"></i> Desempenho</button>
             <button onclick="openCompoundInterestModal()">Juros Compostos</button>
         </div>
@@ -528,9 +553,18 @@
         </table>
 
         <div class="totals">
-            <p id="dailyBalance" class="positive"><span class="balance-label">Saldo do Dia:</span> R$ 0,00</p>
-            <p id="monthlyBalance" class="positive"><span class="balance-label">Saldo do Mês:</span> R$ 0,00</p>
-            <p id="annualBalance" class="positive"><span class="balance-label">Saldo do Ano:</span> R$ 0,00</p>
+            <p id="dailyBalance" class="positive">
+                <span class="balance-label">Saldo do Dia</span>
+                <span class="balance-value">R$ 0,00</span>
+            </p>
+            <p id="monthlyBalance" class="positive">
+                <span class="balance-label">Saldo do Mês</span>
+                <span class="balance-value">R$ 0,00</span>
+            </p>
+            <p id="annualBalance" class="positive">
+                <span class="balance-label">Saldo do Ano</span>
+                <span class="balance-value">R$ 0,00</span>
+            </p>
         </div>
 
         <div id="filterPeriodModal" class="modal">
@@ -649,7 +683,7 @@
                 <span class="close" onclick="closeThemeSelectorModal()">×</span>
                 <h2>Selecionar Tema</h2>
                 <label for="colorPicker">Escolha uma cor:</label>
-                <input type="color" id="colorPicker" value="#533483" onchange="applyTheme(this.value)" style="margin-top: 20px; cursor: pointer;">
+                <input type="color" id="colorPicker" value="#6b48ff" onchange="applyTheme(this.value)" style="margin-top: 20px; cursor: pointer;">
             </div>
         </div>
 
@@ -709,7 +743,6 @@
         const auth = firebase.auth();
 
         let transactions = [];
-        let paymentReminders = [];
         let allUsers = [];
         let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
 
@@ -724,8 +757,6 @@
                     document.getElementById('userGreeting').innerHTML = '<span>Olá, <strong>' + userName + '</strong>!</span>';
                     loadTransactions();
                     checkAdmin(user.email);
-                    loadPaymentReminders();
-                    checkReminders();
                 }).catch(error => {
                     console.error('Erro ao carregar dados do usuário:', error);
                 });
@@ -745,27 +776,6 @@
             }).catch(error => {
                 console.error('Erro ao carregar tema:', error);
             });
-        }
-
-        function loadPaymentReminders() {
-            const userId = auth.currentUser.uid;
-            database.ref('paymentReminders/' + userId).once('value').then((snapshot) => {
-                if (snapshot.val()) {
-                    paymentReminders = Object.values(snapshot.val());
-                } else {
-                    paymentReminders = [];
-                }
-            }).catch(error => {
-                console.error('Erro ao carregar lembretes de pagamento:', error);
-            });
-        }
-
-        function checkReminders() {
-            const today = getCurrentDate();
-            const reminders = paymentReminders.filter(reminder => reminder.date === today);
-            if (reminders.length > 0) {
-                showAlert(`Você tem ${reminders.length} lembrete(s) de pagamento(s) para hoje.`);
-            }
         }
 
         function loadTransactions() {
@@ -940,9 +950,9 @@
             const monthlyBalanceSpan = document.getElementById('monthlyBalance');
             const annualBalanceSpan = document.getElementById('annualBalance');
 
-            dailyBalanceSpan.innerHTML = `<span class="balance-label">Saldo do Dia:</span> ${formatCurrency(dailyBalance)}`;
-            monthlyBalanceSpan.innerHTML = `<span class="balance-label">Saldo do Mês:</span> ${formatCurrency(monthlyBalance)}`;
-            annualBalanceSpan.innerHTML = `<span class="balance-label">Saldo do Ano:</span> ${formatCurrency(annualBalance)}`;
+            dailyBalanceSpan.innerHTML = `<span class="balance-label">Saldo do Dia</span><span class="balance-value">${formatCurrency(dailyBalance)}</span>`;
+            monthlyBalanceSpan.innerHTML = `<span class="balance-label">Saldo do Mês</span><span class="balance-value">${formatCurrency(monthlyBalance)}</span>`;
+            annualBalanceSpan.innerHTML = `<span class="balance-label">Saldo do Ano</span><span class="balance-value">${formatCurrency(annualBalance)}</span>`;
 
             dailyBalanceSpan.classList.toggle('negative', dailyBalance < 0);
             monthlyBalanceSpan.classList.toggle('negative', monthlyBalance < 0);
@@ -1065,14 +1075,6 @@
             }, 500);
         }
 
-        function openPaymentRemindersPage() {
-            window.location.href = 'lembrete_pagamentos.html';
-        }
-
-        function openReminderReceitasPage() {
-            window.location.href = 'lembrete_receitas.html';
-        }
-
         function openPerformanceFromDateModal() {
             const modal = document.getElementById('performanceFromDateModal');
             modal.style.display = 'block';
@@ -1084,38 +1086,50 @@
             modal.style.animation = 'fadeout 0.5s';
             setTimeout(() => {
                 modal.style.display = 'none';
+                if (performanceFromSelectedDateChart) {
+                    performanceFromSelectedDateChart.destroy();
+                    performanceFromSelectedDateChart = null;
+                }
             }, 500);
         }
 
         let performanceFromSelectedDateChart;
 
         function generatePerformanceFromSelectedDateChart() {
-            const startDate = document.getElementById('performanceFromStartDate').value;
+            const startDateInput = document.getElementById('performanceFromStartDate').value;
             const endDate = getCurrentDate();
 
-            if (!startDate) {
+            if (!startDateInput) {
                 alert('Por favor, selecione a data inicial.');
                 return;
             }
 
-            const filteredTransactions = transactions.filter(transaction =>
-                transaction.date >= startDate && transaction.date <= endDate
-            );
+            const filteredTransactions = transactions
+                .filter(t => t.date >= startDateInput && t.date <= endDate)
+                .sort((a, b) => a.date.localeCompare(b.date)); // Ordenação por data como string
 
-            filteredTransactions.sort((a, b) => new Date(a.date) - new Date(b.date));
+            if (filteredTransactions.length === 0) {
+                alert('Nenhuma transação encontrada no período selecionado.');
+                return;
+            }
 
-            const dates = [];
-            const balances = [];
+            const dateMap = new Map();
             let cumulativeBalance = 0;
 
-            filteredTransactions.forEach(transaction => {
-                if (!dates.includes(transaction.date)) {
-                    dates.push(transaction.date);
-                    const dailyTransactions = filteredTransactions.filter(t => t.date === transaction.date);
-                    const dailyBalance = dailyTransactions.reduce((total, t) => total + (t.type === 'receita' ? t.amount : -t.amount), 0);
-                    cumulativeBalance += dailyBalance;
-                    balances.push(cumulativeBalance);
+            filteredTransactions.forEach(t => {
+                if (!dateMap.has(t.date)) {
+                    dateMap.set(t.date, 0);
                 }
+                const currentDayBalance = dateMap.get(t.date) + (t.type === 'receita' ? t.amount : -t.amount);
+                dateMap.set(t.date, currentDayBalance);
+                cumulativeBalance += t.type === 'receita' ? t.amount : -t.amount;
+            });
+
+            const dates = Array.from(dateMap.keys());
+            const balances = dates.map(date => {
+                const dailyBalance = dateMap.get(date);
+                cumulativeBalance = cumulativeBalance - dailyBalance + dailyBalance; // Acumula corretamente
+                return cumulativeBalance;
             });
 
             if (performanceFromSelectedDateChart) {
@@ -1123,91 +1137,92 @@
             }
 
             const ctx = document.getElementById('performanceFromSelectedDateChart').getContext('2d');
-            performanceFromSelectedDateChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Desempenho Financeiro',
-                        data: balances,
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                        fill: true,
-                        borderWidth: 3,
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'day',
-                                tooltipFormat: 'dd MMM yyyy'
-                            },
-                            title: {
-                                display: true,
-                                text: 'Data',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                },
-                                color: '#ffffff'
-                            },
-                            ticks: {
-                                color: '#ffffff',
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Saldo (R$)',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
-                                },
-                                color: '#ffffff'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return formatCurrency(value);
-                                },
-                                color: '#ffffff',
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        }
+            if (!ctx) {
+                console.error('Erro ao obter o contexto do canvas.');
+                alert('Erro ao gerar o gráfico.');
+                return;
+            }
+
+            try {
+                performanceFromSelectedDateChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates.map(date => formatDate(date)),
+                        datasets: [{
+                            label: 'Saldo Acumulado',
+                            data: balances,
+                            borderColor: 'var(--positive-color)',
+                            backgroundColor: 'rgba(0, 255, 204, 0.2)',
+                            fill: true,
+                            borderWidth: 3,
+                            tension: 0.3,
+                            pointBackgroundColor: 'var(--text-color)',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
                     },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    return `Saldo: ${formatCurrency(tooltipItem.raw)}`;
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Data',
+                                    font: { size: 14, weight: 'bold', family: 'Orbitron' },
+                                    color: 'var(--text-color)'
+                                },
+                                ticks: {
+                                    color: 'var(--text-color)',
+                                    font: { size: 12 },
+                                    maxRotation: 45,
+                                    minRotation: 45
                                 }
                             },
-                            backgroundColor: 'rgba(0,0,0,0.7)',
-                            titleFont: { size: 14, weight: 'bold' },
-                            bodyFont: { size: 14 },
-                            displayColors: false,
-                            borderColor: '#3498db',
-                            borderWidth: 1
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Saldo (R$)',
+                                    font: { size: 14, weight: 'bold', family: 'Orbitron' },
+                                    color: 'var(--text-color)'
+                                },
+                                ticks: {
+                                    callback: value => formatCurrency(value),
+                                    color: 'var(--text-color)',
+                                    font: { size: 12 }
+                                },
+                                beginAtZero: true
+                            }
                         },
-                        legend: {
-                            labels: {
-                                color: '#ffffff',
-                                font: {
-                                    size: 14,
-                                    weight: 'bold'
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'var(--text-color)',
+                                    font: { size: 14, weight: 'bold', family: 'Orbitron' }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(26, 26, 46, 0.9)',
+                                titleFont: { size: 14, weight: 'bold', family: 'Orbitron' },
+                                bodyFont: { size: 12 },
+                                borderColor: 'var(--input-border-color)',
+                                borderWidth: 1,
+                                padding: 12,
+                                callbacks: {
+                                    label: tooltipItem => `Saldo: ${formatCurrency(tooltipItem.raw)}`
                                 }
                             }
+                        },
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeInOutQuad'
                         }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error('Erro ao criar o gráfico:', error);
+                alert('Erro ao gerar o gráfico de desempenho.');
+            }
         }
 
         function openCompoundInterestModal() {
@@ -1231,27 +1246,23 @@
             const years = parseInt(document.getElementById('years').value) || 0;
             const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
 
-            // Validação rigorosa
             if (principal < 0 || monthlyContribution < 0 || annualRate < 0 || years <= 0 || frequency <= 0) {
                 document.getElementById('compoundInterestResult').innerHTML = 
                     '<span style="color: var(--negative-color);">Erro: Insira valores válidos (positivos e período maior que zero).</span>';
                 return;
             }
 
-            const monthlyRate = annualRate / 100 / frequency; // Taxa por período
-            const totalPeriods = years * frequency; // Total de períodos
+            const monthlyRate = annualRate / 100 / frequency;
+            const totalPeriods = years * frequency;
 
-            // Fórmula de juros compostos com aportes mensais
             let futureValue = principal;
             for (let i = 0; i < totalPeriods; i++) {
                 futureValue = (futureValue + monthlyContribution) * (1 + monthlyRate);
             }
 
-            // Resultados detalhados
             const totalInvested = principal + (monthlyContribution * totalPeriods);
             const totalInterest = futureValue - totalInvested;
 
-            // Exibir resultado formatado
             document.getElementById('compoundInterestResult').innerHTML = `
                 <p>Montante Final: <span class="highlight-amount">${formatCurrency(futureValue)}</span></p>
                 <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
@@ -1301,7 +1312,6 @@
             const dateInput = document.getElementById('date');
             dateInput.value = getCurrentDate();
             updateFilteredView();
-            checkReminders();
         });
     </script>
 </body>
