@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+l<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -307,6 +307,7 @@
             gap: 25px;
             flex-wrap: wrap;
             margin-top: 30px;
+            flex-direction: row; /* Alinhamento horizontal */
         }
 
         .totals p {
@@ -322,6 +323,7 @@
             flex-direction: column;
             align-items: center;
             min-width: 200px;
+            max-width: 250px; /* Limita a largura máxima para evitar esticamento excessivo */
         }
 
         .totals p:hover {
@@ -497,7 +499,7 @@
             }
 
             .totals {
-                flex-direction: column;
+                flex-direction: column; /* Empilha em telas pequenas */
                 align-items: center;
             }
 
@@ -1351,6 +1353,7 @@
                 }
             }).catch(error => {
                 console.error('Erro ao carregar lembretes:', error);
+                remindersList.innerHTML = '<li>Erro ao carregar lembretes.</li>';
             });
         }
 
