@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Receitas e Despesas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --background-color: #1a1a2e;
-            --text-color: #e0e0e0;
-            --primary-color: #0f3460;
-            --button-color: #533483;
-            --input-border-color: #e94560;
-            --negative-color: #ff6b6b;
-            --positive-color: #4ecdc4;
-            --card-bg: #16213e;
-            --shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            --background-color: #0a0a1f;
+            --text-color: #d9e6ff;
+            --primary-color: #1e1e3f;
+            --button-color: #6b48ff;
+            --input-border-color: #ff4d94;
+            --negative-color: #ff3366;
+            --positive-color: #00ffcc;
+            --card-bg: #15152e;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            --glow: 0 0 15px rgba(107, 72, 255, 0.5);
         }
 
         * {
@@ -27,60 +28,85 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--background-color), #0f0f23);
+            background: linear-gradient(145deg, var(--background-color), #141432);
             color: var(--text-color);
             min-height: 100vh;
             display: flex;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(107, 72, 255, 0.1), transparent 70%);
+            z-index: -1;
         }
 
         .sidebar {
-            width: 250px;
-            background: linear-gradient(180deg, var(--primary-color), #16213e);
-            padding: 20px;
+            width: 280px;
+            background: linear-gradient(180deg, var(--primary-color), #0f0f2a);
+            padding: 30px 20px;
             position: fixed;
             height: 100vh;
             box-shadow: var(--shadow);
-            transition: transform 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .sidebar .logo-container {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
         }
 
-        .sidebar .logo-container img {
+        .sidebar .logo-container svg {
             width: 80px;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            height: 80px;
+            filter: drop-shadow(0 5px 15px rgba(107, 72, 255, 0.5));
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar .logo-container svg:hover {
+            transform: rotate(360deg);
         }
 
         .sidebar h3 {
             color: var(--text-color);
-            font-weight: 600;
-            font-size: 1.5rem;
-            margin-bottom: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.6rem;
+            margin-bottom: 30px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(107, 72, 255, 0.3);
         }
 
         .sidebar .menu-icons {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
+            gap: 20px;
+            margin-bottom: 40px;
         }
 
         .sidebar .menu-icons i {
-            font-size: 1.8rem;
+            font-size: 1.9rem;
             color: var(--text-color);
             cursor: pointer;
-            transition: color 0.3s ease, transform 0.2s ease;
+            transition: all 0.3s ease;
+            padding: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .sidebar .menu-icons i:hover {
             color: var(--input-border-color);
             transform: scale(1.2);
+            box-shadow: var(--glow);
         }
 
         .sidebar .buttons {
@@ -90,115 +116,6 @@
         }
 
         .sidebar button {
-            padding: 12px;
-            background: linear-gradient(90deg, var(--button-color), #e94560);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow);
-        }
-
-        .sidebar button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-        }
-
-        .sidebar .theme-selector {
-            margin-top: 30px;
-            text-align: center;
-        }
-
-        .sidebar .theme-selector label {
-            font-size: 0.9rem;
-            color: var(--text-color);
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .sidebar .theme-selector button {
-            width: 100%;
-            background: var(--card-bg);
-            padding: 10px;
-            border-radius: 12px;
-            color: var(--text-color);
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar .theme-selector button:hover {
-            background: var(--button-color);
-            color: white;
-        }
-
-        .container {
-            margin-left: 270px;
-            padding: 30px;
-            width: calc(100% - 270px);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .container h1, .container .greeting {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--positive-color), var(--input-border-color));
-            -webkit-background-clip: text;
-            color: transparent;
-            text-align: center;
-        }
-
-        .form-header {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-color);
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .form-group {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .form-group label {
-            font-weight: 500;
-            color: var(--text-color);
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--input-border-color);
-            border-radius: 8px;
-            background: #0f0f23;
-            color: var(--text-color);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            border-color: var(--positive-color);
-            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
-            outline: none;
-        }
-
-        .container button {
             padding: 14px;
             background: linear-gradient(90deg, var(--button-color), var(--input-border-color));
             color: white;
@@ -207,67 +124,205 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(107, 72, 255, 0.5);
+        }
+
+        .sidebar .theme-selector {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .sidebar .theme-selector label {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar .theme-selector button {
             width: 100%;
-            max-width: 500px;
-            margin: 20px auto;
+            background: linear-gradient(90deg, #2a2a5a, #1e1e3f);
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--text-color);
+            font-weight: 600;
             transition: all 0.3s ease;
             box-shadow: var(--shadow);
         }
 
+        .sidebar .theme-selector button:hover {
+            background: linear-gradient(90deg, var(--button-color), var(--input-border-color));
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .container {
+            margin-left: 300px;
+            padding: 40px;
+            width: calc(100% - 300px);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            position: relative;
+        }
+
+        .container h1, .container .greeting {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--positive-color), var(--input-border-color));
+            -webkit-background-clip: text;
+            color: transparent;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 15px rgba(107, 72, 255, 0.3);
+        }
+
+        .form-header {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 25px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .form-group {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .form-group:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            display: block;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--input-border-color);
+            border-radius: 10px;
+            background: #0f0f2a;
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--positive-color);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5), inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            outline: none;
+        }
+
+        .container button {
+            padding: 16px;
+            background: linear-gradient(90deg, var(--button-color), var(--input-border-color));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            max-width: 600px;
+            margin: 25px auto;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .container button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(107, 72, 255, 0.6);
         }
 
         .container table {
             width: 100%;
-            max-width: 800px;
-            margin: 20px auto;
+            max-width: 900px;
+            margin: 25px auto;
             background: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 15px;
             overflow: hidden;
             box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .container th, .container td {
-            padding: 15px;
+            padding: 18px;
             text-align: left;
             color: var(--text-color);
-        }
-
-        .container th {
-            background: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .container tbody tr {
             transition: background 0.3s ease;
         }
 
+        .container th {
+            background: linear-gradient(90deg, var(--primary-color), #0f0f2a);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .container tbody tr {
+            transition: all 0.3s ease;
+        }
+
         .container tbody tr:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
         }
 
         .totals {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 25px;
             flex-wrap: wrap;
-            margin-top: 20px;
+            margin-top: 30px;
         }
 
         .totals p {
             background: var(--card-bg);
-            padding: 15px 25px;
+            padding: 18px 30px;
             border-radius: 12px;
             font-weight: 600;
             box-shadow: var(--shadow);
             color: var(--text-color);
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .totals p:hover {
             transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         .totals p.negative { color: var(--negative-color); }
@@ -281,27 +336,32 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
         }
 
         .modal-content {
             background: var(--card-bg);
-            margin: 10% auto;
-            padding: 30px;
-            border-radius: 16px;
+            margin: 8% auto;
+            padding: 35px;
+            border-radius: 20px;
             width: 90%;
-            max-width: 600px;
+            max-width: 700px;
             box-shadow: var(--shadow);
             color: var(--text-color);
-            animation: slideIn 0.4s ease-out;
+            animation: slideIn 0.5s ease-out;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .modal-content h2 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 20px;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(90deg, var(--positive-color), var(--input-border-color));
+            -webkit-background-clip: text;
+            color: transparent;
         }
 
         .modal-content .form-group {
@@ -310,32 +370,34 @@
         }
 
         .modal-content button {
-            max-width: 300px;
-            margin: 10px auto;
+            max-width: 350px;
+            margin: 15px auto;
         }
 
         .modal-content canvas {
             max-width: 100%;
-            margin-top: 20px;
-            border-radius: 12px;
+            margin-top: 25px;
+            border-radius: 15px;
             background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
+            padding: 15px;
+            box-shadow: var(--shadow);
         }
 
         .close {
             float: right;
-            font-size: 2rem;
+            font-size: 2.2rem;
             cursor: pointer;
             color: var(--text-color);
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .close:hover {
             color: var(--input-border-color);
+            transform: rotate(90deg);
         }
 
         @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
+            from { transform: translateY(-60px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
 
@@ -349,13 +411,13 @@
                 width: 100%;
                 height: auto;
                 position: relative;
-                padding: 15px;
+                padding: 20px;
             }
 
             .container {
                 margin-left: 0;
                 width: 100%;
-                padding: 15px;
+                padding: 20px;
             }
 
             .form-group, .container button {
@@ -363,7 +425,12 @@
             }
 
             .sidebar .buttons {
-                gap: 10px;
+                gap: 12px;
+            }
+
+            .modal-content {
+                padding: 25px;
+                margin: 10% auto;
             }
         }
 
@@ -374,18 +441,33 @@
         }
 
         .highlight-amount {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: var(--positive-color);
+            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
         <div class="logo-container">
-            <img src="logo.png" alt="Logo">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color: var(--positive-color); stop-opacity: 1;" />
+                        <stop offset="100%" style="stop-color: var(--input-border-color); stop-opacity: 1;" />
+                    </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="url(#logoGradient)" stroke-width="8" stroke-linecap="round">
+                    <animate attributeName="stroke-dasharray" from="0 251.2" to="251.2 0" dur="2s" repeatCount="indefinite" />
+                </circle>
+                <path d="M 35 65 L 50 35 L 65 65" fill="none" stroke="url(#logoGradient)" stroke-width="6" stroke-linecap="round" />
+                <circle cx="50" cy="50" r="10" fill="url(#logoGradient)" opacity="0.8">
+                    <animate attributeName="r" from="10" to="14" dur="1.5s" repeatCount="indefinite" begin="0s" calcMode="spline" keySplines="0.4 0 0.2 1" />
+                </circle>
+            </svg>
         </div>
-        <h3>Menu</h3>
+        <h3>Dashboard</h3>
         <div class="menu-icons">
             <i class="fas fa-user-shield admin-icon" onclick="openAdminModal()" title="Área do Administrador"></i>
             <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
@@ -393,16 +475,15 @@
         </div>
         <div class="buttons">
             <button onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i> Filtrar Período</button>
-            <button onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Definir Limite de Gastos</button>
-            <button onclick="openSpecificTransactionsModal()"><i class="fas fa-search-dollar"></i> Transações Detalhadas</button>
-            <button onclick="openPaymentRemindersPage()"><i class="fas fa-bell"></i> Lembrete de Pagamentos</button>
-            <button onclick="openReminderReceitasPage()"><i class="fas fa-bell"></i> Lembrete de Receitas</button>
-            <button onclick="openPerformanceFromDateModal()"><i class="fas fa-chart-line"></i> Acompanhar Desempenho</button>
-            <button onclick="openCompoundInterestModal()">Calculadora de Juros Compostos</button>
+            <button onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Limite de Gastos</button>
+            <button onclick="openPaymentRemindersPage()"><i class="fas fa-bell"></i> Lembrete Pagamentos</button>
+            <button onclick="openReminderReceitasPage()"><i class="fas fa-bell"></i> Lembrete Receitas</button>
+            <button onclick="openPerformanceFromDateModal()"><i class="fas fa-chart-line"></i> Desempenho</button>
+            <button onclick="openCompoundInterestModal()">Juros Compostos</button>
         </div>
         <div class="theme-selector">
-            <label for="theme">Selecionar Tema:</label>
-            <button id="themeButton" onclick="openThemeSelectorModal()">Clique para escolher</button>
+            <label for="theme">Tema</label>
+            <button id="themeButton" onclick="openThemeSelectorModal()">Escolher Cor</button>
         </div>
     </div>
     <div class="container">
@@ -515,30 +596,6 @@
             </div>
         </div>
 
-        <div id="specificTransactionsModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeSpecificTransactionsModal()">×</span>
-                <h2>Transações Detalhadas</h2>
-                <div class="form-group">
-                    <label for="specificStartDate">Data Inicial:</label>
-                    <input type="date" id="specificStartDate" class="highlight">
-                </div>
-                <div class="form-group">
-                    <label for="specificEndDate">Data Final:</label>
-                    <input type="date" id="specificEndDate" class="highlight">
-                </div>
-                <div class="form-group">
-                    <label for="specificType">Tipo:</label>
-                    <select id="specificType" class="highlight">
-                        <option value="receita">Receita</option>
-                        <option value="despesa">Despesa</option>
-                    </select>
-                </div>
-                <button onclick="generateSpecificTransactionsReport()">Gerar Relatório</button>
-                <canvas id="specificTransactionsChart" height="300"></canvas>
-            </div>
-        </div>
-
         <div id="performanceFromDateModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closePerformanceFromDateModal()">×</span>
@@ -558,19 +615,19 @@
                 <h2>Calculadora de Juros Compostos</h2>
                 <div class="form-group">
                     <label for="initialAmount">Valor Inicial (R$):</label>
-                    <input type="number" id="initialAmount" class="highlight" placeholder="Ex: 1000">
+                    <input type="number" id="initialAmount" class="highlight" placeholder="Ex: 1000" step="0.01" min="0">
                 </div>
                 <div class="form-group">
                     <label for="monthlyContribution">Aporte Mensal (R$):</label>
-                    <input type="number" id="monthlyContribution" class="highlight" placeholder="Ex: 200">
+                    <input type="number" id="monthlyContribution" class="highlight" placeholder="Ex: 200" step="0.01" min="0">
                 </div>
                 <div class="form-group">
                     <label for="interestRate">Taxa de Juros (% ao ano):</label>
-                    <input type="number" id="interestRate" class="highlight" placeholder="Ex: 5">
+                    <input type="number" id="interestRate" class="highlight" placeholder="Ex: 5" step="0.01" min="0">
                 </div>
                 <div class="form-group">
                     <label for="years">Período (Anos):</label>
-                    <input type="number" id="years" class="highlight" placeholder="Ex: 10">
+                    <input type="number" id="years" class="highlight" placeholder="Ex: 10" step="1" min="1">
                 </div>
                 <div class="form-group">
                     <label for="compoundingFrequency">Frequência de Capitalização:</label>
@@ -578,12 +635,12 @@
                         <option value="1">Anual</option>
                         <option value="2">Semestral</option>
                         <option value="4">Trimestral</option>
-                        <option value="12">Mensal</option>
+                        <option value="12" selected>Mensal</option>
                         <option value="365">Diária</option>
                     </select>
                 </div>
                 <button onclick="calculateCompoundInterest()">Calcular</button>
-                <div id="compoundInterestResult" style="margin-top: 20px; font-weight: bold;"></div>
+                <div id="compoundInterestResult" style="margin-top: 25px; font-weight: 600;"></div>
             </div>
         </div>
 
@@ -655,7 +712,6 @@
         let paymentReminders = [];
         let allUsers = [];
         let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
-        let specificTransactionsChart;
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -1017,166 +1073,6 @@
             window.location.href = 'lembrete_receitas.html';
         }
 
-        function openSpecificTransactionsModal() {
-            const modal = document.getElementById('specificTransactionsModal');
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
-            // Garantir que o canvas esteja visível antes de tentar renderizar
-            setTimeout(() => {
-                const canvas = document.getElementById('specificTransactionsChart');
-                if (canvas) canvas.style.display = 'block';
-            }, 100);
-        }
-
-        function closeSpecificTransactionsModal() {
-            const modal = document.getElementById('specificTransactionsModal');
-            modal.style.animation = 'fadeout 0.5s';
-            setTimeout(() => {
-                modal.style.display = 'none';
-                if (specificTransactionsChart) {
-                    specificTransactionsChart.destroy();
-                    specificTransactionsChart = null;
-                }
-            }, 500);
-        }
-
-        function generateSpecificTransactionsReport() {
-            console.log('Iniciando geração do relatório...');
-
-            const startDate = document.getElementById('specificStartDate').value;
-            const endDate = document.getElementById('specificEndDate').value;
-            const specificType = document.getElementById('specificType').value;
-
-            if (!startDate || !endDate || !specificType) {
-                alert('Por favor, preencha todos os campos corretamente.');
-                console.log('Campos obrigatórios não preenchidos.');
-                return;
-            }
-
-            const filteredTransactions = transactions.filter(t => 
-                t.date >= startDate && t.date <= endDate && t.type === specificType
-            );
-
-            console.log('Transações filtradas:', filteredTransactions);
-
-            if (filteredTransactions.length === 0) {
-                alert('Nenhuma transação encontrada para o período e tipo selecionados.');
-                console.log('Nenhuma transação encontrada.');
-                return;
-            }
-
-            // Consolidar transações por descrição
-            const groupedData = {};
-            filteredTransactions.forEach(t => {
-                const desc = t.description;
-                if (!groupedData[desc]) {
-                    groupedData[desc] = 0;
-                }
-                groupedData[desc] += t.amount;
-            });
-
-            const labels = Object.keys(groupedData);
-            const data = labels.map(desc => groupedData[desc]);
-
-            console.log('Labels:', labels);
-            console.log('Data:', data);
-
-            const canvas = document.getElementById('specificTransactionsChart');
-            if (!canvas) {
-                console.error('Canvas não encontrado.');
-                alert('Erro interno: Canvas não encontrado.');
-                return;
-            }
-
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                console.error('Não foi possível obter o contexto 2D do canvas.');
-                alert('Erro interno: Falha ao inicializar o gráfico.');
-                return;
-            }
-
-            // Limpar gráfico anterior
-            if (specificTransactionsChart) {
-                specificTransactionsChart.destroy();
-                specificTransactionsChart = null;
-            }
-
-            // Criar gradientes para as cores
-            const gradientColors = labels.map((_, i) => {
-                const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-                gradient.addColorStop(0, specificType === 'receita' ? 'rgba(78, 205, 196, 0.9)' : 'rgba(255, 107, 107, 0.9)');
-                gradient.addColorStop(1, specificType === 'receita' ? 'rgba(78, 205, 196, 0.5)' : 'rgba(255, 107, 107, 0.5)');
-                return gradient;
-            });
-
-            try {
-                specificTransactionsChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: specificType === 'receita' ? 'Receitas' : 'Despesas',
-                            data: data,
-                            backgroundColor: gradientColors,
-                            borderColor: 'rgba(255, 255, 255, 0.8)',
-                            borderWidth: 1,
-                            hoverOffset: 10
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    color: 'rgba(255, 255, 255, 0.9)',
-                                    font: {
-                                        size: 14,
-                                        weight: '600'
-                                    },
-                                    padding: 15,
-                                    boxWidth: 20,
-                                    usePointStyle: true
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(26, 26, 46, 0.9)',
-                                titleFont: { size: 16, weight: 'bold' },
-                                bodyFont: { size: 14 },
-                                borderColor: 'var(--input-border-color)',
-                                borderWidth: 1,
-                                padding: 12,
-                                callbacks: {
-                                    label: function(tooltipItem) {
-                                        const total = tooltipItem.dataset.data.reduce((sum, val) => sum + val, 0);
-                                        const value = tooltipItem.raw;
-                                        const percentage = ((value / total) * 100).toFixed(2);
-                                        return `${tooltipItem.label}: ${formatCurrency(value)} (${percentage}%)`;
-                                    }
-                                }
-                            }
-                        },
-                        animation: {
-                            duration: 1000,
-                            easing: 'easeInOutQuad'
-                        }
-                    }
-                });
-                console.log('Gráfico de pizza gerado com sucesso.');
-            } catch (error) {
-                console.error('Erro ao criar o gráfico:', error);
-                alert('Erro ao gerar o gráfico. Verifique o console para mais detalhes.');
-            }
-        }
-
-        function normalizeText(text) {
-            return text.trim().toLowerCase()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .replace(/\s+/g, " ");
-        }
-
         function openPerformanceFromDateModal() {
             const modal = document.getElementById('performanceFromDateModal');
             modal.style.display = 'block';
@@ -1329,26 +1225,38 @@
         }
 
         function calculateCompoundInterest() {
-            const principal = parseFloat(document.getElementById('initialAmount').value);
+            const principal = parseFloat(document.getElementById('initialAmount').value) || 0;
             const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
-            const rate = parseFloat(document.getElementById('interestRate').value) / 100;
-            const years = parseInt(document.getElementById('years').value);
-            const frequency = parseInt(document.getElementById('compoundingFrequency').value);
+            const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const years = parseInt(document.getElementById('years').value) || 0;
+            const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
 
-            if (isNaN(principal) || isNaN(rate) || isNaN(years) || isNaN(frequency)) {
-                alert('Por favor, preencha todos os campos corretamente.');
+            // Validação rigorosa
+            if (principal < 0 || monthlyContribution < 0 || annualRate < 0 || years <= 0 || frequency <= 0) {
+                document.getElementById('compoundInterestResult').innerHTML = 
+                    '<span style="color: var(--negative-color);">Erro: Insira valores válidos (positivos e período maior que zero).</span>';
                 return;
             }
 
-            let amount = principal;
-            const monthlyRate = rate / frequency;
+            const monthlyRate = annualRate / 100 / frequency; // Taxa por período
+            const totalPeriods = years * frequency; // Total de períodos
 
-            for (let i = 0; i < years * frequency; i++) {
-                amount = (amount + monthlyContribution) * (1 + monthlyRate);
+            // Fórmula de juros compostos com aportes mensais
+            let futureValue = principal;
+            for (let i = 0; i < totalPeriods; i++) {
+                futureValue = (futureValue + monthlyContribution) * (1 + monthlyRate);
             }
 
-            const formattedAmount = formatCurrency(amount);
-            document.getElementById('compoundInterestResult').innerHTML = `Montante Final: <span class="highlight-amount">${formattedAmount}</span>`;
+            // Resultados detalhados
+            const totalInvested = principal + (monthlyContribution * totalPeriods);
+            const totalInterest = futureValue - totalInvested;
+
+            // Exibir resultado formatado
+            document.getElementById('compoundInterestResult').innerHTML = `
+                <p>Montante Final: <span class="highlight-amount">${formatCurrency(futureValue)}</span></p>
+                <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
+                <p>Juros Acumulados: <span style="color: var(--positive-color);">${formatCurrency(totalInterest)}</span></p>
+            `;
         }
 
         function openThemeSelectorModal() {
