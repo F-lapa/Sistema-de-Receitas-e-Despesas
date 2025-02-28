@@ -355,7 +355,7 @@
             border-radius: 15px;
             box-shadow: var(--shadow);
             padding: 20px;
-            display: block;
+            display: block; /* Garantir visibilidade */
         }
 
         .reminders-list h3 {
@@ -858,6 +858,7 @@
         auth.onAuthStateChanged(user => {
             if (user) {
                 const userId = user.uid;
+                console.log('Usuário autenticado:', userId);
                 loadTheme(userId);
                 database.ref('users/' + userId).once('value').then((snapshot) => {
                     const userData = snapshot.val();
@@ -1277,11 +1278,14 @@
                 type: 'payment'
             };
 
+            console.log('Adicionando lembrete de pagamento:', reminder);
+
             database.ref(`reminders/${userId}/${reminder.id}`).set(reminder)
                 .then(() => {
+                    console.log('Lembrete de pagamento salvo no Firebase');
                     alert('Lembrete de pagamento adicionado com sucesso!');
                     closePaymentReminderModal();
-                    loadReminders(userId);
+                    loadReminders(userId); // Recarregar imediatamente
                 })
                 .catch(error => {
                     console.error('Erro ao adicionar lembrete de pagamento:', error);
@@ -1327,11 +1331,14 @@
                 type: 'revenue'
             };
 
+            console.log('Adicionando lembrete de receita:', reminder);
+
             database.ref(`reminders/${userId}/${reminder.id}`).set(reminder)
                 .then(() => {
+                    console.log('Lembrete de receita salvo no Firebase');
                     alert('Lembrete de receita adicionado com sucesso!');
                     closeRevenueReminderModal();
-                    loadReminders(userId);
+                    loadReminders(userId); // Recarregar imediatamente
                 })
                 .catch(error => {
                     console.error('Erro ao adicionar lembrete de receita:', error);
@@ -1343,12 +1350,16 @@
         }
 
         function loadReminders(userId) {
+            console.log('Carregando lembretes para o usuário:', userId);
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
                 const remindersList = document.getElementById('remindersList');
-                remindersList.innerHTML = '';
-                if (snapshot.val()) {
-                    reminders = Object.values(snapshot.val());
+                remindersList.innerHTML = ''; // Limpar a lista antes de atualizar
+                const data = snapshot.val();
+                console.log('Dados retornados do Firebase:', data);
+                if (data) {
+                    reminders = Object.values(data);
                     reminders.sort((a, b) => a.date.localeCompare(b.date));
+                    console.log('Lembretes processados:', reminders);
                     reminders.forEach(reminder => {
                         const li = document.createElement('li');
                         li.innerHTML = `
@@ -1365,6 +1376,7 @@
                     reminders = [];
                     remindersList.innerHTML = '<li>Nenhum lembrete cadastrado.</li>';
                 }
+                // Garantir que a lista esteja visível
                 document.querySelector('.reminders-list').style.display = 'block';
             }).catch(error => {
                 console.error('Erro ao carregar lembretes:', error);
