@@ -1,4 +1,4 @@
-l<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -303,11 +303,11 @@ l<!DOCTYPE html>
 
         .totals {
             display: flex;
+            flex-direction: row; /* Alinhamento horizontal por padrão */
             justify-content: center;
-            gap: 25px;
-            flex-wrap: wrap;
+            gap: 20px;
             margin-top: 30px;
-            flex-direction: row; /* Alinhamento horizontal */
+            flex-wrap: wrap; /* Permite quebra de linha se necessário */
         }
 
         .totals p {
@@ -323,7 +323,7 @@ l<!DOCTYPE html>
             flex-direction: column;
             align-items: center;
             min-width: 200px;
-            max-width: 250px; /* Limita a largura máxima para evitar esticamento excessivo */
+            max-width: 250px;
         }
 
         .totals p:hover {
@@ -378,7 +378,6 @@ l<!DOCTYPE html>
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
             transition: background 0.3s ease;
         }
 
@@ -389,6 +388,8 @@ l<!DOCTYPE html>
         .reminders-list li .reminder-info {
             display: flex;
             flex-direction: column;
+            cursor: pointer;
+            flex-grow: 1;
         }
 
         .reminders-list li .reminder-info span {
@@ -398,9 +399,21 @@ l<!DOCTYPE html>
         .reminders-list li .reminder-amount {
             font-weight: 600;
             color: var(--positive-color);
+            margin-right: 15px;
         }
 
         .reminders-list li .reminder-amount.payment { color: var(--negative-color); }
+
+        .reminders-list li .delete-icon {
+            font-size: 1.2rem;
+            color: var(--negative-color);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .reminders-list li .delete-icon:hover {
+            transform: scale(1.2);
+        }
 
         .modal {
             display: none;
@@ -1338,13 +1351,13 @@ l<!DOCTYPE html>
                     reminders.forEach(reminder => {
                         const li = document.createElement('li');
                         li.innerHTML = `
-                            <div class="reminder-info">
+                            <div class="reminder-info" onclick="openReminderConfirmModal('${reminder.id}')">
                                 <span>${formatDate(reminder.date)}</span>
                                 <span>${reminder.description}</span>
                             </div>
                             <span class="reminder-amount ${reminder.type}">${formatCurrency(reminder.amount)}</span>
+                            <i class="fas fa-trash-alt delete-icon" onclick="confirmDeleteReminder('${reminder.id}')"></i>
                         `;
-                        li.onclick = () => openReminderConfirmModal(reminder);
                         remindersList.appendChild(li);
                     });
                 } else {
@@ -1353,11 +1366,13 @@ l<!DOCTYPE html>
                 }
             }).catch(error => {
                 console.error('Erro ao carregar lembretes:', error);
-                remindersList.innerHTML = '<li>Erro ao carregar lembretes.</li>';
+                document.getElementById('remindersList').innerHTML = '<li>Erro ao carregar lembretes.</li>';
             });
         }
 
-        function openReminderConfirmModal(reminder) {
+        function openReminderConfirmModal(reminderId) {
+            const reminder = reminders.find(r => r.id === reminderId);
+            if (!reminder) return;
             selectedReminder = reminder;
             const modal = document.getElementById('reminderConfirmModal');
             const title = document.getElementById('reminderConfirmTitle');
@@ -1404,6 +1419,23 @@ l<!DOCTYPE html>
                     });
             }
             closeReminderConfirmModal();
+        }
+
+        function confirmDeleteReminder(reminderId) {
+            const reminder = reminders.find(r => r.id === reminderId);
+            if (!reminder) return;
+            if (confirm(`Tem certeza que deseja excluir o lembrete "${reminder.description}" de ${formatCurrency(reminder.amount)} em ${formatDate(reminder.date)}?`)) {
+                const userId = auth.currentUser.uid;
+                database.ref(`reminders/${userId}/${reminderId}`).remove()
+                    .then(() => {
+                        alert('Lembrete excluído com sucesso!');
+                        loadReminders(userId);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao excluir lembrete:', error);
+                        alert('Erro ao excluir o lembrete. Tente novamente.');
+                    });
+            }
         }
 
         function openCompoundInterestModal() {
