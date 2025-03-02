@@ -1678,11 +1678,19 @@
         }
 
         function openEditReminderModal(reminderId) {
+            console.log('Tentando abrir modal de edição para reminderId:', reminderId);
+            if (!reminderId || typeof reminderId !== 'string') {
+                console.error('ID de lembrete inválido:', reminderId);
+                alert('ID de lembrete inválido. Tente novamente.');
+                return;
+            }
+
             const userId = auth.currentUser.uid;
             const originalId = reminderId.split('_')[0];
 
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
                 const data = snapshot.val();
+                console.log('Dados do Firebase para edição:', data);
                 if (data) {
                     reminders = Object.values(data).filter(reminder => 
                         reminder && 
@@ -1692,13 +1700,15 @@
                         reminder.amount !== undefined && 
                         reminder.type
                     );
+                    console.log('Lembretes carregados:', reminders);
                 } else {
                     reminders = [];
+                    console.log('Nenhum lembrete encontrado no Firebase');
                 }
 
                 const reminder = reminders.find(r => r.id === originalId);
                 if (!reminder) {
-                    console.error('Lembrete não encontrado:', originalId);
+                    console.error('Lembrete não encontrado para originalId:', originalId);
                     alert('Lembrete não encontrado. Ele pode ter sido excluído ou não existe mais.');
                     loadReminders(userId);
                     return;
@@ -1711,6 +1721,7 @@
                 }
 
                 reminderToEdit = { ...displayReminder, originalId: reminder.id };
+                console.log('Lembrete selecionado para edição:', reminderToEdit);
                 const modal = document.getElementById('editReminderModal');
                 document.getElementById('editReminderDate').value = displayReminder.date;
                 document.getElementById('editReminderAmount').value = formatCurrency(displayReminder.amount).replace('R$', '').trim();
@@ -1767,70 +1778,20 @@
         }
 
         function openReminderConfirmModal(reminderId) {
-            const originalId = reminderId.split('_')[0];
-            const reminder = reminders.find(r => r.id === originalId);
-            if (!reminder) return;
-            selectedReminder = { ...reminder, displayId: reminderId };
-            if (reminderId.includes('_')) {
-                selectedReminder.date = `${reminderId.split('_')[1]}-${reminder.date.split('-')[2]}`;
-            } else {
-                selectedReminder.date = reminder.date;
-            }
-            const modal = document.getElementById('reminderConfirmModal');
-            const title = document.getElementById('reminderConfirmTitle');
-            const message = document.getElementById('reminderConfirmMessage');
-            title.innerText = `Confirmar ${reminder.type === 'payment' ? 'Pagamento' : 'Receita'}`;
-            message.innerText = `${reminder.description} - ${formatCurrency(reminder.amount)} em ${formatDate(selectedReminder.date)}\nJá foi ${reminder.type === 'payment' ? 'pago' : 'recebido'}?`;
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
-        }
+    console.log('Tentando abrir modal de confirmação para reminderId:', reminderId);
+    if (!reminderId || typeof reminderId !== 'string') {
+        console.error('ID de lembrete inválido:', reminderId);
+        alert('ID de lembrete inválido. Tente novamente.');
+        return;
+    }
 
-        function closeReminderConfirmModal() {
-            const modal = document.getElementById('reminderConfirmModal');
-            modal.style.animation = 'fadeout 0.5s';
-            setTimeout(() => {
-                modal.style.display = 'none';
-                selectedReminder = null;
-            }, 500);
-        }
-
-        function confirmReminder(confirmed) {
-            if (!selectedReminder) return;
-
-            const userId = auth.currentUser.uid;
-            if (confirmed) {
-                const transaction = {
-                    id: generateTransactionId(),
-                    date: selectedReminder.date,
-                    description: selectedReminder.description,
-                    amount: selectedReminder.amount,
-                    type: selectedReminder.type === 'payment' ? 'despesa' : 'receita'
-                };
-                transactions.push(transaction);
-                saveTransactions();
-
-                const originalId = selectedReminder.id;
-                database.ref(`reminders/${userId}/${originalId}`).remove()
-                    .then(() => {
-                        alert(`Transação de ${transaction.type} adicionada com sucesso!`);
-                        loadReminders(userId);
-                        updateFilteredView();
-                        calculateBalances();
-                    })
-                    .catch(error => {
-                        console.error('Erro ao remover lembrete:', error);
-                        alert('Erro ao processar o lembrete. Tente novamente.');
-                    });
-            }
-            closeReminderConfirmModal();
-        }
-
-        function openDeleteReminderConfirmModal(reminderId) {
     const userId = auth.currentUser.uid;
     const originalId = reminderId.split('_')[0];
 
+    // Recarregar lembretes do Firebase para garantir sincronização
     database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
         const data = snapshot.val();
+        console.log('Dados do Firebase para confirmação:', data);
         if (data) {
             reminders = Object.values(data).filter(reminder => 
                 reminder && 
@@ -1840,13 +1801,114 @@
                 reminder.amount !== undefined && 
                 reminder.type
             );
+            console.log('Lembretes carregados:', reminders);
         } else {
             reminders = [];
+            console.log('Nenhum lembrete encontrado no Firebase');
         }
 
         const reminder = reminders.find(r => r.id === originalId);
         if (!reminder) {
-            console.error('Lembrete não encontrado:', originalId);
+            console.error('Lembrete não encontrado para originalId:', originalId);
+            alert('Lembrete não encontrado. Ele pode ter sido excluído ou não existe mais.');
+            loadReminders(userId);
+            return;
+        }
+
+        selectedReminder = { ...reminder, displayId: reminderId };
+        if (reminderId.includes('_')) {
+            const [_, yearMonth] = reminderId.split('_');
+            selectedReminder.date = `${yearMonth}-${reminder.date.split('-')[2]}`;
+        } else {
+            selectedReminder.date = reminder.date;
+        }
+
+        console.log('Lembrete selecionado para confirmação:', selectedReminder);
+        const modal = document.getElementById('reminderConfirmModal');
+        const title = document.getElementById('reminderConfirmTitle');
+        const message = document.getElementById('reminderConfirmMessage');
+        title.innerText = `Confirmar ${reminder.type === 'payment' ? 'Pagamento' : 'Receita'}`;
+        message.innerText = `${reminder.description} - ${formatCurrency(reminder.amount)} em ${formatDate(selectedReminder.date)}\nJá foi ${reminder.type === 'payment' ? 'pago' : 'recebido'}?`;
+        modal.style.display = 'block';
+        modal.style.animation = 'slideIn 0.4s';
+    }).catch(error => {
+        console.error('Erro ao carregar lembretes para confirmação:', error);
+        alert('Erro ao carregar os dados do lembrete. Tente novamente.');
+    });
+}
+
+function closeReminderConfirmModal() {
+    const modal = document.getElementById('reminderConfirmModal');
+    modal.style.animation = 'fadeout 0.5s';
+    setTimeout(() => {
+        modal.style.display = 'none';
+        selectedReminder = null;
+    }, 500);
+}
+
+function confirmReminder(confirmed) {
+    if (!selectedReminder) return;
+
+    const userId = auth.currentUser.uid;
+    if (confirmed) {
+        const transaction = {
+            id: generateTransactionId(),
+            date: selectedReminder.date,
+            description: selectedReminder.description,
+            amount: selectedReminder.amount,
+            type: selectedReminder.type === 'payment' ? 'despesa' : 'receita'
+        };
+        transactions.push(transaction);
+        saveTransactions();
+
+        const originalId = selectedReminder.id;
+        database.ref(`reminders/${userId}/${originalId}`).remove()
+            .then(() => {
+                alert(`Transação de ${transaction.type} adicionada com sucesso!`);
+                loadReminders(userId);
+                updateFilteredView();
+                calculateBalances();
+            })
+            .catch(error => {
+                console.error('Erro ao remover lembrete:', error);
+                alert('Erro ao processar o lembrete. Tente novamente.');
+            });
+    }
+    closeReminderConfirmModal();
+}
+
+function openDeleteReminderConfirmModal(reminderId) {
+    console.log('Tentando abrir modal de exclusão para reminderId:', reminderId);
+    if (!reminderId || typeof reminderId !== 'string') {
+        console.error('ID de lembrete inválido:', reminderId);
+        alert('ID de lembrete inválido. Tente novamente.');
+        return;
+    }
+
+    const userId = auth.currentUser.uid;
+    const originalId = reminderId.split('_')[0];
+
+    database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
+        const data = snapshot.val();
+        console.log('Dados do Firebase para exclusão:', data);
+        if (data) {
+            reminders = Object.values(data).filter(reminder => 
+                reminder && 
+                reminder.id && 
+                reminder.date && 
+                reminder.description && 
+                reminder.amount !== undefined && 
+                reminder.type
+            );
+            console.log('Lembretes carregados:', reminders);
+        } else {
+            reminders = [];
+            console.log('Nenhum lembrete encontrado no Firebase');
+        }
+
+        const reminder = reminders.find(r => r.id === originalId);
+        if (!reminder) {
+            console.error('Lembrete não encontrado para originalId:', originalId);
             alert('Lembrete não encontrado. Ele pode ter sido excluído ou não existe mais.');
             loadReminders(userId);
             return;
@@ -2024,4 +2086,3 @@ function snoozeReminder() {
     </script>
 </body>
 </html>
-                
