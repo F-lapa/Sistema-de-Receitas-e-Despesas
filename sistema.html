@@ -312,7 +312,7 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            width: 150px; /* Tamanho fixo para consistência */
+            width: 150px;
             margin: 10px;
             transition: all 0.3s ease;
             box-shadow: var(--shadow);
@@ -780,6 +780,16 @@
             </div>
         </div>
 
+        <div id="deleteTransactionConfirmModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeDeleteTransactionConfirmModal()">×</span>
+                <h2>Confirmar Exclusão</h2>
+                <p id="deleteTransactionMessage"></p>
+                <button onclick="deleteTransaction(true)">Sim</button>
+                <button onclick="deleteTransaction(false)">Não</button>
+            </div>
+        </div>
+
         <div id="paymentReminderModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closePaymentReminderModal()">×</span>
@@ -833,8 +843,16 @@
                 <span class="close" onclick="closeEditReminderModal()">×</span>
                 <h2>Editar Lembrete</h2>
                 <div class="form-group">
+                    <label for="editReminderDate">Data:</label>
+                    <input type="date" id="editReminderDate" class="highlight">
+                </div>
+                <div class="form-group">
                     <label for="editReminderAmount">Novo Valor (R$):</label>
                     <input type="text" id="editReminderAmount" class="highlight" placeholder="0,00" inputmode="decimal" oninput="validateAmount(this)">
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="editReminderMonthly">
+                    <label for="editReminderMonthly">Mensal</label>
                 </div>
                 <button onclick="updateReminder()">Salvar</button>
             </div>
@@ -963,6 +981,7 @@
         let selectedReminder = null;
         let reminderToDelete = null;
         let reminderToEdit = null;
+        let transactionToDelete = null;
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -1125,16 +1144,39 @@
                                             </div>`;
                 cellAmount.innerHTML = `<div class="transaction-amount ${transaction.type}">${formatCurrency(transaction.amount)}</div>`;
                 cellType.innerText = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-                cellAction.innerHTML = `<i class="fas fa-trash-alt remove-icon" onclick="confirmRemoveTransaction('${transaction.id}')" style="cursor:pointer;"></i>`;
+                cellAction.innerHTML = `<i class="fas fa-trash-alt remove-icon" onclick="openDeleteTransactionConfirmModal('${transaction.id}')" style="cursor:pointer;"></i>`;
             });
 
             calculateBalances();
         }
 
-        function confirmRemoveTransaction(transactionId) {
-            if (confirm('Tem certeza que deseja remover esta transação?')) {
-                removeTransaction(transactionId);
+        function openDeleteTransactionConfirmModal(transactionId) {
+            const transaction = transactions.find(t => t.id === transactionId);
+            if (!transaction) return;
+            transactionToDelete = transaction;
+            const modal = document.getElementById('deleteTransactionConfirmModal');
+            const message = document.getElementById('deleteTransactionMessage');
+            message.innerText = `Tem certeza que deseja remover a transação "${transaction.description}" de ${formatCurrency(transaction.amount)} em ${formatDate(transaction.date)}?`;
+            modal.style.display = 'block';
+            modal.style.animation = 'slideIn 0.4s';
+        }
+
+        function closeDeleteTransactionConfirmModal() {
+            const modal = document.getElementById('deleteTransactionConfirmModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                transactionToDelete = null;
+            }, 500);
+        }
+
+        function deleteTransaction(confirmed) {
+            if (!transactionToDelete) return;
+
+            if (confirmed) {
+                removeTransaction(transactionToDelete.id);
             }
+            closeDeleteTransactionConfirmModal();
         }
 
         function removeTransaction(transactionId) {
@@ -1238,6 +1280,7 @@
         function checkMonthlyReminders(userId) {
             const currentDate = new Date(getCurrentDate());
             const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
 
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
                 const data = snapshot.val();
@@ -1247,7 +1290,9 @@
                         if (reminder.monthly) {
                             const reminderDate = new Date(reminder.date);
                             const reminderMonth = reminderDate.getMonth();
-                            if (reminderMonth < currentMonth || (reminderMonth === 11 && currentMonth === 0)) {
+                            const reminderYear = reminderDate.getFullYear();
+                            if ((reminderMonth < currentMonth && reminderYear <= currentYear) || 
+                                (reminderMonth === 11 && currentMonth === 0 && reminderYear < currentYear)) {
                                 const newReminder = {
                                     ...reminder,
                                     id: generateTransactionId(),
@@ -1596,7 +1641,9 @@
             if (!reminder) return;
             reminderToEdit = reminder;
             const modal = document.getElementById('editReminderModal');
+            document.getElementById('editReminderDate').value = reminder.date;
             document.getElementById('editReminderAmount').value = formatCurrency(reminder.amount).replace('R$', '').trim();
+            document.getElementById('editReminderMonthly').checked = reminder.monthly || false;
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
         }
@@ -1613,14 +1660,22 @@
         function updateReminder() {
             if (!reminderToEdit) return;
 
+            const newDate = document.getElementById('editReminderDate').value;
             const newAmount = parseCurrency(document.getElementById('editReminderAmount').value);
-            if (isNaN(newAmount) || newAmount <= 0) {
-                alert('Por favor, insira um valor válido.');
+            const monthly = document.getElementById('editReminderMonthly').checked;
+
+            if (!newDate || isNaN(newAmount) || newAmount <= 0) {
+                alert('Por favor, insira uma data e um valor válido.');
                 return;
             }
 
             const userId = auth.currentUser.uid;
-            const updatedReminder = { ...reminderToEdit, amount: newAmount };
+            const updatedReminder = { 
+                ...reminderToEdit, 
+                date: newDate,
+                amount: newAmount,
+                monthly 
+            };
 
             database.ref(`reminders/${userId}/${reminderToEdit.id}`).set(updatedReminder)
                 .then(() => {
@@ -1785,7 +1840,7 @@
             }, 500);
         }
 
-        function applyTheme(color) {
+                function applyTheme(color) {
             document.documentElement.style.setProperty('--button-color', color);
             document.documentElement.style.setProperty('--input-border-color', color);
             const userId = auth.currentUser.uid;
