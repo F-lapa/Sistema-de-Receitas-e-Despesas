@@ -175,7 +175,7 @@
             width: calc(100% - 300px);
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 20px; /* Reduzido de 30px para maior compactação */
             position: relative;
         }
 
@@ -191,78 +191,86 @@
         }
 
         .form-header {
-            font-size: 1.8rem;
+            font-size: 1.5rem; /* Reduzido de 1.8rem */
             font-weight: 600;
             color: var(--text-color);
-            margin-bottom: 25px;
+            margin-bottom: 15px; /* Reduzido de 25px */
             text-align: center;
             font-family: 'Orbitron', sans-serif;
             letter-spacing: 1px;
         }
 
-        .form-group {
+        .transaction-form {
             background: var(--card-bg);
-            padding: 25px;
+            padding: 15px; /* Reduzido de 25px */
             border-radius: 15px;
             box-shadow: var(--shadow);
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
-            position: relative;
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: transform 0.3s ease;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr 1fr; /* Layout em grade */
+            gap: 10px; /* Espaçamento entre os campos */
         }
 
-        .form-group:hover {
+        .transaction-form:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
         }
 
         .form-group label {
             font-weight: 500;
             color: var(--text-color);
-            margin-bottom: 10px;
-            display: block;
+            margin-bottom: 5px; /* Reduzido de 10px */
+            font-size: 0.9rem; /* Reduzido para compactação */
             letter-spacing: 0.5px;
         }
 
         .form-group input, .form-group select {
             width: 100%;
-            padding: 14px;
+            padding: 8px; /* Reduzido de 14px */
             border: 2px solid var(--input-border-color);
-            border-radius: 10px;
+            border-radius: 8px; /* Reduzido de 10px */
             background: #0f0f2a;
             color: var(--text-color);
-            font-size: 1rem;
+            font-size: 0.9rem; /* Reduzido de 1rem */
             transition: all 0.3s ease;
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .form-group input:focus, .form-group select:focus {
             border-color: var(--positive-color);
-            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5), inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5), inset 0 2px 5px rgba(0, 0, 0, 0.2);
             outline: none;
         }
 
-        .container button {
-            padding: 16px;
+        .container button.transaction-btn {
+            padding: 10px; /* Reduzido de 16px */
             background: linear-gradient(90deg, var(--button-color), var(--input-border-color));
             color: white;
             border: none;
-            border-radius: 12px;
-            font-size: 1.1rem;
+            border-radius: 10px; /* Reduzido de 12px */
+            font-size: 1rem; /* Reduzido de 1.1rem */
             font-weight: 600;
             cursor: pointer;
             width: 100%;
             max-width: 600px;
-            margin: 25px auto;
+            margin: 10px auto 0; /* Reduzido de 25px e ajustado */
             transition: all 0.3s ease;
             box-shadow: var(--shadow);
             text-transform: uppercase;
             letter-spacing: 1px;
+            grid-column: span 4; /* Ocupa toda a largura da grade */
         }
 
-        .container button:hover {
+        .container button.transaction-btn:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 40px rgba(107, 72, 255, 0.6);
         }
@@ -355,7 +363,7 @@
             border-radius: 15px;
             box-shadow: var(--shadow);
             padding: 20px;
-            display: block; /* Garantir visibilidade */
+            display: block;
         }
 
         .reminders-list h3 {
@@ -499,12 +507,13 @@
                 padding: 20px;
             }
 
-            .form-group, .container button {
-                max-width: 100%;
+            .transaction-form {
+                grid-template-columns: 1fr; /* Empilha os campos em telas pequenas */
+                gap: 8px;
             }
 
-            .sidebar .buttons {
-                gap: 12px;
+            .container button.transaction-btn {
+                grid-column: span 1; /* Ajusta para telas pequenas */
             }
 
             .modal-content {
@@ -586,26 +595,28 @@
         <input type="text" style="display:none;" autocomplete="username">
         <input type="password" style="display:none;" autocomplete="new-password">
 
-        <div class="form-group">
-            <label for="date">Data:</label>
-            <input type="date" id="date" class="highlight" onchange="updateFilteredView()">
+        <div class="transaction-form">
+            <div class="form-group">
+                <label for="date">Data:</label>
+                <input type="date" id="date" class="highlight" onchange="updateFilteredView()">
+            </div>
+            <div class="form-group">
+                <label for="description">Descrição:</label>
+                <input type="text" id="description" class="highlight">
+            </div>
+            <div class="form-group">
+                <label for="amount">Valor (R$):</label>
+                <input type="text" id="amount" name="amount_field" placeholder="0,00" value="0,00" class="highlight" inputmode="decimal" autocomplete="off" onclick="this.value = ''" oninput="validateAmount(this)">
+            </div>
+            <div class="form-group">
+                <label for="type">Tipo:</label>
+                <select id="type" class="highlight">
+                    <option value="receita">Receita</option>
+                    <option value="despesa">Despesa</option>
+                </select>
+            </div>
+            <button class="transaction-btn" onclick="addTransaction()">Adicionar Transação</button>
         </div>
-        <div class="form-group">
-            <label for="description">Descrição:</label>
-            <input type="text" id="description" class="highlight">
-        </div>
-        <div class="form-group">
-            <label for="amount">Valor (R$):</label>
-            <input type="text" id="amount" name="amount_field" placeholder="0,00" value="0,00" class="highlight" inputmode="decimal" autocomplete="off" onclick="this.value = ''" oninput="validateAmount(this)">
-        </div>
-        <div class="form-group">
-            <label for="type">Tipo:</label>
-            <select id="type" class="highlight">
-                <option value="receita">Receita</option>
-                <option value="despesa">Despesa</option>
-            </select>
-        </div>
-        <button onclick="addTransaction()">Adicionar Transação</button>
 
         <table id="transactionsTable">
             <thead>
