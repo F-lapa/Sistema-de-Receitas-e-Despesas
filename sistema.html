@@ -1616,7 +1616,6 @@
                     let displayReminders = [];
 
                     reminders.forEach(reminder => {
-                        const reminderDate = new Date(reminder.date);
                         const reminderMonth = reminder.date.slice(0, 7);
                         const transactionDateObj = new Date(transactionDate);
 
@@ -1631,7 +1630,7 @@
                                 if (currentMonth !== reminderMonth && currentMonth <= transactionMonth) {
                                     const newReminder = {
                                         ...reminder,
-                                        id: reminder.id + '_' + currentMonth,
+                                        id: `${reminder.id}_${currentMonth}`,
                                         date: `${currentMonth}-${reminder.date.split('-')[2]}`
                                     };
                                     displayReminders.push(newReminder);
@@ -1658,8 +1657,8 @@
                                     <span>${reminder.description}</span>
                                 </div>
                                 <span class="reminder-amount ${reminder.type}">${formatCurrency(reminder.amount)}</span>
-                                ${reminder.monthly ? `<i class="fas fa-edit edit-icon" onclick="openEditReminderModal('${reminder.id.split('_')[0]}')"></i>` : ''}
-                                <i class="fas fa-trash-alt delete-icon" onclick="openDeleteReminderConfirmModal('${reminder.id.split('_')[0]}')"></i>
+                                <i class="fas fa-edit edit-icon" onclick="openEditReminderModal('${reminder.id}')"></i>
+                                <i class="fas fa-trash-alt delete-icon" onclick="openDeleteReminderConfirmModal('${reminder.id}')"></i>
                             `;
                             remindersList.appendChild(li);
                         });
@@ -1678,13 +1677,15 @@
         }
 
         function openEditReminderModal(reminderId) {
-            const reminder = reminders.find(r => r.id === reminderId);
+            const reminder = reminders.find(r => r.id === reminderId.split('_')[0]);
             if (!reminder) return;
-            reminderToEdit = reminder;
+            
+            const displayReminder = reminders.find(r => r.id === reminderId) || reminder;
+            reminderToEdit = { ...displayReminder, originalId: reminder.id };
             const modal = document.getElementById('editReminderModal');
-            document.getElementById('editReminderDate').value = reminder.date;
-            document.getElementById('editReminderAmount').value = formatCurrency(reminder.amount).replace('R$', '').trim();
-            document.getElementById('editReminderMonthly').checked = reminder.monthly || false;
+            document.getElementById('editReminderDate').value = displayReminder.date;
+            document.getElementById('editReminderAmount').value = formatCurrency(displayReminder.amount).replace('R$', '').trim();
+            document.getElementById('editReminderMonthly').checked = displayReminder.monthly || false;
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
         }
@@ -1718,7 +1719,7 @@
                 monthly 
             };
 
-            database.ref(`reminders/${userId}/${reminderToEdit.id}`).set(updatedReminder)
+            database.ref(`reminders/${userId}/${reminderToEdit.originalId}`).set(updatedReminder)
                 .then(() => {
                     alert('Lembrete atualizado com sucesso!');
                     closeEditReminderModal();
@@ -1785,9 +1786,9 @@
         }
 
         function openDeleteReminderConfirmModal(reminderId) {
-            const reminder = reminders.find(r => r.id === reminderId);
+            const reminder = reminders.find(r => r.id === reminderId.split('_')[0]);
             if (!reminder) return;
-            reminderToDelete = reminder;
+            reminderToDelete = { ...reminder, displayId: reminderId };
             const modal = document.getElementById('deleteReminderConfirmModal');
             const message = document.getElementById('deleteReminderMessage');
             message.innerText = `Tem certeza que deseja excluir o lembrete "${reminder.description}" de ${formatCurrency(reminder.amount)} em ${formatDate(reminder.date)}?`;
@@ -1809,9 +1810,10 @@
 
             if (confirmed) {
                 const userId = auth.currentUser.uid;
-                const originalId = reminderToDelete.id.split('_')[0];
+                const originalId = reminderToDelete.id;
                 database.ref(`reminders/${userId}/${originalId}`).remove()
                     .then(() => {
+                        alert('Lembrete excluído com sucesso!');
                         loadReminders(userId);
                     })
                     .catch(error => {
@@ -1853,17 +1855,17 @@
                 return;
             }
 
-            const ratePerPeriod = annualRate / 100 / frequency;
+                        const periodRate = annualRate / 100 / frequency; // Reescrevendo "ratePerPeriod" como "periodRate"
             const totalPeriods = years * frequency;
 
             let accumulatedValue = principal;
 
             for (let period = 0; period < totalPeriods; period++) {
-                accumulatedValue = (accumulatedValue + monthlyContribution) * (1 + ratePerPeriod);
+                accumulatedValue = (accumulatedValue + monthlyContribution) * (1 + periodRate);
             }
 
             const totalInvested = principal + (monthlyContribution * totalPeriods);
-                        const interestEarned = accumulatedValue - totalInvested;
+            const interestEarned = accumulatedValue - totalInvested;
 
             document.getElementById('compoundInterestResult').innerHTML = `
                 <p>Montante Final: <span class="highlight-amount">${formatCurrency(accumulatedValue)}</span></p>
