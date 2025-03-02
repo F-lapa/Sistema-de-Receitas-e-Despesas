@@ -1677,25 +1677,49 @@
         }
 
         function openEditReminderModal(reminderId) {
+            const userId = auth.currentUser.uid;
             const originalId = reminderId.split('_')[0];
-            const reminder = reminders.find(r => r.id === originalId);
-            if (!reminder) {
-                console.error('Lembrete não encontrado:', reminderId);
-                return;
-            }
-            
-            const displayReminder = { ...reminder, displayId: reminderId };
-            if (reminderId.includes('_')) {
-                displayReminder.date = `${reminderId.split('_')[1]}-${reminder.date.split('-')[2]}`;
-            }
-            
-            reminderToEdit = { ...displayReminder, originalId: reminder.id };
-            const modal = document.getElementById('editReminderModal');
-            document.getElementById('editReminderDate').value = displayReminder.date;
-            document.getElementById('editReminderAmount').value = formatCurrency(displayReminder.amount).replace('R$', '').trim();
-            document.getElementById('editReminderMonthly').checked = displayReminder.monthly || false;
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
+
+            // Forçar recarregamento dos lembretes antes de buscar
+            database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    reminders = Object.values(data).filter(reminder => 
+                        reminder && 
+                        reminder.id && 
+                        reminder.date && 
+                        reminder.description && 
+                        reminder.amount !== undefined && 
+                        reminder.type
+                    );
+                } else {
+                    reminders = [];
+                }
+
+                const reminder = reminders.find(r => r.id === originalId);
+                if (!reminder) {
+                    console.error('Lembrete não encontrado após recarregamento:', reminderId);
+                    alert('Lembrete não encontrado. Tente novamente.');
+                    loadReminders(userId); // Recarrega a lista para refletir o estado atual
+                    return;
+                }
+
+                const displayReminder = { ...reminder, displayId: reminderId };
+                if (reminderId.includes('_')) {
+                    displayReminder.date = `${reminderId.split('_')[1]}-${reminder.date.split('-')[2]}`;
+                }
+                
+                reminderToEdit = { ...displayReminder, originalId: reminder.id };
+                const modal = document.getElementById('editReminderModal');
+                document.getElementById('editReminderDate').value = displayReminder.date;
+                document.getElementById('editReminderAmount').value = formatCurrency(displayReminder.amount).replace('R$', '').trim();
+                document.getElementById('editReminderMonthly').checked = displayReminder.monthly || false;
+                modal.style.display = 'block';
+                modal.style.animation = 'slideIn 0.4s';
+            }).catch(error => {
+                console.error('Erro ao recarregar lembretes:', error);
+                alert('Erro ao carregar os dados do lembrete. Tente novamente.');
+            });
         }
 
         function closeEditReminderModal() {
@@ -1801,71 +1825,96 @@
         }
 
         function openDeleteReminderConfirmModal(reminderId) {
-            const originalId = reminderId.split('_')[0];
-            const reminder = reminders.find(r => r.id === originalId);
-            if (!reminder) {
-                console.error('Lembrete não encontrado:', reminderId);
-                return;
-            }
-            reminderToDelete = { ...reminder, displayId: reminderId };
-            const displayDate = reminderId.includes('_') ? `${reminderId.split('_')[1]}-${reminder.date.split('-')[2]}` : reminder.date;
-            const modal = document.getElementById('deleteReminderConfirmModal');
-            const message = document.getElementById('deleteReminderMessage');
-            message.innerText = `Tem certeza que deseja excluir o lembrete "${reminder.description}" de ${formatCurrency(reminder.amount)} em ${formatDate(displayDate)}?`;
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
+    const currentUserId = auth.currentUser.uid; // ID do usuário autenticado
+    const baseReminderId = reminderId.split('_')[0]; // ID base do lembrete
+
+    // Forçar recarregamento dos lembretes antes de buscar
+    database.ref(`reminders/${currentUserId}`).once('value').then((snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            reminders = Object.values(data).filter(reminder => 
+                reminder && 
+                reminder.id && 
+                reminder.date && 
+                reminder.description && 
+                reminder.amount !== undefined && 
+                reminder.type
+            );
+        } else {
+            reminders = [];
         }
 
-        function closeDeleteReminderConfirmModal() {
-            const modal = document.getElementById('deleteReminderConfirmModal');
-            modal.style.animation = 'fadeout 0.5s';
-            setTimeout(() => {
-                modal.style.display = 'none';
-                reminderToDelete = null;
-            }, 500);
+        const reminder = reminders.find(r => r.id === baseReminderId);
+        if (!reminder) {
+            console.error('Lembrete não encontrado após recarregamento:', reminderId);
+            alert('Lembrete não encontrado. Tente novamente.');
+            loadReminders(currentUserId); // Recarrega a lista para refletir o estado atual
+            return;
         }
 
-        function deleteReminder(confirmed) {
-            if (!reminderToDelete) return;
+        reminderToDelete = { ...reminder, displayId: reminderId };
+        const displayDate = reminderId.includes('_') ? `${reminderId.split('_')[1]}-${reminder.date.split('-')[2]}` : reminder.date;
+        const modal = document.getElementById('deleteReminderConfirmModal');
+        const message = document.getElementById('deleteReminderMessage');
+        message.innerText = `Tem certeza que deseja excluir o lembrete "${reminder.description}" de ${formatCurrency(reminder.amount)} em ${formatDate(displayDate)}?`;
+        modal.style.display = 'block';
+        modal.style.animation = 'slideIn 0.4s';
+    }).catch(error => {
+        console.error('Erro ao recarregar lembretes:', error);
+        alert('Erro ao carregar os dados do lembrete. Tente novamente.');
+    });
+}
 
-            if (confirmed) {
-                const userId = auth.currentUser.uid;
-                const originalId = reminderToDelete.id;
-                database.ref(`reminders/${userId}/${originalId}`).remove()
-                    .then(() => {
-                        alert('Lembrete excluído com sucesso!');
-                        loadReminders(userId);
-                    })
-                    .catch(error => {
-                        console.error('Erro ao excluir lembrete:', error);
-                        alert('Erro ao excluir o lembrete. Tente novamente.');
-                    });
-            }
-            closeDeleteReminderConfirmModal();
-        }
+function closeDeleteReminderConfirmModal() {
+    const modal = document.getElementById('deleteReminderConfirmModal');
+    modal.style.animation = 'fadeout 0.5s';
+    setTimeout(() => {
+        modal.style.display = 'none';
+        reminderToDelete = null;
+    }, 500);
+}
 
-        function confirmDeleteReminder(reminderId) {
-            openDeleteReminderConfirmModal(reminderId);
-        }
+function deleteReminder(confirmed) {
+    if (!reminderToDelete) return;
 
-        function openCompoundInterestModal() {
-            const modal = document.getElementById('compoundInterestModal');
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
-        }
+    if (confirmed) {
+        const userId = auth.currentUser.uid;
+        const originalId = reminderToDelete.id;
+        database.ref(`reminders/${userId}/${originalId}`).remove()
+            .then(() => {
+                alert('Lembrete excluído com sucesso!');
+                loadReminders(userId);
+            })
+            .catch(error => {
+                console.error('Erro ao excluir lembrete:', error);
+                alert('Erro ao excluir o lembrete. Tente novamente.');
+            });
+    }
+    closeDeleteReminderConfirmModal();
+}
 
-        function closeCompoundInterestModal() {
-            const modal = document.getElementById('compoundInterestModal');
-            modal.style.animation = 'fadeout 0.5s';
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 500);
-        }
+function confirmDeleteReminder(reminderId) {
+    openDeleteReminderConfirmModal(reminderId);
+}
 
-      function calculateCompoundInterest() {
-    const initialCapital = parseFloat(document.getElementById('initialAmount').value) || 0; // Valor inicial
-    const monthlyDeposit = parseFloat(document.getElementById('monthlyContribution').value) || 0; // Aporte mensal
-    const yearlyRate = parseFloat(document.getElementById('interestRate').value) || 0; // Taxa de juros anual
+function openCompoundInterestModal() {
+    const modal = document.getElementById('compoundInterestModal');
+    modal.style.display = 'block';
+    modal.style.animation = 'slideIn 0.4s';
+}
+
+function closeCompoundInterestModal() {
+    const modal = document.getElementById('compoundInterestModal');
+    modal.style.animation = 'fadeout 0.5s';
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 500);
+}
+
+function calculateCompoundInterest() {
+    const initialCapital = parseFloat(document.getElementById('initialAmount').value) || 0;
+    const monthlyDeposit = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+    const yearlyRate = parseFloat(document.getElementById('interestRate').value) || 0;
     const years = parseInt(document.getElementById('years').value) || 0;
     const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
 
