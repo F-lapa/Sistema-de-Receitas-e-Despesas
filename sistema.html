@@ -406,7 +406,6 @@
             text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
-        /* Nova seção de lembretes */
         .reminders-section {
             width: 100%;
             max-width: 900px;
@@ -450,6 +449,7 @@
             display: flex;
             flex-direction: column;
             flex-grow: 1;
+            cursor: pointer;
         }
 
         .reminders-section li .reminder-info span {
@@ -696,7 +696,6 @@
             </p>
         </div>
 
-        <!-- Nova seção de lembretes -->
         <div class="reminders-section">
             <h3>Lembretes</h3>
             <ul id="remindersList"></ul>
@@ -790,7 +789,6 @@
             </div>
         </div>
 
-        <!-- Novo modal para adicionar lembrete -->
         <div id="addReminderModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeAddReminderModal()">×</span>
@@ -814,11 +812,14 @@
                         <option value="revenue">Receita</option>
                     </select>
                 </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="reminderMonthly">
+                    <label for="reminderMonthly">Mensal</label>
+                </div>
                 <button onclick="addReminder()">Adicionar</button>
             </div>
         </div>
 
-        <!-- Novo modal para editar lembrete -->
         <div id="editReminderModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeEditReminderModal()">×</span>
@@ -842,11 +843,14 @@
                         <option value="revenue">Receita</option>
                     </select>
                 </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="editReminderMonthly">
+                    <label for="editReminderMonthly">Mensal</label>
+                </div>
                 <button onclick="updateReminder()">Salvar</button>
             </div>
         </div>
 
-        <!-- Novo modal para confirmar exclusão de lembrete -->
         <div id="deleteReminderConfirmModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeDeleteReminderConfirmModal()">×</span>
@@ -854,6 +858,16 @@
                 <p id="deleteReminderMessage"></p>
                 <button onclick="deleteReminder(true)">Sim</button>
                 <button onclick="deleteReminder(false)">Não</button>
+            </div>
+        </div>
+
+        <div id="reminderConfirmModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeReminderConfirmModal()">×</span>
+                <h2 id="reminderConfirmTitle"></h2>
+                <p id="reminderConfirmMessage"></p>
+                <button onclick="confirmReminder(true)">Sim</button>
+                <button onclick="confirmReminder(false)">Não</button>
             </div>
         </div>
 
@@ -1247,6 +1261,13 @@
             return brasiliaTime.toISOString().split('T')[0];
         }
 
+        function getNextMonthDate(dateString) {
+            const [year, month, day] = dateString.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            date.setMonth(date.getMonth() + 1);
+            return date.toISOString().split('T')[0];
+        }
+
         function openAdminModal() {
             const user = auth.currentUser;
             if (user && user.email === 'fernandolapa1987@gmail.com') {
@@ -1415,9 +1436,11 @@
             updateFilteredView();
         }
 
-        // Novas funções para gerenciamento de lembretes
         function loadReminders(userId) {
             console.log('Carregando lembretes para o usuário:', userId);
+            const selectedDate = document.getElementById('date').value;
+            const selectedMonth = selectedDate.slice(0, 7);
+
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
                 const remindersList = document.getElementById('remindersList');
                 remindersList.innerHTML = '';
@@ -1426,11 +1449,33 @@
 
                 if (data) {
                     reminders = Object.entries(data).map(([id, reminder]) => ({ id, ...reminder }));
+                    let displayReminders = [];
+
                     reminders.forEach(reminder => {
+                        const reminderMonth = reminder.date.slice(0, 7);
+                        if (reminder.monthly) {
+                            let currentDate = new Date(reminder.date);
+                            const selectedDateObj = new Date(selectedDate);
+                            while (currentDate <= selectedDateObj) {
+                                const currentMonth = currentDate.toISOString().slice(0, 7);
+                                if (currentMonth === selectedMonth) {
+                                    displayReminders.push({
+                                        ...reminder,
+                                        displayDate: `${currentMonth}-${reminder.date.split('-')[2]}`
+                                    });
+                                }
+                                currentDate.setMonth(currentDate.getMonth() + 1);
+                            }
+                        } else if (reminderMonth === selectedMonth) {
+                            displayReminders.push({ ...reminder, displayDate: reminder.date });
+                        }
+                    });
+
+                    displayReminders.forEach(reminder => {
                         const li = document.createElement('li');
                         li.innerHTML = `
-                            <div class="reminder-info">
-                                <span>${formatDate(reminder.date)}</span>
+                            <div class="reminder-info" onclick="openReminderConfirmModal('${reminder.id}', '${reminder.displayDate}')">
+                                <span>${formatDate(reminder.displayDate)}</span>
                                 <span>${reminder.description}</span>
                             </div>
                             <span class="reminder-amount ${reminder.type}">${formatCurrency(reminder.amount)}</span>
@@ -1439,6 +1484,10 @@
                         `;
                         remindersList.appendChild(li);
                     });
+
+                    if (displayReminders.length === 0) {
+                        remindersList.innerHTML = '<li>Nenhum lembrete para o mês selecionado.</li>';
+                    }
                 } else {
                     reminders = [];
                     remindersList.innerHTML = '<li>Nenhum lembrete cadastrado.</li>';
@@ -1455,6 +1504,7 @@
             document.getElementById('reminderDescription').value = '';
             document.getElementById('reminderAmount').value = '0,00';
             document.getElementById('reminderType').value = 'payment';
+            document.getElementById('reminderMonthly').checked = false;
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
         }
@@ -1472,6 +1522,7 @@
             const description = document.getElementById('reminderDescription').value;
             const amount = parseCurrency(document.getElementById('reminderAmount').value);
             const type = document.getElementById('reminderType').value;
+            const monthly = document.getElementById('reminderMonthly').checked;
 
             if (!date || !description || isNaN(amount) || amount <= 0) {
                 alert('Por favor, preencha todos os campos corretamente.');
@@ -1484,7 +1535,8 @@
                 date,
                 description,
                 amount,
-                type
+                type,
+                monthly
             };
 
             database.ref(`reminders/${userId}/${reminder.id}`).set(reminder)
@@ -1513,6 +1565,7 @@
             document.getElementById('editReminderDescription').value = reminder.description;
             document.getElementById('editReminderAmount').value = formatCurrency(reminder.amount).replace('R$', '').trim();
             document.getElementById('editReminderType').value = reminder.type;
+            document.getElementById('editReminderMonthly').checked = reminder.monthly || false;
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
         }
@@ -1533,6 +1586,7 @@
             const description = document.getElementById('editReminderDescription').value;
             const amount = parseCurrency(document.getElementById('editReminderAmount').value);
             const type = document.getElementById('editReminderType').value;
+            const monthly = document.getElementById('editReminderMonthly').checked;
 
             if (!date || !description || isNaN(amount) || amount <= 0) {
                 alert('Por favor, preencha todos os campos corretamente.');
@@ -1545,7 +1599,8 @@
                 date,
                 description,
                 amount,
-                type
+                type,
+                monthly
             };
 
             database.ref(`reminders/${userId}/${selectedReminderId}`).set(updatedReminder)
@@ -1602,6 +1657,80 @@
                     console.error('Erro ao excluir lembrete:', error);
                     alert('Erro ao excluir lembrete. Tente novamente.');
                 });
+        }
+
+        function openReminderConfirmModal(reminderId, displayDate) {
+            const reminder = reminders.find(r => r.id === reminderId);
+            if (!reminder) {
+                alert('Lembrete não encontrado.');
+                loadReminders(auth.currentUser.uid);
+                return;
+            }
+
+            selectedReminderId = reminderId;
+            const modal = document.getElementById('reminderConfirmModal');
+            const title = document.getElementById('reminderConfirmTitle');
+            const message = document.getElementById('reminderConfirmMessage');
+            title.innerText = `Confirmar ${reminder.type === 'payment' ? 'Pagamento' : 'Receita'}`;
+            message.innerText = `${reminder.description} - ${formatCurrency(reminder.amount)} em ${formatDate(displayDate)}\nJá foi ${reminder.type === 'payment' ? 'pago' : 'recebido'}?`;
+            modal.style.display = 'block';
+            modal.style.animation = 'slideIn 0.4s';
+        }
+
+        function closeReminderConfirmModal() {
+            const modal = document.getElementById('reminderConfirmModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                selectedReminderId = null;
+            }, 500);
+        }
+
+        function confirmReminder(confirmed) {
+            if (!selectedReminderId || !confirmed) {
+                closeReminderConfirmModal();
+                return;
+            }
+
+            const reminder = reminders.find(r => r.id === selectedReminderId);
+            if (!reminder) {
+                alert('Lembrete não encontrado.');
+                closeReminderConfirmModal();
+                loadReminders(auth.currentUser.uid);
+                return;
+            }
+
+            const userId = auth.currentUser.uid;
+            const transaction = {
+                id: generateTransactionId(),
+                date: document.getElementById('date').value,
+                description: reminder.description,
+                amount: reminder.type === 'payment' ? -reminder.amount : reminder.amount,
+                type: reminder.type === 'payment' ? 'despesa' : 'receita'
+            };
+
+            transactions.push(transaction);
+            saveTransactions();
+
+            if (!reminder.monthly) {
+                database.ref(`reminders/${userId}/${selectedReminderId}`).remove()
+                    .then(() => {
+                        alert(`Transação de ${transaction.type} registrada com sucesso!`);
+                        closeReminderConfirmModal();
+                        loadReminders(userId);
+                        updateFilteredView();
+                        calculateBalances();
+                    })
+                    .catch(error => {
+                        console.error('Erro ao remover lembrete:', error);
+                        alert('Erro ao processar o lembrete. Tente novamente.');
+                    });
+            } else {
+                alert(`Transação de ${transaction.type} registrada com sucesso!`);
+                closeReminderConfirmModal();
+                updateFilteredView();
+                calculateBalances();
+            }
         }
 
         function openCompoundInterestModal() {
