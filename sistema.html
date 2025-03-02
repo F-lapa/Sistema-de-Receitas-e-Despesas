@@ -753,6 +753,16 @@
             </div>
         </div>
 
+        <div id="deleteReminderConfirmModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeDeleteReminderConfirmModal()">×</span>
+                <h2>Confirmar Exclusão</h2>
+                <p id="deleteReminderMessage"></p>
+                <button onclick="deleteReminder(true)">Sim</button>
+                <button onclick="deleteReminder(false)">Não</button>
+            </div>
+        </div>
+
         <div id="compoundInterestModal" class="modal">
             <div class="modal-content">
                 <span class="close" onclick="closeCompoundInterestModal()">×</span>
@@ -854,6 +864,7 @@
         let reminders = [];
         let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
         let selectedReminder = null;
+        let reminderToDelete = null;
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -1288,7 +1299,7 @@
                     console.log('Lembrete de pagamento salvo no Firebase');
                     alert('Lembrete de pagamento adicionado com sucesso!');
                     closePaymentReminderModal();
-                    loadReminders(userId); // Recarregar imediatamente
+                    loadReminders(userId);
                 })
                 .catch(error => {
                     console.error('Erro ao adicionar lembrete de pagamento:', error);
@@ -1341,7 +1352,7 @@
                     console.log('Lembrete de receita salvo no Firebase');
                     alert('Lembrete de receita adicionado com sucesso!');
                     closeRevenueReminderModal();
-                    loadReminders(userId); // Recarregar imediatamente
+                    loadReminders(userId);
                 })
                 .catch(error => {
                     console.error('Erro ao adicionar lembrete de receita:', error);
@@ -1356,7 +1367,7 @@
             console.log('Carregando lembretes para o usuário:', userId);
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
                 const remindersList = document.getElementById('remindersList');
-                remindersList.innerHTML = ''; // Limpar a lista antes de atualizar
+                remindersList.innerHTML = '';
                 const data = snapshot.val();
                 console.log('Dados retornados do Firebase:', data);
                 if (data) {
@@ -1367,7 +1378,7 @@
                         reminder.description && 
                         reminder.amount !== undefined && 
                         reminder.type
-                    ); // Filtra lembretes inválidos
+                    );
                     reminders.sort((a, b) => a.date.localeCompare(b.date));
                     console.log('Lembretes processados:', reminders);
                     if (reminders.length > 0) {
@@ -1379,7 +1390,7 @@
                                     <span>${reminder.description}</span>
                                 </div>
                                 <span class="reminder-amount ${reminder.type}">${formatCurrency(reminder.amount)}</span>
-                                <i class="fas fa-trash-alt delete-icon" onclick="confirmDeleteReminder('${reminder.id}')"></i>
+                                <i class="fas fa-trash-alt delete-icon" onclick="openDeleteReminderConfirmModal('${reminder.id}')"></i>
                             `;
                             remindersList.appendChild(li);
                         });
@@ -1390,7 +1401,6 @@
                     reminders = [];
                     remindersList.innerHTML = '<li>Nenhum lembrete cadastrado.</li>';
                 }
-                // Garantir que a lista esteja visível
                 document.querySelector('.reminders-list').style.display = 'block';
             }).catch(error => {
                 console.error('Erro ao carregar lembretes:', error);
@@ -1449,14 +1459,33 @@
             closeReminderConfirmModal();
         }
 
-        function confirmDeleteReminder(reminderId) {
+        function openDeleteReminderConfirmModal(reminderId) {
             const reminder = reminders.find(r => r.id === reminderId);
             if (!reminder) return;
-            if (confirm(`Tem certeza que deseja excluir o lembrete "${reminder.description}" de ${formatCurrency(reminder.amount)} em ${formatDate(reminder.date)}?`)) {
+            reminderToDelete = reminder;
+            const modal = document.getElementById('deleteReminderConfirmModal');
+            const message = document.getElementById('deleteReminderMessage');
+            message.innerText = `Tem certeza que deseja excluir o lembrete "${reminder.description}" de ${formatCurrency(reminder.amount)} em ${formatDate(reminder.date)}?`;
+            modal.style.display = 'block';
+            modal.style.animation = 'slideIn 0.4s';
+        }
+
+        function closeDeleteReminderConfirmModal() {
+            const modal = document.getElementById('deleteReminderConfirmModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                reminderToDelete = null;
+            }, 500);
+        }
+
+        function deleteReminder(confirmed) {
+            if (!reminderToDelete) return;
+
+            if (confirmed) {
                 const userId = auth.currentUser.uid;
-                database.ref(`reminders/${userId}/${reminderId}`).remove()
+                database.ref(`reminders/${userId}/${reminderToDelete.id}`).remove()
                     .then(() => {
-                        alert('Lembrete excluído com sucesso!');
                         loadReminders(userId);
                     })
                     .catch(error => {
@@ -1464,6 +1493,11 @@
                         alert('Erro ao excluir o lembrete. Tente novamente.');
                     });
             }
+            closeDeleteReminderConfirmModal();
+        }
+
+        function confirmDeleteReminder(reminderId) {
+            openDeleteReminderConfirmModal(reminderId);
         }
 
         function openCompoundInterestModal() {
