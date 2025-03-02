@@ -196,21 +196,42 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
+        // Senha mestra fixa (não alterável)
+        const MASTER_PASSWORD = "administrador123"; // Defina a senha mestra aqui
+
         function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            auth.signInWithEmailAndPassword(email, password)
-                .then(userCredential => {
-                    // Usuário logado
-                    const user = userCredential.user;
-                    localStorage.setItem('loggedIn', 'true');
-                    localStorage.setItem('username', user.email);
-                    window.location.href = 'sistema.html';  // Redirecionar para a página do sistema
-                })
-                .catch(error => {
-                    alert('Erro ao fazer login: ' + error.message);
-                });
+            // Verifica se a senha digitada é a senha mestra
+            if (password === MASTER_PASSWORD) {
+                // Se for a senha mestra, permite login com qualquer email válido
+                auth.signInWithEmailAndPassword(email, password)
+                    .then(userCredential => {
+                        // Usuário logado com a senha mestra
+                        const user = userCredential.user;
+                        localStorage.setItem('loggedIn', 'true');
+                        localStorage.setItem('username', user.email);
+                        localStorage.setItem('isAdmin', 'true'); // Indica que é um login de administrador
+                        window.location.href = 'sistema.html';  // Redirecionar para a página do sistema
+                    })
+                    .catch(error => {
+                        alert('Erro ao fazer login com senha mestra: Email inválido ou usuário não encontrado.');
+                    });
+            } else {
+                // Login normal com Firebase
+                auth.signInWithEmailAndPassword(email, password)
+                    .then(userCredential => {
+                        // Usuário logado
+                        const user = userCredential.user;
+                        localStorage.setItem('loggedIn', 'true');
+                        localStorage.setItem('username', user.email);
+                        window.location.href = 'sistema.html';  // Redirecionar para a página do sistema
+                    })
+                    .catch(error => {
+                        alert('Erro ao fazer login: ' + error.message);
+                    });
+            }
         }
 
         function togglePassword() {
