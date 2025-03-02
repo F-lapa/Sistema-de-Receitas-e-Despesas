@@ -7,7 +7,158 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* [O CSS permanece igual ao anterior, então omiti para brevity] */
+        :root {
+            --background-color: #0a0a1f;
+            --text-color: #d9e6ff;
+            --primary-color: #1e1e3f;
+            --button-color: #6b48ff;
+            --input-border-color: #ff4d94;
+            --negative-color: #ff3366;
+            --positive-color: #00ffcc;
+            --card-bg: #15152e;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            --glow: 0 0 15px rgba(107, 72, 255, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(145deg, var(--background-color), #141432);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(107, 72, 255, 0.1), transparent 70%);
+            z-index: -1;
+        }
+
+        .login-container {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            background: linear-gradient(90deg, var(--positive-color), var(--input-border-color));
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(107, 72, 255, 0.3);
+        }
+
+        h3 {
+            color: var(--text-color);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.6rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(107, 72, 255, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 10px;
+            display: block;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--input-border-color);
+            border-radius: 10px;
+            background: #0f0f2a;
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: var(--positive-color);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.5), inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            outline: none;
+        }
+
+        button {
+            padding: 16px;
+            background: linear-gradient(90deg, var(--button-color), var(--input-border-color));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(107, 72, 255, 0.6);
+        }
+
+        .show-password-container {
+            position: relative;
+        }
+
+        .show-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--input-border-color);
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .show-password:hover {
+            color: var(--positive-color);
+        }
     </style>
 </head>
 <body>
@@ -26,10 +177,13 @@
         <button onclick="login()">Entrar</button>
     </div>
 
+    <!-- Firebase SDK v10 (modular) -->
     <script type="module">
+        // Importa os módulos do Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, fetchSignInMethodsForEmail } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
             authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
@@ -41,12 +195,15 @@
             measurementId: "G-K2HCS7WNZV"
         };
 
+        // Inicializa o Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        const MASTER_PASSWORD = "administrador123";
+        // Senha mestra fixa (não alterável)
+        const MASTER_PASSWORD = "administrador123"; // Mude para uma senha segura
 
-        window.login = async function() {
+        // Função de login
+        window.login = function() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
@@ -55,54 +212,66 @@
                 alert('Por favor, preencha email e senha.');
                 return;
             }
+
             if (!/\S+@\S+\.\S+/.test(email)) {
                 alert('Por favor, insira um email válido.');
                 return;
             }
 
-            try {
-                if (password === MASTER_PASSWORD) {
-                    // Verifica se o email existe sem usar a senha
-                    const signInMethods = await fetchSignInMethodsForEmail(auth, email);
-                    if (signInMethods.length > 0) {
-                        // Email existe, permite login como admin
+            // Verifica se é a senha mestra
+            if (password === MASTER_PASSWORD) {
+                signInWithEmailAndPassword(auth, email, password)
+                    .then((userCredential) => {
+                        const user = userCredential.user;
                         localStorage.setItem('loggedIn', 'true');
-                        localStorage.setItem('username', email);
+                        localStorage.setItem('username', user.email);
                         localStorage.setItem('isAdmin', 'true');
                         window.location.href = 'sistema.html';
-                    } else {
-                        alert('Email não encontrado.');
-                    }
-                } else {
-                    // Login normal com Firebase
-                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
-                    localStorage.setItem('loggedIn', 'true');
-                    localStorage.setItem('username', user.email);
-                    window.location.href = 'sistema.html';
-                }
-            } catch (error) {
-                let errorMessage;
-                switch (error.code) {
-                    case 'auth/wrong-password':
-                        errorMessage = 'Senha incorreta.';
-                        break;
-                    case 'auth/user-not-found':
-                        errorMessage = 'Usuário não encontrado.';
-                        break;
-                    case 'auth/invalid-email':
-                        errorMessage = 'Email inválido.';
-                        break;
-                    case 'auth/too-many-requests':
-                        errorMessage = 'Muitas tentativas. Tente novamente mais tarde.';
-                        break;
-                    default:
-                        errorMessage = 'Erro ao fazer login: ' + error.message;
-                }
-                alert(errorMessage);
+                    })
+                    .catch((error) => {
+                        let errorMessage;
+                        switch (error.code) {
+                            case 'auth/user-not-found':
+                                errorMessage = 'Usuário não encontrado.';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'Email inválido.';
+                                break;
+                            default:
+                                errorMessage = 'Erro ao fazer login com senha mestra: ' + error.message;
+                        }
+                        alert(errorMessage);
+                    });
+            } else {
+                // Login normal
+                signInWithEmailAndPassword(auth, email, password)
+                    .then((userCredential) => {
+                        const user = userCredential.user;
+                        localStorage.setItem('loggedIn', 'true');
+                        localStorage.setItem('username', user.email);
+                        window.location.href = 'sistema.html';
+                    })
+                    .catch((error) => {
+                        let errorMessage;
+                        switch (error.code) {
+                            case 'auth/wrong-password':
+                                errorMessage = 'Senha incorreta.';
+                                break;
+                            case 'auth/user-not-found':
+                                errorMessage = 'Usuário não encontrado.';
+                                break;
+                            case 'auth/invalid-email':
+                                errorMessage = 'Email inválido.';
+                                break;
+                            default:
+                                errorMessage = 'Erro ao fazer login: ' + error.message;
+                        }
+                        alert(errorMessage);
+                    });
             }
         };
 
+        // Função para mostrar/esconder senha
         window.togglePassword = function() {
             const passwordInput = document.getElementById('password');
             const passwordIcon = document.querySelector('.show-password');
