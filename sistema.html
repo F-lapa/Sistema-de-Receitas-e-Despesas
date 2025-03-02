@@ -997,6 +997,7 @@
                     checkAdmin(user.email);
                     loadReminders(userId);
                     checkMonthlyReminders(userId);
+                    updateFilteredView();
                 }).catch(error => {
                     console.error('Erro ao carregar dados do usuário:', error);
                 });
@@ -1148,7 +1149,7 @@
             });
 
             calculateBalances();
-            loadReminders(auth.currentUser.uid); // Recarrega os lembretes com base na nova data
+            loadReminders(auth.currentUser.uid);
         }
 
         function openDeleteTransactionConfirmModal(transactionId) {
@@ -1593,8 +1594,8 @@
 
         function loadReminders(userId) {
             console.log('Carregando lembretes para o usuário:', userId);
-            const transactionDate = document.getElementById('date').value; // Data selecionada no campo de transação
-            const transactionMonth = transactionDate.slice(0, 7); // Ano-Mês da transação
+            const transactionDate = document.getElementById('date').value;
+            const transactionMonth = transactionDate.slice(0, 7);
 
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
                 const remindersList = document.getElementById('remindersList');
@@ -1612,7 +1613,6 @@
                         reminder.type
                     );
 
-                    // Array para armazenar lembretes a exibir
                     let displayReminders = [];
 
                     reminders.forEach(reminder => {
@@ -1620,12 +1620,10 @@
                         const reminderMonth = reminder.date.slice(0, 7);
                         const transactionDateObj = new Date(transactionDate);
 
-                        // Adiciona o lembrete original se estiver no mês da transação ou anterior
                         if (reminderMonth === transactionMonth || reminder.date <= transactionDate) {
                             displayReminders.push({ ...reminder });
                         }
 
-                        // Se for mensal, gera lembretes futuros até o mês da transação
                         if (reminder.monthly && reminder.date <= transactionDate) {
                             let currentDate = new Date(reminder.date);
                             while (currentDate <= transactionDateObj) {
@@ -1633,7 +1631,7 @@
                                 if (currentMonth !== reminderMonth && currentMonth <= transactionMonth) {
                                     const newReminder = {
                                         ...reminder,
-                                        id: reminder.id + '_' + currentMonth, // ID único para cada mês
+                                        id: reminder.id + '_' + currentMonth,
                                         date: `${currentMonth}-${reminder.date.split('-')[2]}`
                                     };
                                     displayReminders.push(newReminder);
@@ -1643,7 +1641,6 @@
                         }
                     });
 
-                    // Filtra para exibir apenas os lembretes do mês da transação
                     const filteredReminders = displayReminders.filter(reminder => {
                         const reminderMonth = reminder.date.slice(0, 7);
                         return reminderMonth === transactionMonth;
@@ -1737,7 +1734,7 @@
             const reminder = reminders.find(r => r.id === reminderId.split('_')[0]);
             if (!reminder) return;
             selectedReminder = reminder;
-            selectedReminder.date = document.getElementById('date').value.slice(0, 8) + reminderId.split('_')[1]; // Ajusta a data para o mês selecionado
+            selectedReminder.date = document.getElementById('date').value.slice(0, 8) + reminderId.split('_')[1];
             const modal = document.getElementById('reminderConfirmModal');
             const title = document.getElementById('reminderConfirmTitle');
             const message = document.getElementById('reminderConfirmMessage');
@@ -1771,7 +1768,6 @@
                 transactions.push(transaction);
                 saveTransactions();
 
-                // Remove apenas o lembrete original, não os gerados dinamicamente
                 const originalId = selectedReminder.id.split('_')[0];
                 database.ref(`reminders/${userId}/${originalId}`).remove()
                     .then(() => {
@@ -1844,118 +1840,115 @@
             }, 500);
         }
 
-    function calculateCompoundInterest() {
-        const principal = parseFloat(document.getElementById('initialAmount').value) || 0;
-        const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
-        const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
-        const years = parseInt(document.getElementById('years').value) || 0;
-        const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
+        function calculateCompoundInterest() {
+            const principal = parseFloat(document.getElementById('initialAmount').value) || 0;
+            const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+            const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+            const years = parseInt(document.getElementById('years').value) || 0;
+            const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
 
-        if (principal < 0 || monthlyContribution < 0 || annualRate < 0 || years <= 0 || frequency <= 0) {
-            document.getElementById('compoundInterestResult').innerHTML = 
-                '<span style="color: var(--negative-color);">Por favor, insira valores válidos (positivos e período maior que zero).</span>';
-            return;
+            if (principal < 0 || monthlyContribution < 0 || annualRate < 0 || years <= 0 || frequency <= 0) {
+                document.getElementById('compoundInterestResult').innerHTML = 
+                    '<span style="color: var(--negative-color);">Por favor, insira valores válidos (positivos e período maior que zero).</span>';
+                return;
+            }
+
+            const ratePerPeriod = annualRate / 100 / frequency;
+            const totalPeriods = years * frequency;
+
+            let accumulatedValue = principal;
+
+            for (let period = 0; period < totalPeriods; period++) {
+                accumulatedValue = (accumulatedValue + monthlyContribution) * (1 + ratePerPeriod);
+            }
+
+            const totalInvested = principal + (monthlyContribution * totalPeriods);
+                        const interestEarned = accumulatedValue - totalInvested;
+
+            document.getElementById('compoundInterestResult').innerHTML = `
+                <p>Montante Final: <span class="highlight-amount">${formatCurrency(accumulatedValue)}</span></p>
+                <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
+                <p>Juros Acumulados: <span style="color: var(--positive-color);">${formatCurrency(interestEarned)}</span></p>
+            `;
         }
 
-        const monthlyRate = annualRate / 100 / frequency;
-        const totalPeriods = years * frequency;
-
-        let futureValue = principal;
-        for (let i = 0; i < totalPeriods; i++) {
-            futureValue = (futureValue + monthlyContribution) * (1 + monthlyRate);
+        function openThemeSelectorModal() {
+            const modal = document.getElementById('themeSelectorModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'slideIn 0.4s';
         }
 
-        const totalInvested = principal + (monthlyContribution * totalPeriods);
-        const totalInterest = futureValue - totalInvested;
+        function closeThemeSelectorModal() {
+            const modal = document.getElementById('themeSelectorModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
 
-        document.getElementById('compoundInterestResult').innerHTML = `
-            <p>Montante Final: <span class="highlight-amount">${formatCurrency(futureValue)}</span></p>
-            <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
-            <p>Juros Acumulados: <span style="color: var(--positive-color);">${formatCurrency(totalInterest)}</span></p>
-        `;
-    }
+        function applyTheme(color) {
+            document.documentElement.style.setProperty('--button-color', color);
+            document.documentElement.style.setProperty('--input-border-color', color);
+            const userId = auth.currentUser.uid;
+            if (userId) {
+                database.ref('users/' + userId + '/theme').set(color)
+                    .then(() => {
+                        console.log('Tema salvo com sucesso:', color);
+                        closeThemeSelectorModal();
+                    })
+                    .catch(error => {
+                        console.error('Erro ao salvar tema:', error);
+                        alert('Erro ao salvar o tema. Tente novamente.');
+                    });
+            } else {
+                console.error('Nenhum usuário autenticado.');
+                alert('Você precisa estar logado para alterar o tema.');
+            }
+        }
 
-    function openThemeSelectorModal() {
-        const modal = document.getElementById('themeSelectorModal');
-        modal.style.display = 'block';
-        modal.style.animation = 'slideIn 0.4s';
-    }
+        function goToLimitPage() {
+            window.location.href = 'definir_limite.html';
+        }
 
-    function closeThemeSelectorModal() {
-        const modal = document.getElementById('themeSelectorModal');
-        modal.style.animation = 'fadeout 0.5s';
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 500);
-    }
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('date');
+            dateInput.value = getCurrentDate();
+        });
 
-    function applyTheme(color) {
-        document.documentElement.style.setProperty('--button-color', color);
-        document.documentElement.style.setProperty('--input-border-color', color);
-        const userId = auth.currentUser.uid;
-        if (userId) {
-            database.ref('users/' + userId + '/theme').set(color)
-                .then(() => {
-                    console.log('Tema salvo com sucesso:', color);
-                    closeThemeSelectorModal();
+        function registerNewUser() {
+            const name = document.getElementById('newUserName').value;
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+
+            if (!name || !email || !password) {
+                alert('Por favor, preencha todos os campos.');
+                return;
+            }
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    database.ref('users/' + user.uid).set({
+                        name: name,
+                        email: email
+                    }).then(() => {
+                        alert('Novo usuário registrado com sucesso!');
+                        closeAdminModal();
+                    });
                 })
                 .catch(error => {
-                    console.error('Erro ao salvar tema:', error);
-                    alert('Erro ao salvar o tema. Tente novamente.');
+                    console.error('Erro ao registrar usuário:', error);
+                    alert('Erro ao registrar usuário: ' + error.message);
                 });
-        } else {
-            console.error('Nenhum usuário autenticado.');
-            alert('Você precisa estar logado para alterar o tema.');
-        }
-    }
-
-    function goToLimitPage() {
-        window.location.href = 'definir_limite.html';
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const dateInput = document.getElementById('date');
-        dateInput.value = getCurrentDate();
-        updateFilteredView();
-    });
-
-    // Funções placeholders que podem estar faltando no código fornecido
-    function registerNewUser() {
-        const name = document.getElementById('newUserName').value;
-        const email = document.getElementById('newUserEmail').value;
-        const password = document.getElementById('newUserPassword').value;
-
-        if (!name || !email || !password) {
-            alert('Por favor, preencha todos os campos.');
-            return;
         }
 
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                const user = userCredential.user;
-                database.ref('users/' + user.uid).set({
-                    name: name,
-                    email: email
-                }).then(() => {
-                    alert('Novo usuário registrado com sucesso!');
-                    closeAdminModal();
-                });
-            })
-            .catch(error => {
-                console.error('Erro ao registrar usuário:', error);
-                alert('Erro ao registrar usuário: ' + error.message);
-            });
-    }
+        function markAsPaid() {
+            closeReminderAlertModal();
+        }
 
-    function markAsPaid() {
-        closeReminderAlertModal();
-        // Implementar lógica para marcar como pago, se necessário
-    }
-
-    function snoozeReminder() {
-        closeReminderAlertModal();
-        // Implementar lógica para adiar o lembrete, se necessário
-    }
-</script>
+        function snoozeReminder() {
+            closeReminderAlertModal();
+        }
+    </script>
 </body>
 </html>
