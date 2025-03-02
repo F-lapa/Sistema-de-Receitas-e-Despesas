@@ -175,7 +175,7 @@
             width: calc(100% - 300px);
             display: flex;
             flex-direction: column;
-            gap: 20px; /* Reduzido de 30px para maior compactação */
+            gap: 20px;
             position: relative;
         }
 
@@ -191,10 +191,10 @@
         }
 
         .form-header {
-            font-size: 1.5rem; /* Reduzido de 1.8rem */
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--text-color);
-            margin-bottom: 15px; /* Reduzido de 25px */
+            margin-bottom: 15px;
             text-align: center;
             font-family: 'Orbitron', sans-serif;
             letter-spacing: 1px;
@@ -202,7 +202,7 @@
 
         .transaction-form {
             background: var(--card-bg);
-            padding: 15px; /* Reduzido de 25px */
+            padding: 15px;
             border-radius: 15px;
             box-shadow: var(--shadow);
             width: 100%;
@@ -211,8 +211,8 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: transform 0.3s ease;
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr 1fr; /* Layout em grade */
-            gap: 10px; /* Espaçamento entre os campos */
+            grid-template-columns: 1fr 2fr 1fr 1fr;
+            gap: 10px;
         }
 
         .transaction-form:hover {
@@ -223,24 +223,25 @@
         .form-group {
             display: flex;
             flex-direction: column;
+            position: relative; /* Para o ícone de olho */
         }
 
         .form-group label {
             font-weight: 500;
             color: var(--text-color);
-            margin-bottom: 5px; /* Reduzido de 10px */
-            font-size: 0.9rem; /* Reduzido para compactação */
+            margin-bottom: 5px;
+            font-size: 0.9rem;
             letter-spacing: 0.5px;
         }
 
         .form-group input, .form-group select {
             width: 100%;
-            padding: 8px; /* Reduzido de 14px */
+            padding: 8px;
             border: 2px solid var(--input-border-color);
-            border-radius: 8px; /* Reduzido de 10px */
+            border-radius: 8px;
             background: #0f0f2a;
             color: var(--text-color);
-            font-size: 0.9rem; /* Reduzido de 1rem */
+            font-size: 0.9rem;
             transition: all 0.3s ease;
             box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
         }
@@ -251,23 +252,32 @@
             outline: none;
         }
 
+        .form-group .fa-eye, .form-group .fa-eye-slash {
+            position: absolute;
+            right: 10px;
+            top: 65%;
+            transform: translateY(-50%);
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
         .container button.transaction-btn {
-            padding: 10px; /* Reduzido de 16px */
+            padding: 10px;
             background: linear-gradient(90deg, var(--button-color), var(--input-border-color));
             color: white;
             border: none;
-            border-radius: 10px; /* Reduzido de 12px */
-            font-size: 1rem; /* Reduzido de 1.1rem */
+            border-radius: 10px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             width: 100%;
             max-width: 600px;
-            margin: 10px auto 0; /* Reduzido de 25px e ajustado */
+            margin: 10px auto 0;
             transition: all 0.3s ease;
             box-shadow: var(--shadow);
             text-transform: uppercase;
             letter-spacing: 1px;
-            grid-column: span 4; /* Ocupa toda a largura da grade */
+            grid-column: span 4;
         }
 
         .container button.transaction-btn:hover {
@@ -508,12 +518,12 @@
             }
 
             .transaction-form {
-                grid-template-columns: 1fr; /* Empilha os campos em telas pequenas */
+                grid-template-columns: 1fr;
                 gap: 8px;
             }
 
             .container button.transaction-btn {
-                grid-column: span 1; /* Ajusta para telas pequenas */
+                grid-column: span 1;
             }
 
             .modal-content {
@@ -574,7 +584,7 @@
         <div class="menu-icons">
             <i class="fas fa-user-shield admin-icon" onclick="openAdminModal()" title="Área do Administrador"></i>
             <i class="fas fa-key change-password" onclick="openChangePasswordModal()" title="Alterar Senha"></i>
-            <i class="fas fa-sign-out-alt logout" onclick="logout()" title="Deslogar"></i>
+            <i class="fas fa-sign-out-alt logout" onclick="openLogoutConfirmModal()" title="Deslogar"></i>
         </div>
         <div class="buttons">
             <button onclick="openFilterPeriodModal()"><i class="fas fa-filter"></i> Filtrar Período</button>
@@ -705,12 +715,27 @@
             <div class="modal-content">
                 <span class="close" onclick="closeChangePasswordModal()">×</span>
                 <h2>Alterar Senha</h2>
-                <div class="form-group password-field">
+                <div class="form-group">
+                    <label for="currentPassword">Senha Atual:</label>
+                    <input type="password" id="currentPassword" class="highlight">
+                    <i class="fas fa-eye" id="toggleCurrentPassword" onclick="togglePasswordVisibility('currentPassword')"></i>
+                </div>
+                <div class="form-group">
                     <label for="newPassword">Nova Senha:</label>
                     <input type="password" id="newPassword" class="highlight">
-                    <i class="fas fa-eye" id="toggleChangePassword" onclick="togglePasswordVisibility('newPassword')"></i>
+                    <i class="fas fa-eye" id="toggleNewPassword" onclick="togglePasswordVisibility('newPassword')"></i>
                 </div>
                 <button onclick="changePassword()">Alterar Senha</button>
+            </div>
+        </div>
+
+        <div id="logoutConfirmModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeLogoutConfirmModal()">×</span>
+                <h2>Confirmar Logout</h2>
+                <p>Tem certeza que deseja sair?</p>
+                <button onclick="confirmLogout(true)">Sim</button>
+                <button onclick="confirmLogout(false)">Não</button>
             </div>
         </div>
 
@@ -1163,6 +1188,8 @@
             const modal = document.getElementById('changePasswordModal');
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
         }
 
         function closeChangePasswordModal() {
@@ -1174,20 +1201,32 @@
         }
 
         function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
             const newPassword = document.getElementById('newPassword').value;
             const user = auth.currentUser;
 
-            user.updatePassword(newPassword).then(() => {
-                alert('Senha alterada com sucesso.');
-                closeChangePasswordModal();
+            if (!currentPassword || !newPassword) {
+                alert('Por favor, preencha ambos os campos de senha.');
+                return;
+            }
+
+            const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+
+            user.reauthenticateWithCredential(credential).then(() => {
+                user.updatePassword(newPassword).then(() => {
+                    alert('Senha alterada com sucesso.');
+                    closeChangePasswordModal();
+                }).catch(error => {
+                    alert('Erro ao alterar senha: ' + error.message);
+                });
             }).catch(error => {
-                alert('Erro ao alterar senha: ' + error.message);
+                alert('Senha atual incorreta: ' + error.message);
             });
         }
 
         function togglePasswordVisibility(inputId) {
             const input = document.getElementById(inputId);
-            const icon = input.nextElementSibling;
+            const icon = document.getElementById('toggle' + inputId.charAt(0).toUpperCase() + inputId.slice(1));
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.classList.replace('fa-eye', 'fa-eye-slash');
@@ -1195,6 +1234,36 @@
                 input.type = 'password';
                 icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
+        }
+
+        function openLogoutConfirmModal() {
+            const modal = document.getElementById('logoutConfirmModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'slideIn 0.4s';
+        }
+
+        function closeLogoutConfirmModal() {
+            const modal = document.getElementById('logoutConfirmModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 500);
+        }
+
+        function confirmLogout(confirmed) {
+            if (confirmed) {
+                auth.signOut().then(() => {
+                    window.location.href = 'index.html';
+                }).catch(error => {
+                    console.error('Erro ao fazer logout:', error);
+                    alert('Erro ao fazer logout: ' + error.message);
+                });
+            }
+            closeLogoutConfirmModal();
+        }
+
+        function logout() {
+            openLogoutConfirmModal();
         }
 
         function openFilterPeriodModal() {
