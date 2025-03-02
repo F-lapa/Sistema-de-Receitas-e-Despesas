@@ -1101,6 +1101,9 @@
         }
 
         function formatCurrency(value) {
+            if (value === undefined || value === null || isNaN(value)) {
+                return "R$ 0,00";
+            }
             return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
@@ -1357,21 +1360,32 @@
                 const data = snapshot.val();
                 console.log('Dados retornados do Firebase:', data);
                 if (data) {
-                    reminders = Object.values(data);
+                    reminders = Object.values(data).filter(reminder => 
+                        reminder && 
+                        reminder.id && 
+                        reminder.date && 
+                        reminder.description && 
+                        reminder.amount !== undefined && 
+                        reminder.type
+                    ); // Filtra lembretes inválidos
                     reminders.sort((a, b) => a.date.localeCompare(b.date));
                     console.log('Lembretes processados:', reminders);
-                    reminders.forEach(reminder => {
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <div class="reminder-info" onclick="openReminderConfirmModal('${reminder.id}')">
-                                <span>${formatDate(reminder.date)}</span>
-                                <span>${reminder.description}</span>
-                            </div>
-                            <span class="reminder-amount ${reminder.type}">${formatCurrency(reminder.amount)}</span>
-                            <i class="fas fa-trash-alt delete-icon" onclick="confirmDeleteReminder('${reminder.id}')"></i>
-                        `;
-                        remindersList.appendChild(li);
-                    });
+                    if (reminders.length > 0) {
+                        reminders.forEach(reminder => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `
+                                <div class="reminder-info" onclick="openReminderConfirmModal('${reminder.id}')">
+                                    <span>${formatDate(reminder.date)}</span>
+                                    <span>${reminder.description}</span>
+                                </div>
+                                <span class="reminder-amount ${reminder.type}">${formatCurrency(reminder.amount)}</span>
+                                <i class="fas fa-trash-alt delete-icon" onclick="confirmDeleteReminder('${reminder.id}')"></i>
+                            `;
+                            remindersList.appendChild(li);
+                        });
+                    } else {
+                        remindersList.innerHTML = '<li>Nenhum lembrete válido cadastrado.</li>';
+                    }
                 } else {
                     reminders = [];
                     remindersList.innerHTML = '<li>Nenhum lembrete cadastrado.</li>';
