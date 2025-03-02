@@ -1647,6 +1647,7 @@
 
                     filteredReminders.sort((a, b) => a.date.localeCompare(b.date));
                     console.log('Lembretes processados para exibição:', filteredReminders);
+                    console.log('Display IDs gerados:', filteredReminders.map(r => r.displayId));
 
                     if (filteredReminders.length > 0) {
                         filteredReminders.forEach(reminder => {
@@ -1680,7 +1681,6 @@
             const userId = auth.currentUser.uid;
             const originalId = reminderId.split('_')[0];
 
-            // Forçar recarregamento dos lembretes antes de buscar
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
                 const data = snapshot.val();
                 if (data) {
@@ -1698,17 +1698,18 @@
 
                 const reminder = reminders.find(r => r.id === originalId);
                 if (!reminder) {
-                    console.error('Lembrete não encontrado após recarregamento:', reminderId);
-                    alert('Lembrete não encontrado. Tente novamente.');
-                    loadReminders(userId); // Recarrega a lista para refletir o estado atual
+                    console.error('Lembrete não encontrado:', originalId);
+                    alert('Lembrete não encontrado. Ele pode ter sido excluído ou não existe mais.');
+                    loadReminders(userId);
                     return;
                 }
 
                 const displayReminder = { ...reminder, displayId: reminderId };
                 if (reminderId.includes('_')) {
-                    displayReminder.date = `${reminderId.split('_')[1]}-${reminder.date.split('-')[2]}`;
+                    const [_, yearMonth] = reminderId.split('_');
+                    displayReminder.date = `${yearMonth}-${reminder.date.split('-')[2]}`;
                 }
-                
+
                 reminderToEdit = { ...displayReminder, originalId: reminder.id };
                 const modal = document.getElementById('editReminderModal');
                 document.getElementById('editReminderDate').value = displayReminder.date;
@@ -1825,11 +1826,10 @@
         }
 
         function openDeleteReminderConfirmModal(reminderId) {
-    const currentUserId = auth.currentUser.uid; // ID do usuário autenticado
-    const baseReminderId = reminderId.split('_')[0]; // ID base do lembrete
+    const userId = auth.currentUser.uid;
+    const originalId = reminderId.split('_')[0];
 
-    // Forçar recarregamento dos lembretes antes de buscar
-    database.ref(`reminders/${currentUserId}`).once('value').then((snapshot) => {
+    database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
         const data = snapshot.val();
         if (data) {
             reminders = Object.values(data).filter(reminder => 
@@ -1844,11 +1844,11 @@
             reminders = [];
         }
 
-        const reminder = reminders.find(r => r.id === baseReminderId);
+        const reminder = reminders.find(r => r.id === originalId);
         if (!reminder) {
-            console.error('Lembrete não encontrado após recarregamento:', reminderId);
-            alert('Lembrete não encontrado. Tente novamente.');
-            loadReminders(currentUserId); // Recarrega a lista para refletir o estado atual
+            console.error('Lembrete não encontrado:', originalId);
+            alert('Lembrete não encontrado. Ele pode ter sido excluído ou não existe mais.');
+            loadReminders(userId);
             return;
         }
 
@@ -2020,6 +2020,8 @@ function markAsPaid() {
 function snoozeReminder() {
     closeReminderAlertModal();
 }
+
     </script>
 </body>
 </html>
+                
