@@ -223,7 +223,7 @@
         .form-group {
             display: flex;
             flex-direction: column;
-            position: relative; /* Para o ícone de olho */
+            position: relative;
         }
 
         .form-group label {
@@ -261,6 +261,24 @@
             cursor: pointer;
         }
 
+        .form-group.checkbox-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .form-group.checkbox-group label {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .form-group.checkbox-group input[type="checkbox"] {
+            width: auto;
+            padding: 0;
+        }
+
         .container button.transaction-btn {
             padding: 10px;
             background: linear-gradient(90deg, var(--button-color), var(--input-border-color));
@@ -283,6 +301,29 @@
         .container button.transaction-btn:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 40px rgba(107, 72, 255, 0.6);
+        }
+
+        .modal-content button {
+            padding: 14px;
+            background: linear-gradient(90deg, var(--button-color), var(--input-border-color));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 150px; /* Tamanho fixo para consistência */
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+        }
+
+        .modal-content button:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(107, 72, 255, 0.5);
         }
 
         .container table {
@@ -423,14 +464,19 @@
 
         .reminders-list li .reminder-amount.payment { color: var(--negative-color); }
 
-        .reminders-list li .delete-icon {
+        .reminders-list li .delete-icon, .reminders-list li .edit-icon {
             font-size: 1.2rem;
             color: var(--negative-color);
             cursor: pointer;
             transition: transform 0.3s ease;
+            margin-left: 10px;
         }
 
-        .reminders-list li .delete-icon:hover {
+        .reminders-list li .edit-icon {
+            color: var(--positive-color);
+        }
+
+        .reminders-list li .delete-icon:hover, .reminders-list li .edit-icon:hover {
             transform: scale(1.2);
         }
 
@@ -473,11 +519,6 @@
         .modal-content .form-group {
             max-width: 100%;
             text-align: left;
-        }
-
-        .modal-content button {
-            max-width: 350px;
-            margin: 15px auto;
         }
 
         .close {
@@ -755,6 +796,10 @@
                     <label for="paymentReminderAmount">Valor (R$):</label>
                     <input type="text" id="paymentReminderAmount" class="highlight" placeholder="0,00" inputmode="decimal" oninput="validateAmount(this)">
                 </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="paymentReminderMonthly">
+                    <label for="paymentReminderMonthly">Mensal</label>
+                </div>
                 <button onclick="addPaymentReminder()">Adicionar Lembrete</button>
             </div>
         </div>
@@ -775,7 +820,23 @@
                     <label for="revenueReminderAmount">Valor (R$):</label>
                     <input type="text" id="revenueReminderAmount" class="highlight" placeholder="0,00" inputmode="decimal" oninput="validateAmount(this)">
                 </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="revenueReminderMonthly">
+                    <label for="revenueReminderMonthly">Mensal</label>
+                </div>
                 <button onclick="addRevenueReminder()">Adicionar Lembrete</button>
+            </div>
+        </div>
+
+        <div id="editReminderModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEditReminderModal()">×</span>
+                <h2>Editar Lembrete</h2>
+                <div class="form-group">
+                    <label for="editReminderAmount">Novo Valor (R$):</label>
+                    <input type="text" id="editReminderAmount" class="highlight" placeholder="0,00" inputmode="decimal" oninput="validateAmount(this)">
+                </div>
+                <button onclick="updateReminder()">Salvar</button>
             </div>
         </div>
 
@@ -901,6 +962,7 @@
         let monthlyLimit = parseCurrency(localStorage.getItem('monthlyLimit') || '0,00');
         let selectedReminder = null;
         let reminderToDelete = null;
+        let reminderToEdit = null;
 
         auth.onAuthStateChanged(user => {
             if (user) {
@@ -915,6 +977,7 @@
                     loadTransactions();
                     checkAdmin(user.email);
                     loadReminders(userId);
+                    checkMonthlyReminders(userId);
                 }).catch(error => {
                     console.error('Erro ao carregar dados do usuário:', error);
                 });
@@ -1165,6 +1228,41 @@
             return brasiliaTime.toISOString().split('T')[0];
         }
 
+        function getNextMonthDate(dateString) {
+            const [year, month, day] = dateString.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            date.setMonth(date.getMonth() + 1);
+            return date.toISOString().split('T')[0];
+        }
+
+        function checkMonthlyReminders(userId) {
+            const currentDate = new Date(getCurrentDate());
+            const currentMonth = currentDate.getMonth();
+
+            database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    const reminders = Object.values(data);
+                    reminders.forEach(reminder => {
+                        if (reminder.monthly) {
+                            const reminderDate = new Date(reminder.date);
+                            const reminderMonth = reminderDate.getMonth();
+                            if (reminderMonth < currentMonth || (reminderMonth === 11 && currentMonth === 0)) {
+                                const newReminder = {
+                                    ...reminder,
+                                    id: generateTransactionId(),
+                                    date: getNextMonthDate(reminder.date)
+                                };
+                                database.ref(`reminders/${userId}/${newReminder.id}`).set(newReminder);
+                            }
+                        }
+                    });
+                }
+            }).catch(error => {
+                console.error('Erro ao verificar lembretes mensais:', error);
+            });
+        }
+
         function openAdminModal() {
             const user = auth.currentUser;
             if (user && user.email === 'fernandolapa1987@gmail.com') {
@@ -1342,6 +1440,9 @@
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
             document.getElementById('paymentReminderDate').value = getCurrentDate();
+            document.getElementById('paymentReminderDescription').value = '';
+            document.getElementById('paymentReminderAmount').value = '0,00';
+            document.getElementById('paymentReminderMonthly').checked = false;
         }
 
         function closePaymentReminderModal() {
@@ -1357,6 +1458,7 @@
             const description = document.getElementById('paymentReminderDescription').value;
             const amountInput = document.getElementById('paymentReminderAmount');
             const amount = parseCurrency(amountInput.value);
+            const monthly = document.getElementById('paymentReminderMonthly').checked;
 
             if (!date || !description || isNaN(amount) || amount <= 0) {
                 alert('Por favor, preencha todos os campos corretamente com valores válidos.');
@@ -1369,7 +1471,8 @@
                 date,
                 description,
                 amount,
-                type: 'payment'
+                type: 'payment',
+                monthly
             };
 
             console.log('Adicionando lembrete de pagamento:', reminder);
@@ -1385,9 +1488,6 @@
                     console.error('Erro ao adicionar lembrete de pagamento:', error);
                     alert('Erro ao salvar o lembrete. Tente novamente.');
                 });
-
-            document.getElementById('paymentReminderDescription').value = '';
-            amountInput.value = '0,00';
         }
 
         function openRevenueReminderModal() {
@@ -1395,6 +1495,9 @@
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
             document.getElementById('revenueReminderDate').value = getCurrentDate();
+            document.getElementById('revenueReminderDescription').value = '';
+            document.getElementById('revenueReminderAmount').value = '0,00';
+            document.getElementById('revenueReminderMonthly').checked = false;
         }
 
         function closeRevenueReminderModal() {
@@ -1410,6 +1513,7 @@
             const description = document.getElementById('revenueReminderDescription').value;
             const amountInput = document.getElementById('revenueReminderAmount');
             const amount = parseCurrency(amountInput.value);
+            const monthly = document.getElementById('revenueReminderMonthly').checked;
 
             if (!date || !description || isNaN(amount) || amount <= 0) {
                 alert('Por favor, preencha todos os campos corretamente com valores válidos.');
@@ -1422,7 +1526,8 @@
                 date,
                 description,
                 amount,
-                type: 'revenue'
+                type: 'revenue',
+                monthly
             };
 
             console.log('Adicionando lembrete de receita:', reminder);
@@ -1438,9 +1543,6 @@
                     console.error('Erro ao adicionar lembrete de receita:', error);
                     alert('Erro ao salvar o lembrete. Tente novamente.');
                 });
-
-            document.getElementById('revenueReminderDescription').value = '';
-            amountInput.value = '0,00';
         }
 
         function loadReminders(userId) {
@@ -1470,6 +1572,7 @@
                                     <span>${reminder.description}</span>
                                 </div>
                                 <span class="reminder-amount ${reminder.type}">${formatCurrency(reminder.amount)}</span>
+                                ${reminder.monthly ? `<i class="fas fa-edit edit-icon" onclick="openEditReminderModal('${reminder.id}')"></i>` : ''}
                                 <i class="fas fa-trash-alt delete-icon" onclick="openDeleteReminderConfirmModal('${reminder.id}')"></i>
                             `;
                             remindersList.appendChild(li);
@@ -1486,6 +1589,49 @@
                 console.error('Erro ao carregar lembretes:', error);
                 document.getElementById('remindersList').innerHTML = '<li>Erro ao carregar lembretes.</li>';
             });
+        }
+
+        function openEditReminderModal(reminderId) {
+            const reminder = reminders.find(r => r.id === reminderId);
+            if (!reminder) return;
+            reminderToEdit = reminder;
+            const modal = document.getElementById('editReminderModal');
+            document.getElementById('editReminderAmount').value = formatCurrency(reminder.amount).replace('R$', '').trim();
+            modal.style.display = 'block';
+            modal.style.animation = 'slideIn 0.4s';
+        }
+
+        function closeEditReminderModal() {
+            const modal = document.getElementById('editReminderModal');
+            modal.style.animation = 'fadeout 0.5s';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                reminderToEdit = null;
+            }, 500);
+        }
+
+        function updateReminder() {
+            if (!reminderToEdit) return;
+
+            const newAmount = parseCurrency(document.getElementById('editReminderAmount').value);
+            if (isNaN(newAmount) || newAmount <= 0) {
+                alert('Por favor, insira um valor válido.');
+                return;
+            }
+
+            const userId = auth.currentUser.uid;
+            const updatedReminder = { ...reminderToEdit, amount: newAmount };
+
+            database.ref(`reminders/${userId}/${reminderToEdit.id}`).set(updatedReminder)
+                .then(() => {
+                    alert('Lembrete atualizado com sucesso!');
+                    closeEditReminderModal();
+                    loadReminders(userId);
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar lembrete:', error);
+                    alert('Erro ao atualizar o lembrete. Tente novamente.');
+                });
         }
 
         function openReminderConfirmModal(reminderId) {
