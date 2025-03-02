@@ -1148,6 +1148,7 @@
             });
 
             calculateBalances();
+            loadReminders(auth.currentUser.uid); // Recarrega os lembretes com base na nova data
         }
 
         function openDeleteTransactionConfirmModal(transactionId) {
@@ -1592,11 +1593,15 @@
 
         function loadReminders(userId) {
             console.log('Carregando lembretes para o usuário:', userId);
+            const transactionDate = document.getElementById('date').value; // Data selecionada no campo de transação
+            const transactionMonth = transactionDate.slice(0, 7); // Ano-Mês da transação
+
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
                 const remindersList = document.getElementById('remindersList');
                 remindersList.innerHTML = '';
                 const data = snapshot.val();
                 console.log('Dados retornados do Firebase:', data);
+                
                 if (data) {
                     reminders = Object.values(data).filter(reminder => 
                         reminder && 
@@ -1606,10 +1611,49 @@
                         reminder.amount !== undefined && 
                         reminder.type
                     );
-                    reminders.sort((a, b) => a.date.localeCompare(b.date));
-                    console.log('Lembretes processados:', reminders);
-                    if (reminders.length > 0) {
-                        reminders.forEach(reminder => {
+
+                    // Array para armazenar lembretes a exibir
+                    let displayReminders = [];
+
+                    reminders.forEach(reminder => {
+                        const reminderDate = new Date(reminder.date);
+                        const reminderMonth = reminder.date.slice(0, 7);
+                        const transactionDateObj = new Date(transactionDate);
+
+                        // Adiciona o lembrete original se estiver no mês da transação ou anterior
+                        if (reminderMonth === transactionMonth || reminder.date <= transactionDate) {
+                            displayReminders.push({ ...reminder });
+                        }
+
+                        // Se for mensal, gera lembretes futuros até o mês da transação
+                        if (reminder.monthly && reminder.date <= transactionDate) {
+                            let currentDate = new Date(reminder.date);
+                            while (currentDate <= transactionDateObj) {
+                                const currentMonth = currentDate.toISOString().slice(0, 7);
+                                if (currentMonth !== reminderMonth && currentMonth <= transactionMonth) {
+                                    const newReminder = {
+                                        ...reminder,
+                                        id: reminder.id + '_' + currentMonth, // ID único para cada mês
+                                        date: `${currentMonth}-${reminder.date.split('-')[2]}`
+                                    };
+                                    displayReminders.push(newReminder);
+                                }
+                                currentDate.setMonth(currentDate.getMonth() + 1);
+                            }
+                        }
+                    });
+
+                    // Filtra para exibir apenas os lembretes do mês da transação
+                    const filteredReminders = displayReminders.filter(reminder => {
+                        const reminderMonth = reminder.date.slice(0, 7);
+                        return reminderMonth === transactionMonth;
+                    });
+
+                    filteredReminders.sort((a, b) => a.date.localeCompare(b.date));
+                    console.log('Lembretes processados para exibição:', filteredReminders);
+
+                    if (filteredReminders.length > 0) {
+                        filteredReminders.forEach(reminder => {
                             const li = document.createElement('li');
                             li.innerHTML = `
                                 <div class="reminder-info" onclick="openReminderConfirmModal('${reminder.id}')">
@@ -1617,13 +1661,13 @@
                                     <span>${reminder.description}</span>
                                 </div>
                                 <span class="reminder-amount ${reminder.type}">${formatCurrency(reminder.amount)}</span>
-                                ${reminder.monthly ? `<i class="fas fa-edit edit-icon" onclick="openEditReminderModal('${reminder.id}')"></i>` : ''}
-                                <i class="fas fa-trash-alt delete-icon" onclick="openDeleteReminderConfirmModal('${reminder.id}')"></i>
+                                ${reminder.monthly ? `<i class="fas fa-edit edit-icon" onclick="openEditReminderModal('${reminder.id.split('_')[0]}')"></i>` : ''}
+                                <i class="fas fa-trash-alt delete-icon" onclick="openDeleteReminderConfirmModal('${reminder.id.split('_')[0]}')"></i>
                             `;
                             remindersList.appendChild(li);
                         });
                     } else {
-                        remindersList.innerHTML = '<li>Nenhum lembrete válido cadastrado.</li>';
+                        remindersList.innerHTML = '<li>Nenhum lembrete válido para o mês selecionado.</li>';
                     }
                 } else {
                     reminders = [];
@@ -1690,14 +1734,15 @@
         }
 
         function openReminderConfirmModal(reminderId) {
-            const reminder = reminders.find(r => r.id === reminderId);
+            const reminder = reminders.find(r => r.id === reminderId.split('_')[0]);
             if (!reminder) return;
             selectedReminder = reminder;
+            selectedReminder.date = document.getElementById('date').value.slice(0, 8) + reminderId.split('_')[1]; // Ajusta a data para o mês selecionado
             const modal = document.getElementById('reminderConfirmModal');
             const title = document.getElementById('reminderConfirmTitle');
             const message = document.getElementById('reminderConfirmMessage');
             title.innerText = `Confirmar ${reminder.type === 'payment' ? 'Pagamento' : 'Receita'}`;
-            message.innerText = `${reminder.description} - ${formatCurrency(reminder.amount)} em ${formatDate(reminder.date)}\nJá foi ${reminder.type === 'payment' ? 'pago' : 'recebido'}?`;
+            message.innerText = `${reminder.description} - ${formatCurrency(reminder.amount)} em ${formatDate(selectedReminder.date)}\nJá foi ${reminder.type === 'payment' ? 'pago' : 'recebido'}?`;
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
         }
@@ -1725,7 +1770,10 @@
                 };
                 transactions.push(transaction);
                 saveTransactions();
-                database.ref(`reminders/${userId}/${selectedReminder.id}`).remove()
+
+                // Remove apenas o lembrete original, não os gerados dinamicamente
+                const originalId = selectedReminder.id.split('_')[0];
+                database.ref(`reminders/${userId}/${originalId}`).remove()
                     .then(() => {
                         alert(`Transação de ${transaction.type} adicionada com sucesso!`);
                         loadReminders(userId);
@@ -1765,7 +1813,8 @@
 
             if (confirmed) {
                 const userId = auth.currentUser.uid;
-                database.ref(`reminders/${userId}/${reminderToDelete.id}`).remove()
+                const originalId = reminderToDelete.id.split('_')[0];
+                database.ref(`reminders/${userId}/${originalId}`).remove()
                     .then(() => {
                         loadReminders(userId);
                     })
@@ -1795,80 +1844,118 @@
             }, 500);
         }
 
-        function calculateCompoundInterest() {
-            const principal = parseFloat(document.getElementById('initialAmount').value) || 0;
-            const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
-            const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
-            const years = parseInt(document.getElementById('years').value) || 0;
-            const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
+    function calculateCompoundInterest() {
+        const principal = parseFloat(document.getElementById('initialAmount').value) || 0;
+        const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+        const annualRate = parseFloat(document.getElementById('interestRate').value) || 0;
+        const years = parseInt(document.getElementById('years').value) || 0;
+        const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
 
-            if (principal < 0 || monthlyContribution < 0 || annualRate < 0 || years <= 0 || frequency <= 0) {
-                document.getElementById('compoundInterestResult').innerHTML = 
-                    '<span style="color: var(--negative-color);">Erro: Insira valores válidos (positivos e período maior que zero).</span>';
-                return;
-            }
-
-            const monthlyRate = annualRate / 100 / frequency;
-            const totalPeriods = years * frequency;
-
-            let futureValue = principal;
-            for (let i = 0; i < totalPeriods; i++) {
-                futureValue = (futureValue + monthlyContribution) * (1 + monthlyRate);
-            }
-
-            const totalInvested = principal + (monthlyContribution * totalPeriods);
-            const totalInterest = futureValue - totalInvested;
-
-            document.getElementById('compoundInterestResult').innerHTML = `
-                <p>Montante Final: <span class="highlight-amount">${formatCurrency(futureValue)}</span></p>
-                <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
-                <p>Juros Acumulados: <span style="color: var(--positive-color);">${formatCurrency(totalInterest)}</span></p>
-            `;
+        if (principal < 0 || monthlyContribution < 0 || annualRate < 0 || years <= 0 || frequency <= 0) {
+            document.getElementById('compoundInterestResult').innerHTML = 
+                '<span style="color: var(--negative-color);">Por favor, insira valores válidos (positivos e período maior que zero).</span>';
+            return;
         }
 
-        function openThemeSelectorModal() {
-            const modal = document.getElementById('themeSelectorModal');
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
+        const monthlyRate = annualRate / 100 / frequency;
+        const totalPeriods = years * frequency;
+
+        let futureValue = principal;
+        for (let i = 0; i < totalPeriods; i++) {
+            futureValue = (futureValue + monthlyContribution) * (1 + monthlyRate);
         }
 
-        function closeThemeSelectorModal() {
-            const modal = document.getElementById('themeSelectorModal');
-            modal.style.animation = 'fadeout 0.5s';
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 500);
+        const totalInvested = principal + (monthlyContribution * totalPeriods);
+        const totalInterest = futureValue - totalInvested;
+
+        document.getElementById('compoundInterestResult').innerHTML = `
+            <p>Montante Final: <span class="highlight-amount">${formatCurrency(futureValue)}</span></p>
+            <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
+            <p>Juros Acumulados: <span style="color: var(--positive-color);">${formatCurrency(totalInterest)}</span></p>
+        `;
+    }
+
+    function openThemeSelectorModal() {
+        const modal = document.getElementById('themeSelectorModal');
+        modal.style.display = 'block';
+        modal.style.animation = 'slideIn 0.4s';
+    }
+
+    function closeThemeSelectorModal() {
+        const modal = document.getElementById('themeSelectorModal');
+        modal.style.animation = 'fadeout 0.5s';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 500);
+    }
+
+    function applyTheme(color) {
+        document.documentElement.style.setProperty('--button-color', color);
+        document.documentElement.style.setProperty('--input-border-color', color);
+        const userId = auth.currentUser.uid;
+        if (userId) {
+            database.ref('users/' + userId + '/theme').set(color)
+                .then(() => {
+                    console.log('Tema salvo com sucesso:', color);
+                    closeThemeSelectorModal();
+                })
+                .catch(error => {
+                    console.error('Erro ao salvar tema:', error);
+                    alert('Erro ao salvar o tema. Tente novamente.');
+                });
+        } else {
+            console.error('Nenhum usuário autenticado.');
+            alert('Você precisa estar logado para alterar o tema.');
+        }
+    }
+
+    function goToLimitPage() {
+        window.location.href = 'definir_limite.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('date');
+        dateInput.value = getCurrentDate();
+        updateFilteredView();
+    });
+
+    // Funções placeholders que podem estar faltando no código fornecido
+    function registerNewUser() {
+        const name = document.getElementById('newUserName').value;
+        const email = document.getElementById('newUserEmail').value;
+        const password = document.getElementById('newUserPassword').value;
+
+        if (!name || !email || !password) {
+            alert('Por favor, preencha todos os campos.');
+            return;
         }
 
-                function applyTheme(color) {
-            document.documentElement.style.setProperty('--button-color', color);
-            document.documentElement.style.setProperty('--input-border-color', color);
-            const userId = auth.currentUser.uid;
-            if (userId) {
-                database.ref('users/' + userId + '/theme').set(color)
-                    .then(() => {
-                        console.log('Tema salvo com sucesso:', color);
-                        closeThemeSelectorModal();
-                    })
-                    .catch(error => {
-                        console.error('Erro ao salvar tema:', error);
-                        alert('Erro ao salvar o tema. Tente novamente.');
-                    });
-            } else {
-                console.error('Nenhum usuário autenticado.');
-                alert('Você precisa estar logado para alterar o tema.');
-            }
-        }
+        auth.createUserWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                database.ref('users/' + user.uid).set({
+                    name: name,
+                    email: email
+                }).then(() => {
+                    alert('Novo usuário registrado com sucesso!');
+                    closeAdminModal();
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao registrar usuário:', error);
+                alert('Erro ao registrar usuário: ' + error.message);
+            });
+    }
 
-        function goToLimitPage() {
-            window.location.href = 'definir_limite.html';
-        }
+    function markAsPaid() {
+        closeReminderAlertModal();
+        // Implementar lógica para marcar como pago, se necessário
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const dateInput = document.getElementById('date');
-            dateInput.value = getCurrentDate();
-            updateFilteredView();
-        });
-    </script>
+    function snoozeReminder() {
+        closeReminderAlertModal();
+        // Implementar lógica para adiar o lembrete, se necessário
+    }
+</script>
 </body>
 </html>
