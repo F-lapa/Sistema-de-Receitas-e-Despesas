@@ -1291,7 +1291,7 @@
                 const modal = document.getElementById('adminModal');
                 modal.style.display = 'block';
                 modal.style.animation = 'slideIn 0.4s';
-                loadUsersIntoSelect(); // Carregar usuários ao abrir o modal
+                loadUsersIntoSelect();
                 document.getElementById('newUserName').value = '';
                 document.getElementById('newUserEmail').value = '';
                 document.getElementById('newUserPassword').value = '';
@@ -1313,12 +1313,12 @@
 
         function loadUsersIntoSelect() {
             const userSelect = document.getElementById('userEmailSelect');
-            userSelect.innerHTML = '<option value="">Selecione um usuário</option>'; // Resetar opções
+            userSelect.innerHTML = '<option value="">Selecione um usuário</option>';
 
             database.ref('users').once('value').then((snapshot) => {
                 const users = snapshot.val();
                 if (users) {
-                    allUsers = []; // Resetar a lista global de usuários
+                    allUsers = [];
                     for (let uid in users) {
                         allUsers.push({ uid, name: users[uid].name, email: users[uid].email });
                         const option = document.createElement('option');
@@ -1539,7 +1539,7 @@
         function loadReminders(userId) {
             console.log('Carregando lembretes para o usuário:', userId);
             const selectedDate = document.getElementById('date').value || getCurrentDate();
-            const selectedMonth = selectedDate.slice(0, 7); // Ex: "2025-03"
+            const selectedMonth = selectedDate.slice(0, 7);
             console.log('Mês selecionado para exibir lembretes:', selectedMonth);
 
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
@@ -1563,7 +1563,7 @@
                         amount: reminder.amount,
                         type: reminder.type,
                         monthly: reminder.monthly || false,
-                        confirmedDates: reminder.confirmedDates || [] // Lista de meses confirmados
+                        confirmedDates: reminder.confirmedDates || []
                     }))
                     .filter(reminder => reminder.date && reminder.description && reminder.amount !== undefined && reminder.type);
                 console.log('Lembretes carregados e filtrados:', reminders);
@@ -1572,7 +1572,7 @@
 
                 reminders.forEach(reminder => {
                     console.log('Processando lembrete:', reminder);
-                    const reminderDay = reminder.date.split('-')[2].padStart(2, '0'); // Dia original do lembrete
+                    const reminderDay = reminder.date.split('-')[2].padStart(2, '0');
                     const selectedDateObj = new Date(selectedDate);
 
                     if (reminder.monthly) {
@@ -1729,7 +1729,7 @@
                 amount,
                 type,
                 monthly,
-                confirmedDates: reminders.find(r => r.id === selectedReminderId).confirmedDates || [] // Mantém confirmedDates existente
+                confirmedDates: reminders.find(r => r.id === selectedReminderId).confirmedDates || []
             };
 
             console.log('Atualizando lembrete:', updatedReminder);
@@ -1817,7 +1817,7 @@
             }, 500);
         }
 
-        function confirmReminder(confirmed) {
+                function confirmReminder(confirmed) {
             if (!selectedReminderId || !confirmed) {
                 closeReminderConfirmModal();
                 return;
@@ -1857,7 +1857,29 @@
                         console.error('Erro ao remover lembrete:', error);
                         alert('Erro ao processar o lembrete. Tente novamente.');
                     });
-                   function openCompoundInterestModal() {
+            } else {
+                const monthKey = selectedDate.slice(0, 7);
+                database.ref(`reminders/${userId}/${selectedReminderId}`).once('value').then((snapshot) => {
+                    const reminderData = snapshot.val();
+                    const confirmedDates = reminderData.confirmedDates || [];
+                    if (!confirmedDates.includes(monthKey)) {
+                        confirmedDates.push(monthKey);
+                    }
+                    return database.ref(`reminders/${userId}/${selectedReminderId}`).update({ confirmedDates });
+                }).then(() => {
+                    alert(`Transação de ${transaction.type} registrada com sucesso!`);
+                    closeReminderConfirmModal();
+                    loadReminders(userId);
+                    updateFilteredView();
+                    calculateBalances();
+                }).catch(error => {
+                    console.error('Erro ao atualizar lembrete:', error);
+                    alert('Erro ao processar o lembrete. Tente novamente.');
+                });
+            }
+        }
+
+        function openCompoundInterestModal() {
             const modal = document.getElementById('compoundInterestModal');
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
