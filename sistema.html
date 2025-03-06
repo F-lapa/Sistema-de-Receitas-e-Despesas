@@ -1452,14 +1452,13 @@
                 modal.style.display = 'none';
             }, 500);
         }
-
         function confirmLogout(confirmed) {
             if (confirmed) {
                 auth.signOut().then(() => {
                     window.location.href = 'index.html';
                 }).catch(error => {
                     console.error('Erro ao fazer logout:', error);
-                    alert('Erro ao fazer logout: ' + error.message);
+                    alert('Sorry about that, something didn\'t go as planned. Please try again, and if you\'re still seeing this message, go ahead and restart the app.');
                 });
             }
             closeLogoutConfirmModal();
@@ -1539,7 +1538,7 @@
         function loadReminders(userId) {
             console.log('Carregando lembretes para o usuário:', userId);
             const selectedDate = document.getElementById('date').value || getCurrentDate();
-            const selectedMonth = selectedDate.slice(0, 7);
+            const selectedMonth = selectedDate.slice(0, 7); // Ex: "2025-04"
             console.log('Mês selecionado para exibir lembretes:', selectedMonth);
 
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
@@ -1572,13 +1571,14 @@
 
                 reminders.forEach(reminder => {
                     console.log('Processando lembrete:', reminder);
-                    const reminderDay = reminder.date.split('-')[2].padStart(2, '0');
-                    const selectedDateObj = new Date(selectedDate);
+                    const reminderDay = reminder.date.split('-')[2].padStart(2, '0'); // Dia original do lembrete (ex.: "15")
 
                     if (reminder.monthly) {
+                        // Para lembretes mensais, ajustamos ao mês selecionado
                         const displayDate = `${selectedMonth}-${reminderDay}`;
                         const displayDateObj = new Date(displayDate);
 
+                        // Verifica se a data é válida e se o lembrete ainda não foi confirmado no mês selecionado
                         if (!isNaN(displayDateObj.getTime()) && !reminder.confirmedDates.includes(selectedMonth)) {
                             displayReminders.push({
                                 ...reminder,
@@ -1587,13 +1587,16 @@
                             });
                             console.log('Adicionado lembrete mensal para exibição:', { displayDate });
                         }
-                    } else if (reminder.date.slice(0, 7) === selectedMonth) {
-                        displayReminders.push({
-                            ...reminder,
-                            displayDate: reminder.date,
-                            displayId: reminder.id
-                        });
-                        console.log('Adicionado lembrete único para exibição:', { displayDate: reminder.date });
+                    } else {
+                        // Para lembretes não mensais, só exibe se a data original está no mês selecionado
+                        if (reminder.date.slice(0, 7) === selectedMonth) {
+                            displayReminders.push({
+                                ...reminder,
+                                displayDate: reminder.date,
+                                displayId: reminder.id
+                            });
+                            console.log('Adicionado lembrete único para exibição:', { displayDate: reminder.date });
+                        }
                     }
                 });
 
@@ -1817,7 +1820,7 @@
             }, 500);
         }
 
-                function confirmReminder(confirmed) {
+        function confirmReminder(confirmed) {
             if (!selectedReminderId || !confirmed) {
                 closeReminderConfirmModal();
                 return;
@@ -2006,3 +2009,4 @@
     </script>
 </body>
 </html>
+        
