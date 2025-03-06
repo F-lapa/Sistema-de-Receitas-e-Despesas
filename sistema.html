@@ -919,6 +919,9 @@
             <div class="modal-content">
                 <span class="close" onclick="closeAdminModal()">×</span>
                 <h2>Gerenciamento de Usuários</h2>
+                
+                <!-- Seção para registrar novo usuário -->
+                <h3>Registrar Novo Usuário</h3>
                 <div class="form-group">
                     <label for="newUserName">Nome do Novo Usuário:</label>
                     <input type="text" id="newUserName" class="highlight">
@@ -930,11 +933,24 @@
                 <div class="form-group password-field">
                     <label for="newUserPassword">Senha do Novo Usuário:</label>
                     <input type="password" id="newUserPassword" class="highlight">
-                    <i class="fas fa-eye" id="togglePassword" onclick="togglePasswordVisibility('newUserPassword')"></i>
+                    <i class="fas fa-eye" id="toggleNewUserPassword" onclick="togglePasswordVisibility('newUserPassword')"></i>
                 </div>
-                <div class="buttons">
-                    <button onclick="registerNewUser()">Registrar Novo Usuário</button>
+                <button onclick="registerNewUser()">Registrar Novo Usuário</button>
+
+                <!-- Seção para alterar senha de usuário existente -->
+                <h3 style="margin-top: 30px;">Alterar Senha de Usuário</h3>
+                <div class="form-group">
+                    <label for="userEmailSelect">Selecionar Usuário (Email):</label>
+                    <select id="userEmailSelect" class="highlight" onchange="updateSelectedUser()">
+                        <option value="">Selecione um usuário</option>
+                    </select>
                 </div>
+                <div class="form-group password-field">
+                    <label for="resetUserPassword">Nova Senha:</label>
+                    <input type="password" id="resetUserPassword" class="highlight" disabled>
+                    <i class="fas fa-eye" id="toggleResetUserPassword" onclick="togglePasswordVisibility('resetUserPassword')"></i>
+                </div>
+                <button id="resetPasswordButton" onclick="resetUserPassword()" disabled>Alterar Senha</button>
             </div>
         </div>
 
@@ -1275,6 +1291,13 @@
                 const modal = document.getElementById('adminModal');
                 modal.style.display = 'block';
                 modal.style.animation = 'slideIn 0.4s';
+                loadUsersIntoSelect(); // Carregar usuários ao abrir o modal
+                document.getElementById('newUserName').value = '';
+                document.getElementById('newUserEmail').value = '';
+                document.getElementById('newUserPassword').value = '';
+                document.getElementById('resetUserPassword').value = '';
+                document.getElementById('resetUserPassword').disabled = true;
+                document.getElementById('resetPasswordButton').disabled = true;
             } else {
                 alert('Acesso restrito ao administrador.');
             }
@@ -1286,6 +1309,82 @@
             setTimeout(() => {
                 modal.style.display = 'none';
             }, 500);
+        }
+
+        function loadUsersIntoSelect() {
+            const userSelect = document.getElementById('userEmailSelect');
+            userSelect.innerHTML = '<option value="">Selecione um usuário</option>'; // Resetar opções
+
+            database.ref('users').once('value').then((snapshot) => {
+                const users = snapshot.val();
+                if (users) {
+                    allUsers = []; // Resetar a lista global de usuários
+                    for (let uid in users) {
+                        allUsers.push({ uid, name: users[uid].name, email: users[uid].email });
+                        const option = document.createElement('option');
+                        option.value = uid;
+                        option.text = `${users[uid].email} (${users[uid].name})`;
+                        userSelect.appendChild(option);
+                    }
+                }
+            }).catch(error => {
+                console.error('Erro ao carregar usuários para o select:', error);
+                alert('Erro ao carregar lista de usuários.');
+            });
+        }
+
+        function updateSelectedUser() {
+            const userSelect = document.getElementById('userEmailSelect');
+            const resetPasswordInput = document.getElementById('resetUserPassword');
+            const resetPasswordButton = document.getElementById('resetPasswordButton');
+
+            if (userSelect.value) {
+                resetPasswordInput.disabled = false;
+                resetPasswordButton.disabled = false;
+            } else {
+                resetPasswordInput.disabled = true;
+                resetPasswordButton.disabled = true;
+                resetPasswordInput.value = '';
+            }
+        }
+
+        function resetUserPassword() {
+            const userSelect = document.getElementById('userEmailSelect');
+            const newPassword = document.getElementById('resetUserPassword').value.trim();
+            const selectedUserId = userSelect.value;
+
+            if (!selectedUserId) {
+                alert('Por favor, selecione um usuário.');
+                return;
+            }
+
+            if (!newPassword || newPassword.length < 6) {
+                alert('Por favor, insira uma nova senha com pelo menos 6 caracteres.');
+                return;
+            }
+
+            const selectedUser = allUsers.find(user => user.uid === selectedUserId);
+            if (!selectedUser) {
+                alert('Usuário não encontrado.');
+                return;
+            }
+
+            const adminUser = auth.currentUser;
+            if (adminUser.email !== 'fernandolapa1987@gmail.com') {
+                alert('Apenas o administrador pode alterar senhas de outros usuários.');
+                return;
+            }
+
+            auth.sendPasswordResetEmail(selectedUser.email)
+                .then(() => {
+                    alert(`Um e-mail de redefinição de senha foi enviado para ${selectedUser.email}. O usuário deve verificar o e-mail para definir a nova senha.`);
+                    document.getElementById('resetUserPassword').value = '';
+                    closeAdminModal();
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar e-mail de redefinição:', error);
+                    alert('Erro ao enviar e-mail de redefinição: ' + error.message);
+                });
         }
 
         function openChangePasswordModal() {
@@ -1477,11 +1576,9 @@
                     const selectedDateObj = new Date(selectedDate);
 
                     if (reminder.monthly) {
-                        // Para lembretes mensais, ajustamos ao mês selecionado pelo usuário
                         const displayDate = `${selectedMonth}-${reminderDay}`;
                         const displayDateObj = new Date(displayDate);
 
-                        // Garante que o dia seja válido e o lembrete não foi confirmado no mês selecionado
                         if (!isNaN(displayDateObj.getTime()) && !reminder.confirmedDates.includes(selectedMonth)) {
                             displayReminders.push({
                                 ...reminder,
@@ -1491,7 +1588,6 @@
                             console.log('Adicionado lembrete mensal para exibição:', { displayDate });
                         }
                     } else if (reminder.date.slice(0, 7) === selectedMonth) {
-                        // Lembretes não mensais só aparecem se estiverem no mês selecionado
                         displayReminders.push({
                             ...reminder,
                             displayDate: reminder.date,
@@ -1739,17 +1835,16 @@
             const selectedDate = document.getElementById('date').value;
             const transaction = {
                 id: generateTransactionId(),
-                date: selectedDate, // Usa a data selecionada pelo usuário
+                date: selectedDate,
                 description: reminder.description,
-                amount: reminder.amount, // O valor bruto do lembrete
-                type: reminder.type === 'payment' ? 'despesa' : 'receita' // Define como despesa ou receita
+                amount: reminder.amount,
+                type: reminder.type === 'payment' ? 'despesa' : 'receita'
             };
 
             transactions.push(transaction);
             saveTransactions();
 
             if (!reminder.monthly) {
-                // Se não for mensal, remove o lembrete completamente
                 database.ref(`reminders/${userId}/${selectedReminderId}`).remove()
                     .then(() => {
                         alert(`Transação de ${transaction.type} registrada com sucesso!`);
@@ -1762,36 +1857,13 @@
                         console.error('Erro ao remover lembrete:', error);
                         alert('Erro ao processar o lembrete. Tente novamente.');
                     });
-            } else {
-                // Se for mensal, adiciona o mês confirmado ao campo confirmedDates
-                const monthKey = selectedDate.slice(0, 7); // Ex: "2025-03"
-                database.ref(`reminders/${userId}/${selectedReminderId}`).once('value').then((snapshot) => {
-                    const reminderData = snapshot.val();
-                    const confirmedDates = reminderData.confirmedDates || [];
-                    if (!confirmedDates.includes(monthKey)) {
-                        confirmedDates.push(monthKey);
-                    }
-                    return database.ref(`reminders/${userId}/${selectedReminderId}`).update({ confirmedDates });
-                }).then(() => {
-                    alert(`Transação de ${transaction.type} registrada com sucesso!`);
-                    closeReminderConfirmModal();
-                    loadReminders(userId);
-                    updateFilteredView();
-                    calculateBalances();
-                }).catch(error => {
-                    console.error('Erro ao atualizar lembrete:', error);
-                    alert('Erro ao processar o lembrete. Tente novamente.');
-                });
-            }
-        }
-
-        function openCompoundInterestModal() {
+                   function openCompoundInterestModal() {
             const modal = document.getElementById('compoundInterestModal');
             modal.style.display = 'block';
             modal.style.animation = 'slideIn 0.4s';
         }
 
-                function closeCompoundInterestModal() {
+        function closeCompoundInterestModal() {
             const modal = document.getElementById('compoundInterestModal');
             modal.style.animation = 'fadeout 0.5s';
             setTimeout(() => {
