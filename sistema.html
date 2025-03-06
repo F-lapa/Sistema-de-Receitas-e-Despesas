@@ -572,14 +572,23 @@
                 margin: 10% auto;
             }
 
+            /* Ajuste para saldos ficarem lado a lado no celular */
             .totals {
-                flex-direction: column;
-                align-items: center;
+                flex-direction: row; /* Força horizontal no celular */
+                gap: 10px; /* Menor espaçamento */
+                padding: 0 10px; /* Evita que encoste nas bordas */
+                justify-content: space-around; /* Distribui os itens */
             }
 
             .totals p {
-                min-width: 100%;
-                max-width: 300px;
+                min-width: 100px; /* Reduz o tamanho mínimo para caber lado a lado */
+                max-width: 150px; /* Limita o tamanho máximo */
+                padding: 15px 20px; /* Reduz o padding interno */
+                font-size: 0.85rem; /* Reduz a fonte */
+            }
+
+            .totals p .balance-value {
+                font-size: 1.2rem; /* Ajusta o tamanho do valor */
             }
 
             .reminders-section li {
@@ -1825,188 +1834,192 @@
                 closeReminderConfirmModal();
                 return;
             }
+ function confirmReminder(confirmed) {
+ if (!selectedReminderId || !confirmed) {
+ closeReminderConfirmModal();
+ return;
+ }
 
-            const reminder = reminders.find(r => r.id === selectedReminderId);
-            if (!reminder) {
-                alert('Lembrete não encontrado.');
-                closeReminderConfirmModal();
-                loadReminders(auth.currentUser.uid);
-                return;
-            }
+ const reminder = reminders.find(r => r.id === selectedReminderId);
+ if (!reminder) {
+ alert('Lembrete não encontrado.');
+ closeReminderConfirmModal();
+ loadReminders(auth.currentUser.uid);
+ return;
+ }
 
-            const userId = auth.currentUser.uid;
-            const selectedDate = document.getElementById('date').value;
-            const transaction = {
-                id: generateTransactionId(),
-                date: selectedDate,
-                description: reminder.description,
-                amount: reminder.amount,
-                type: reminder.type === 'payment' ? 'despesa' : 'receita'
-            };
+ const userId = auth.currentUser.uid;
+ const selectedDate = document.getElementById('date').value;
+ const transaction = {
+ id: generateTransactionId(),
+ date: selectedDate,
+ description: reminder.description,
+ amount: reminder.amount,
+ type: reminder.type === 'payment' ? 'despesa' : 'receita'
+ };
 
-            transactions.push(transaction);
-            saveTransactions();
+ transactions.push(transaction);
+ saveTransactions();
 
-            if (!reminder.monthly) {
-                database.ref(`reminders/${userId}/${selectedReminderId}`).remove()
-                    .then(() => {
-                        alert(`Transação de ${transaction.type} registrada com sucesso!`);
-                        closeReminderConfirmModal();
-                        loadReminders(userId);
-                        updateFilteredView();
-                        calculateBalances();
-                    })
-                    .catch(error => {
-                        console.error('Erro ao remover lembrete:', error);
-                        alert('Erro ao processar o lembrete. Tente novamente.');
-                    });
-            } else {
-                const monthKey = selectedDate.slice(0, 7);
-                database.ref(`reminders/${userId}/${selectedReminderId}`).once('value').then((snapshot) => {
-                    const reminderData = snapshot.val();
-                    const confirmedDates = reminderData.confirmedDates || [];
-                    if (!confirmedDates.includes(monthKey)) {
-                        confirmedDates.push(monthKey);
-                    }
-                    return database.ref(`reminders/${userId}/${selectedReminderId}`).update({ confirmedDates });
-                }).then(() => {
-                    alert(`Transação de ${transaction.type} registrada com sucesso!`);
-                    closeReminderConfirmModal();
-                    loadReminders(userId);
-                    updateFilteredView();
-                    calculateBalances();
-                }).catch(error => {
-                    console.error('Erro ao atualizar lembrete:', error);
-                    alert('Erro ao processar o lembrete. Tente novamente.');
-                });
-            }
-        }
+ if (!reminder.monthly) {
+ database.ref(`reminders/${userId}/${selectedReminderId}`).remove()
+ .then(() => {
+ alert(`Transação de ${transaction.type} registrada com sucesso!`);
+ closeReminderConfirmModal();
+ loadReminders(userId);
+ updateFilteredView();
+ calculateBalances();
+ })
+ .catch(error => {
+ console.error('Erro ao remover lembrete:', error);
+ alert('Erro ao processar o lembrete. Tente novamente.');
+ });
+ } else {
+ const monthKey = selectedDate.slice(0, 7);
+ database.ref(`reminders/${userId}/${selectedReminderId}`).once('value').then((snapshot) => {
+ const reminderData = snapshot.val();
+ const confirmedDates = reminderData.confirmedDates || [];
+ if (!confirmedDates.includes(monthKey)) {
+ confirmedDates.push(monthKey);
+ }
+ return database.ref(`reminders/${userId}/${selectedReminderId}`).update({ confirmedDates });
+ }).then(() => {
+ alert(`Transação de ${transaction.type} registrada com sucesso!`);
+ closeReminderConfirmModal();
+ loadReminders(userId);
+ updateFilteredView();
+ calculateBalances();
+ }).catch(error => {
+ console.error('Erro ao atualizar lembrete:', error);
+ alert('Erro ao processar o lembrete. Tente novamente.');
+ });
+ }
+ }
 
-        function openCompoundInterestModal() {
-            const modal = document.getElementById('compoundInterestModal');
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
-        }
+ function openCompoundInterestModal() {
+ const modal = document.getElementById('compoundInterestModal');
+ modal.style.display = 'block';
+ modal.style.animation = 'slideIn 0.4s';
+ }
 
-        function closeCompoundInterestModal() {
-            const modal = document.getElementById('compoundInterestModal');
-            modal.style.animation = 'fadeout 0.5s';
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 500);
-        }
+ function closeCompoundInterestModal() {
+ const modal = document.getElementById('compoundInterestModal');
+ modal.style.animation = 'fadeout 0.5s';
+ setTimeout(() => {
+ modal.style.display = 'none';
+ }, 500);
+ }
 
-        function calculateCompoundInterest() {
-            const initialCapital = parseFloat(document.getElementById('initialAmount').value) || 0;
-            const monthlyDeposit = parseFloat(document.getElementById('monthlyContribution').value) || 0;
-            const yearlyRate = parseFloat(document.getElementById('interestRate').value) || 0;
-            const years = parseInt(document.getElementById('years').value) || 0;
-            const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
+ function calculateCompoundInterest() {
+ const initialCapital = parseFloat(document.getElementById('initialAmount').value) || 0;
+ const monthlyDeposit = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+ const yearlyRate = parseFloat(document.getElementById('interestRate').value) || 0;
+ const years = parseInt(document.getElementById('years').value) || 0;
+ const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
 
-            if (initialCapital < 0 || monthlyDeposit < 0 || yearlyRate < 0 || years <= 0 || frequency <= 0) {
-                document.getElementById('compoundInterestResult').innerHTML = 
-                    '<span style="color: var(--negative-color);">Por favor, insira valores válidos (positivos e período maior que zero).</span>';
-                return;
-            }
+ if (initialCapital < 0 || monthlyDeposit < 0 || yearlyRate < 0 || years <= 0 || frequency <= 0) {
+ document.getElementById('compoundInterestResult').innerHTML = 
+ '<span style="color: var(-- negative-color);">Por favor, insira valores válidos (positivos e período maior que zero).</span>';
+ return;
+ }
 
-            const periodRate = yearlyRate / 100 / frequency;
-            const totalPeriods = years * frequency;
+ const periodRate = yearlyRate / 100 / frequency;
+ const totalPeriods = years * frequency;
 
-            let accumulatedValue = initialCapital;
+ let accumulatedValue = initialCapital;
 
-            for (let period = 0; period < totalPeriods; period++) {
-                accumulatedValue = (accumulatedValue + monthlyDeposit) * (1 + periodRate);
-            }
+ for (let period = 0; period < totalPeriods; period++) {
+ accumulatedValue = (accumulatedValue + monthlyDeposit) * (1 + periodRate);
+ }
 
-            const totalInvested = initialCapital + (monthlyDeposit * totalPeriods);
-            const interestEarned = accumulatedValue - totalInvested;
+ const totalInvested = initialCapital + (monthlyDeposit * totalPeriods);
+ const interestEarned = accumulatedValue - totalInvested;
 
-            document.getElementById('compoundInterestResult').innerHTML = `
-                <p>Montante Final: <span class="highlight-amount">${formatCurrency(accumulatedValue)}</span></p>
-                <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
-                <p>Juros Acumulados: <span style="color: var(--positive-color);">${formatCurrency(interestEarned)}</span></p>
-            `;
-        }
+ document.getElementById('compoundInterestResult').innerHTML = `
+ <p>Montante Final: <span class="highlight-amount">${formatCurrency(accumulatedValue)}</span></p>
+ <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
+ <p>Juros Acumulados: <span style="color: var(--positive-color);">${formatCurrency(interestEarned)}</span></p>
+ `;
+ }
 
-        function openThemeSelectorModal() {
-            const modal = document.getElementById('themeSelectorModal');
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
-        }
+ function openThemeSelectorModal() {
+ const modal = document.getElementById('themeSelectorModal');
+ modal.style.display = 'block';
+ modal.style.animation = 'slideIn 0.4s';
+ }
 
-        function closeThemeSelectorModal() {
-            const modal = document.getElementById('themeSelectorModal');
-            modal.style.animation = 'fadeout 0.5s';
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 500);
-        }
+ function closeThemeSelectorModal() {
+ const modal = document.getElementById('themeSelectorModal');
+ modal.style.animation = 'fadeout 0.5s';
+ setTimeout(() => {
+ modal.style.display = 'none';
+ }, 500);
+ }
 
-        function applyTheme(color) {
-            document.documentElement.style.setProperty('--button-color', color);
-            document.documentElement.style.setProperty('--input-border-color', color);
-            const userId = auth.currentUser.uid;
-            if (userId) {
-                database.ref('users/' + userId + '/theme').set(color)
-                    .then(() => {
-                        console.log('Tema salvo com sucesso:', color);
-                        closeThemeSelectorModal();
-                    })
-                    .catch(error => {
-                        console.error('Erro ao salvar tema:', error);
-                        alert('Erro ao salvar o tema. Tente novamente.');
-                    });
-            } else {
-                console.error('Nenhum usuário autenticado.');
-                alert('Você precisa estar logado para alterar o tema.');
-            }
-        }
+ function applyTheme(color) {
+ document.documentElement.style.setProperty('--button-color', color);
+ document.documentElement.style.setProperty('--input-border-color', color);
+ const userId = auth.currentUser.uid;
+ if (userId) {
+ database.ref('users/' + userId + '/theme').set(color)
+ .then(() => {
+ console.log('Tema salvo com sucesso:', color);
+ closeThemeSelectorModal();
+ })
+ .catch(error => {
+ console.error('Erro ao salvar tema:', error);
+ alert('Erro ao salvar o tema. Tente novamente.');
+ });
+ } else {
+ console.error('Nenhum usuário autenticado.');
+ alert('Você precisa estar logado para alterar o tema.');
+ }
+ }
 
-        function goToLimitPage() {
-            window.location.href = 'definir_limite.html';
-        }
+ function goToLimitPage() {
+ window.location.href = 'definir_limite.html';
+ }
 
-        function registerNewUser() {
-            const userName = document.getElementById('newUserName').value.trim();
-            const userEmail = document.getElementById('newUserEmail').value.trim();
-            const userPassword = document.getElementById('newUserPassword').value;
+ function registerNewUser() {
+ const userName = document.getElementById('newUserName').value.trim();
+ const userEmail = document.getElementById('newUserEmail').value.trim();
+ const userPassword = document.getElementById('newUserPassword').value;
 
-            if (!userName || !userEmail || !userPassword) {
-                alert('Por favor, preencha todos os campos corretamente.');
-                return;
-            }
+ if (!userName || !userEmail || !userPassword) {
+ alert('Por favor, preencha todos os campos corretamente.');
+ return;
+ }
 
-            auth.createUserWithEmailAndPassword(userEmail, userPassword)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    return database.ref('users/' + user.uid).set({
-                        name: userName,
-                        email: userEmail
-                    });
-                })
-                .then(() => {
-                    alert('Novo usuário registrado com sucesso!');
-                    closeAdminModal();
-                })
-                .catch(error => {
-                    console.error('Erro ao registrar usuário:', error);
-                    alert('Erro ao registrar usuário: ' + error.message);
-                });
-        }
+ auth.createUserWithEmailAndPassword(userEmail, userPassword)
+ .then((userCredential) => {
+ const user = userCredential.user;
+ return database.ref('users/' + user.uid).set({
+ name: userName,
+ email: userEmail
+ });
+ })
+ .then(() => {
+ alert('Novo usuário registrado com sucesso!');
+ closeAdminModal();
+ })
+ .catch(error => {
+ console.error('Erro ao registrar usuário:', error);
+ alert('Erro ao registrar usuário: ' + error.message);
+ });
+ }
 
-        function markAsPaid() {
-            closeReminderAlertModal();
-        }
+ function markAsPaid() {
+ closeReminderAlertModal();
+ }
 
-        function snoozeReminder() {
-            closeReminderAlertModal();
-        }
+ function snoozeReminder() {
+ closeReminderAlertModal();
+ }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const dateInput = document.getElementById('date');
-            dateInput.value = getCurrentDate();
-        });
-    </script>
+ document.addEventListener('DOMContentLoaded', function() {
+ const dateInput = document.getElementById('date');
+ dateInput.value = getCurrentDate();
+ });
+ </script>
 </body>
 </html>
-        
