@@ -1472,17 +1472,16 @@
 
                 reminders.forEach(reminder => {
                     console.log('Processando lembrete:', reminder);
-                    const reminderDateObj = new Date(reminder.date);
-                    const selectedDateObj = new Date(selectedDate);
                     const reminderDay = reminder.date.split('-')[2].padStart(2, '0'); // Dia original do lembrete
+                    const selectedDateObj = new Date(selectedDate);
 
                     if (reminder.monthly) {
-                        // Para lembretes mensais, ajustamos para o mês selecionado
+                        // Para lembretes mensais, ajustamos ao mês selecionado pelo usuário
                         const displayDate = `${selectedMonth}-${reminderDay}`;
                         const displayDateObj = new Date(displayDate);
 
-                        // Verifica se a data gerada é válida e está no futuro ou presente
-                        if (displayDateObj <= selectedDateObj || displayDateObj.getMonth() === selectedDateObj.getMonth()) {
+                        // Garante que o dia seja válido no mês selecionado
+                        if (!isNaN(displayDateObj.getTime())) {
                             displayReminders.push({
                                 ...reminder,
                                 displayDate: displayDate,
@@ -1737,10 +1736,10 @@
             const userId = auth.currentUser.uid;
             const transaction = {
                 id: generateTransactionId(),
-                date: document.getElementById('date').value,
+                date: document.getElementById('date').value, // Usa a data selecionada pelo usuário
                 description: reminder.description,
-                amount: reminder.type === 'payment' ? -reminder.amount : reminder.amount,
-                type: reminder.type === 'payment' ? 'despesa' : 'receita'
+                amount: reminder.amount, // O valor bruto do lembrete
+                type: reminder.type === 'payment' ? 'despesa' : 'receita' // Define como despesa ou receita
             };
 
             transactions.push(transaction);
@@ -1753,7 +1752,7 @@
                         closeReminderConfirmModal();
                         loadReminders(userId);
                         updateFilteredView();
-                        calculateBalances();
+                        calculateBalances(); // Atualiza os saldos imediatamente
                     })
                     .catch(error => {
                         console.error('Erro ao remover lembrete:', error);
@@ -1763,7 +1762,7 @@
                 alert(`Transação de ${transaction.type} registrada com sucesso!`);
                 closeReminderConfirmModal();
                 updateFilteredView();
-                calculateBalances();
+                calculateBalances(); // Atualiza os saldos imediatamente
             }
         }
 
@@ -1850,11 +1849,6 @@
         function goToLimitPage() {
             window.location.href = 'definir_limite.html';
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const dateInput = document.getElementById('date');
-            dateInput.value = getCurrentDate();
-        });
 
                 function registerNewUser() {
             const userName = document.getElementById('newUserName').value.trim();
