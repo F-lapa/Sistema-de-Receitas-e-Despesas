@@ -528,7 +528,7 @@ body::before {
 #pieChartModal .modal-content {
     background: var(--card-bg);
     margin: 5% auto;
-    padding: 15px; /* Reduzido ainda mais para 15px */
+    padding: 15px;
     border-radius: 20px;
     width: 90%;
     max-width: 600px;
@@ -547,32 +547,33 @@ body::before {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px; /* Reduzido de 10px */
+    gap: 8px;
 }
 
 #pieChartModal .modal-content h2 {
-    font-size: 1.6rem; /* Reduzido de 1.8rem */
-    margin-bottom: 10px; /* Reduzido de 15px */
+    font-size: 1.6rem;
+    margin-bottom: 10px;
 }
 
 #pieChartModal .modal-content canvas {
     width: 100% !important;
-    max-width: 350px; /* Mantido em 350px */
+    max-width: 350px;
     height: auto !important;
-    margin: 5px auto; /* Reduzido de 10px */
+    margin: 5px auto;
     flex-shrink: 0;
 }
 
 #pieChartModal .modal-content .form-group {
-    margin-bottom: 8px; /* Reduzido de 10px */
+    margin-bottom: 8px;
 }
 
 #pieChartModal .modal-content .legend {
-    font-size: 0.9rem; /* Garantir legibilidade */
+    font-size: 0.9rem;
     line-height: 1.2;
-    max-height: 100px; /* Limitar altura da legenda para rolagem se necessário */
+    max-height: 100px;
     overflow-y: auto;
 }
+
 @keyframes slideIn {
     from { transform: translateY(-60px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
