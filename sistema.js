@@ -1003,13 +1003,23 @@ function generatePieChart() {
         return t.date >= startDate && t.date <= endDate && t.type === chartType;
     });
 
-    // Agrupar transações pelo nome da descrição e somar os valores
+    // Normalizar descrições (remover acentos e converter para minúsculas)
+    function normalizeString(str) {
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    }
+
+    // Agrupar transações pelo nome da descrição normalizado e somar os valores
     const descriptionTotals = {};
     filteredTransactions.forEach(t => {
-        descriptionTotals[t.description] = (descriptionTotals[t.description] || 0) + t.amount;
+        const normalizedDescription = normalizeString(t.description);
+        descriptionTotals[normalizedDescription] = (descriptionTotals[normalizedDescription] || 0) + t.amount;
     });
 
-    const labels = Object.keys(descriptionTotals);
+    const labels = Object.keys(descriptionTotals).map(key => {
+        // Reconstruir o label original para exibição (preservando o texto original)
+        const originalLabel = filteredTransactions.find(t => normalizeString(t.description) === key)?.description || key;
+        return originalLabel;
+    });
     const data = Object.values(descriptionTotals);
 
     if (labels.length === 0) {
@@ -1047,7 +1057,7 @@ function generatePieChart() {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        color: 'var(--text-color)',
+                        color: 'rgba(255, 255, 255, 0.9)', // Ajuste para legibilidade
                         font: {
                             size: 10,
                             family: "'Poppins', sans-serif"
@@ -1113,3 +1123,6 @@ function getRandomColor() {
 }
 
 document.getElementById('date').value = getCurrentDate();
+
+// Adicionar evento ao botão de fechar no modal
+document.querySelector('#pieChartModal .close').addEventListener('click', closePieChartModal);
