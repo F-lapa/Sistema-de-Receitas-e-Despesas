@@ -982,16 +982,16 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
     <script>
-       var firebaseConfig = {
-        apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
-        authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
-        databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
-        projectId: "sistema-de-receitas-e-despesas",
-        storageBucket: "sistema-de-receitas-e-despesas.appspot.com",
-        messagingSenderId: "252102478972",
-        appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
-        measurementId: "G-K2HCS7WNZV"
-    };
+        var firebaseConfig = {
+            apiKey: "AIzaSyDgTFBPipaSGqJlahiT-THgzBH4JKuQSA4",
+  authDomain: "sistema-de-receitas-e-despesas.firebaseapp.com",
+  databaseURL: "https://sistema-de-receitas-e-despesas-default-rtdb.firebaseio.com",
+  projectId: "sistema-de-receitas-e-despesas",
+  storageBucket: "sistema-de-receitas-e-despesas.firebasestorage.app",
+  messagingSenderId: "252102478972",
+  appId: "1:252102478972:web:c7e9e4c25b3bc7c6c50df9",
+  measurementId: "G-K2HCS7WNZV"
+        };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -1814,53 +1814,52 @@
             }, 500);
         }
 
-        function calculateCompoundInterest() {
-            const initialCapital = parseFloat(document.getElementById('initialAmount').value) || 0;
-            const monthlyDeposit = parseFloat(document.getElementById('monthlyContribution').value) || 0;
-            const yearlyRate = parseFloat(document.getElementById('interestRate').value) || 0;
-            const years = parseInt(document.getElementById('years').value) || 0;
-            const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
+       function calculateCompoundInterest() {
+    const initialCapital = parseFloat(document.getElementById('initialAmount').value) || 0;
+    const monthlyDeposit = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+    const yearlyRate = parseFloat(document.getElementById('interestRate').value) || 0;
+    const years = parseInt(document.getElementById('years').value) || 0;
+    const frequency = parseInt(document.getElementById('compoundingFrequency').value) || 1;
 
-            if (initialCapital < 0 || monthlyDeposit < 0 || yearlyRate < 0 || years <= 0 || frequency <= 0) {
-                document.getElementById('compoundInterestResult').innerHTML = 
-                    '<span style="color: var(--negative-color);">Por favor, insira valores válidos (positivos e período maior que zero).</span>';
-                return;
-            }
+    if (initialCapital < 0 || monthlyDeposit < 0 || yearlyRate < 0 || years <= 0 || frequency <= 0) {
+        document.getElementById('compoundInterestResult').innerHTML = 
+            '<span style="color: var(--negative-color);">Por favor, insira valores válidos (positivos e período maior que zero).</span>';
+        return;
+    }
 
-            const periodRate = yearlyRate / 100 / frequency;
-            const totalPeriods = years * frequency;
+    const monthlyRate = yearlyRate / 100 / frequency;
+    const totalPeriods = years * frequency;
+    let finalAmount = initialCapital;
 
-            let accumulatedValue = initialCapital;
+    for (let i = 0; i < totalPeriods; i++) {
+        finalAmount = (finalAmount + monthlyDeposit) * (1 + monthlyRate);
+    }
 
-            for (let period = 0; period < totalPeriods; period++) {
-                accumulatedValue = (accumulatedValue + monthlyDeposit) * (1 + periodRate);
-            }
+    const totalInvested = initialCapital + (monthlyDeposit * totalPeriods);
+    const interestEarned = finalAmount - totalInvested;
 
-            const totalInvested = initialCapital + (monthlyDeposit * totalPeriods);
-            const interestEarned = accumulatedValue - totalInvested;
+    document.getElementById('compoundInterestResult').innerHTML = `
+        <p>Montante Final: <span class="highlight-amount">${formatCurrency(finalAmount)}</span></p>
+        <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
+        <p>Juros Acumulados: <span style="color: var(--positive-color);">${formatCurrency(interestEarned)}</span></p>
+    `;
+}
 
-            document.getElementById('compoundInterestResult').innerHTML = `
-                <p>Montante Final: <span class="highlight-amount">${formatCurrency(accumulatedValue)}</span></p>
-                <p>Total Investido: <span style="color: var(--text-color);">${formatCurrency(totalInvested)}</span></p>
-                <p>Juros Acumulados: <span style="color: var(--positive-color);">${formatCurrency(interestEarned)}</span></p>
-            `;
-        }
+function openThemeSelectorModal() {
+    const modal = document.getElementById('themeSelectorModal');
+    modal.style.display = 'block';
+    modal.style.animation = 'slideIn 0.4s';
+}
 
-        function openThemeSelectorModal() {
-            const modal = document.getElementById('themeSelectorModal');
-            modal.style.display = 'block';
-            modal.style.animation = 'slideIn 0.4s';
-        }
+function closeThemeSelectorModal() {
+    const modal = document.getElementById('themeSelectorModal');
+    modal.style.animation = 'fadeout 0.5s';
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 500);
+}
 
-        function closeThemeSelectorModal() {
-            const modal = document.getElementById('themeSelectorModal');
-            modal.style.animation = 'fadeout 0.5s';
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 500);
-        }
-
-        function applyTheme(color) {
+function applyTheme(color) {
     document.documentElement.style.setProperty('--button-color', color);
     document.documentElement.style.setProperty('--input-border-color', color);
     const userId = auth.currentUser.uid;
@@ -1943,7 +1942,10 @@ function closePieChartModal() {
     modal.style.animation = 'fadeout 0.5s';
     setTimeout(() => {
         modal.style.display = 'none';
-        if (window.pieChart) window.pieChart.destroy(); // Destroi o gráfico ao fechar
+        if (window.pieChart && typeof window.pieChart.destroy === 'function') {
+            window.pieChart.destroy();
+            window.pieChart = null; // Limpa a referência após destruir
+        }
     }, 500);
 }
 
@@ -1959,6 +1961,13 @@ function generatePieChart() {
 
     if (new Date(startDate) > new Date(endDate)) {
         alert('A data inicial não pode ser posterior à data final.');
+        return;
+    }
+
+    // Verifica se transactions está inicializado
+    if (!transactions || !Array.isArray(transactions)) {
+        alert('As transações ainda não foram carregadas. Aguarde um momento e tente novamente.');
+        loadTransactions();
         return;
     }
 
@@ -2002,7 +2011,10 @@ function generatePieChart() {
     };
 
     // Destruir gráfico existente, se houver
-    if (window.pieChart) window.pieChart.destroy();
+    if (window.pieChart && typeof window.pieChart.destroy === 'function') {
+        window.pieChart.destroy();
+        window.pieChart = null; // Limpa a referência após destruir
+    }
 
     // Criar o gráfico
     const ctx = document.getElementById('pieChart').getContext('2d');
