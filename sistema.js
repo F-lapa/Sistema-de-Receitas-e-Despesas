@@ -932,13 +932,11 @@ function registerNewUser() {
         });
 }
 
-// Função para marcar lembrete como pago
 function markAsPaid() {
     closeReminderAlertModal();
     openReminderConfirmModal(selectedReminderId, document.getElementById('date').value);
 }
 
-// Função para adiar lembrete
 function snoozeReminder() {
     closeReminderAlertModal();
     const reminder = reminders.find(r => r.id === selectedReminderId);
@@ -958,7 +956,6 @@ function snoozeReminder() {
         });
 }
 
-// Função para ir para a página de limite de gastos
 function goToLimitPage() {
     const limit = prompt('Digite o novo limite de gastos mensais (R$):', formatCurrency(monthlyLimit).replace('R$', '').trim());
     if (limit !== null) {
@@ -974,7 +971,6 @@ function goToLimitPage() {
     }
 }
 
-// Função para abrir o modal de gráfico de pizza
 function openPieChartModal() {
     const modal = document.getElementById('pieChartModal');
     document.getElementById('chartStartDate').value = '';
@@ -984,7 +980,6 @@ function openPieChartModal() {
     modal.style.animation = 'slideIn 0.4s';
 }
 
-// Função para fechar o modal de gráfico de pizza
 function closePieChartModal() {
     const modal = document.getElementById('pieChartModal');
     modal.style.animation = 'fadeout 0.5s';
@@ -993,7 +988,6 @@ function closePieChartModal() {
     }, 500);
 }
 
-// Função para gerar o gráfico de pizza
 function generatePieChart() {
     const startDate = document.getElementById('chartStartDate').value;
     const endDate = document.getElementById('chartEndDate').value;
@@ -1039,15 +1033,21 @@ function generatePieChart() {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
+            layout: {
+                padding: 10
+            },
             plugins: {
                 legend: {
-                    position: 'top',
+                    position: 'bottom',
                     labels: {
                         color: 'var(--text-color)',
                         font: {
-                            size: 14,
+                            size: 12,
                             family: "'Poppins', sans-serif"
-                        }
+                        },
+                        padding: 10,
+                        boxWidth: 20
                     }
                 },
                 title: {
@@ -1055,8 +1055,12 @@ function generatePieChart() {
                     text: `Distribuição de ${chartType === 'receita' ? 'Receitas' : 'Despesas'} (${formatDate(startDate)} a ${formatDate(endDate)})`,
                     color: 'var(--positive-color)',
                     font: {
-                        size: 18,
+                        size: 16,
                         family: "'Orbitron', sans-serif"
+                    },
+                    padding: {
+                        top: 10,
+                        bottom: 10
                     }
                 },
                 tooltip: {
@@ -1065,14 +1069,21 @@ function generatePieChart() {
                             const value = context.raw;
                             return `${context.label}: ${formatCurrency(value)}`;
                         }
-                    }
+                    },
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: { size: 12 },
+                    bodyFont: { size: 12 }
                 }
             }
         }
     });
+
+    const canvas = document.getElementById('pieChart');
+    canvas.style.maxWidth = '400px';
+    canvas.style.width = '100%';
+    canvas.style.height = 'auto';
 }
 
-// Função auxiliar para gerar cores aleatórias
 function getRandomColor() {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -1082,5 +1093,4 @@ function getRandomColor() {
     return color;
 }
 
-// Inicialização
 document.getElementById('date').value = getCurrentDate();
