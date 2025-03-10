@@ -527,47 +527,52 @@ body::before {
 
 #pieChartModal .modal-content {
     background: var(--card-bg);
-    margin: 5% auto; /* Ajustado para começar mais alto */
-    padding: 20px; /* Reduzido de 35px para liberar espaço */
+    margin: 5% auto;
+    padding: 15px; /* Reduzido ainda mais para 15px */
     border-radius: 20px;
     width: 90%;
     max-width: 600px;
-    max-height: 85vh; /* Aumentado para 85vh para mais espaço */
-    overflow-y: auto; /* Mantém a barra de rolagem */
+    max-height: 85vh;
+    overflow-y: auto;
     box-shadow: var(--shadow);
     color: var(--text-color);
     animation: slideIn 0.5s ease-out;
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centraliza verticalmente o conteúdo */
+    justify-content: center;
 }
 
 #pieChartModal .modal-content > div {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px; /* Reduzido de 15px */
+    gap: 8px; /* Reduzido de 10px */
 }
 
 #pieChartModal .modal-content h2 {
-    font-size: 1.8rem; /* Reduzido de 2rem */
-    margin-bottom: 15px; /* Reduzido de 25px */
+    font-size: 1.6rem; /* Reduzido de 1.8rem */
+    margin-bottom: 10px; /* Reduzido de 15px */
 }
 
 #pieChartModal .modal-content canvas {
     width: 100% !important;
-    max-width: 400px;
+    max-width: 350px; /* Mantido em 350px */
     height: auto !important;
-    margin: 10px auto; /* Reduzido de 20px */
-    flex-shrink: 0; /* Impede que o canvas encolha demais */
+    margin: 5px auto; /* Reduzido de 10px */
+    flex-shrink: 0;
 }
 
 #pieChartModal .modal-content .form-group {
-    margin-bottom: 10px; /* Reduz espaço abaixo dos campos */
+    margin-bottom: 8px; /* Reduzido de 10px */
 }
 
+#pieChartModal .modal-content .legend {
+    font-size: 0.9rem; /* Garantir legibilidade */
+    line-height: 1.2;
+    max-height: 100px; /* Limitar altura da legenda para rolagem se necessário */
+    overflow-y: auto;
+}
 @keyframes slideIn {
     from { transform: translateY(-60px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
