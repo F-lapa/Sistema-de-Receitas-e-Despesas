@@ -6,6 +6,7 @@
     <title>Sistema de Receitas e Despesas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --background-color: #0a0a1f;
@@ -572,23 +573,14 @@
                 margin: 10% auto;
             }
 
-            /* Ajuste para saldos ficarem literalmente um ao lado do outro no celular */
             .totals {
-                flex-direction: row; /* Mantém horizontal */
-                gap: 5px; /* Espaçamento mínimo */
-                justify-content: flex-start; /* Alinha à esquerda para proximidade */
-                padding: 0 10px; /* Evita que encoste nas bordas */
+                flex-direction: column;
+                align-items: center;
             }
 
             .totals p {
-                min-width: 100px; /* Tamanho mínimo reduzido */
-                max-width: 120px; /* Limita o tamanho máximo */
-                padding: 10px 15px; /* Reduz o padding interno */
-                font-size: 0.8rem; /* Reduz a fonte */
-            }
-
-            .totals p .balance-value {
-                font-size: 1rem; /* Ajusta o tamanho do valor */
+                min-width: 100%;
+                max-width: 300px;
             }
 
             .reminders-section li {
@@ -641,6 +633,7 @@
             <button onclick="goToLimitPage()"><i class="fas fa-money-check-alt"></i> Limite de Gastos</button>
             <button onclick="openAddReminderModal()"><i class="fas fa-bell"></i> Adicionar Lembrete</button>
             <button onclick="openCompoundInterestModal()">Juros Compostos</button>
+            <button onclick="openPieChartModal()"><i class="fas fa-chart-pie"></i> Ver Gráfico</button>
         </div>
         <div class="theme-selector">
             <label for="theme">Tema</label>
@@ -928,9 +921,6 @@
             <div class="modal-content">
                 <span class="close" onclick="closeAdminModal()">×</span>
                 <h2>Gerenciamento de Usuários</h2>
-                
-                <!-- Seção para registrar novo usuário -->
-                <h3>Registrar Novo Usuário</h3>
                 <div class="form-group">
                     <label for="newUserName">Nome do Novo Usuário:</label>
                     <input type="text" id="newUserName" class="highlight">
@@ -942,24 +932,11 @@
                 <div class="form-group password-field">
                     <label for="newUserPassword">Senha do Novo Usuário:</label>
                     <input type="password" id="newUserPassword" class="highlight">
-                    <i class="fas fa-eye" id="toggleNewUserPassword" onclick="togglePasswordVisibility('newUserPassword')"></i>
+                    <i class="fas fa-eye" id="togglePassword" onclick="togglePasswordVisibility('newUserPassword')"></i>
                 </div>
-                <button onclick="registerNewUser()">Registrar Novo Usuário</button>
-
-                <!-- Seção para alterar senha de usuário existente -->
-                <h3 style="margin-top: 30px;">Alterar Senha de Usuário</h3>
-                <div class="form-group">
-                    <label for="userEmailSelect">Selecionar Usuário (Email):</label>
-                    <select id="userEmailSelect" class="highlight" onchange="updateSelectedUser()">
-                        <option value="">Selecione um usuário</option>
-                    </select>
+                <div class="buttons">
+                    <button onclick="registerNewUser()">Registrar Novo Usuário</button>
                 </div>
-                <div class="form-group password-field">
-                    <label for="resetUserPassword">Nova Senha:</label>
-                    <input type="password" id="resetUserPassword" class="highlight" disabled>
-                    <i class="fas fa-eye" id="toggleResetUserPassword" onclick="togglePasswordVisibility('resetUserPassword')"></i>
-                </div>
-                <button id="resetPasswordButton" onclick="resetUserPassword()" disabled>Alterar Senha</button>
             </div>
         </div>
 
@@ -969,6 +946,23 @@
                 <div id="reminderAlertMessage"></div>
                 <button onclick="markAsPaid()">Já foi Pago</button>
                 <button onclick="snoozeReminder()">Não foi Pago</button>
+            </div>
+        </div>
+
+        <div id="pieChartModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closePieChartModal()">×</span>
+                <h2>Gráfico de Receitas e Despesas</h2>
+                <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                    <div style="width: 400px;">
+                        <h3>Receitas</h3>
+                        <canvas id="revenuePieChart"></canvas>
+                    </div>
+                    <div style="width: 400px;">
+                        <h3>Despesas</h3>
+                        <canvas id="expensePieChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1300,13 +1294,6 @@
                 const modal = document.getElementById('adminModal');
                 modal.style.display = 'block';
                 modal.style.animation = 'slideIn 0.4s';
-                loadUsersIntoSelect();
-                document.getElementById('newUserName').value = '';
-                document.getElementById('newUserEmail').value = '';
-                document.getElementById('newUserPassword').value = '';
-                document.getElementById('resetUserPassword').value = '';
-                document.getElementById('resetUserPassword').disabled = true;
-                document.getElementById('resetPasswordButton').disabled = true;
             } else {
                 alert('Acesso restrito ao administrador.');
             }
@@ -1318,82 +1305,6 @@
             setTimeout(() => {
                 modal.style.display = 'none';
             }, 500);
-        }
-
-        function loadUsersIntoSelect() {
-            const userSelect = document.getElementById('userEmailSelect');
-            userSelect.innerHTML = '<option value="">Selecione um usuário</option>';
-
-            database.ref('users').once('value').then((snapshot) => {
-                const users = snapshot.val();
-                if (users) {
-                    allUsers = [];
-                    for (let uid in users) {
-                        allUsers.push({ uid, name: users[uid].name, email: users[uid].email });
-                        const option = document.createElement('option');
-                        option.value = uid;
-                        option.text = `${users[uid].email} (${users[uid].name})`;
-                        userSelect.appendChild(option);
-                    }
-                }
-            }).catch(error => {
-                console.error('Erro ao carregar usuários para o select:', error);
-                alert('Erro ao carregar lista de usuários.');
-            });
-        }
-
-        function updateSelectedUser() {
-            const userSelect = document.getElementById('userEmailSelect');
-            const resetPasswordInput = document.getElementById('resetUserPassword');
-            const resetPasswordButton = document.getElementById('resetPasswordButton');
-
-            if (userSelect.value) {
-                resetPasswordInput.disabled = false;
-                resetPasswordButton.disabled = false;
-            } else {
-                resetPasswordInput.disabled = true;
-                resetPasswordButton.disabled = true;
-                resetPasswordInput.value = '';
-            }
-        }
-
-        function resetUserPassword() {
-            const userSelect = document.getElementById('userEmailSelect');
-            const newPassword = document.getElementById('resetUserPassword').value.trim();
-            const selectedUserId = userSelect.value;
-
-            if (!selectedUserId) {
-                alert('Por favor, selecione um usuário.');
-                return;
-            }
-
-            if (!newPassword || newPassword.length < 6) {
-                alert('Por favor, insira uma nova senha com pelo menos 6 caracteres.');
-                return;
-            }
-
-            const selectedUser = allUsers.find(user => user.uid === selectedUserId);
-            if (!selectedUser) {
-                alert('Usuário não encontrado.');
-                return;
-            }
-
-            const adminUser = auth.currentUser;
-            if (adminUser.email !== 'fernandolapa1987@gmail.com') {
-                alert('Apenas o administrador pode alterar senhas de outros usuários.');
-                return;
-            }
-
-            auth.sendPasswordResetEmail(selectedUser.email)
-                .then(() => {
-                    alert(`Um e-mail de redefinição de senha foi enviado para ${selectedUser.email}. O usuário deve verificar o e-mail para definir a nova senha.`);
-                    document.getElementById('resetUserPassword').value = '';
-                    closeAdminModal();
-                })
-                .catch(error => {
-                    console.error('Erro ao enviar e-mail de redefinição:', error);
-                    alert('Erro ao enviar e-mail de redefinição: ' + error.message);
-                });
         }
 
         function openChangePasswordModal() {
@@ -1461,13 +1372,14 @@
                 modal.style.display = 'none';
             }, 500);
         }
+
         function confirmLogout(confirmed) {
             if (confirmed) {
                 auth.signOut().then(() => {
                     window.location.href = 'index.html';
                 }).catch(error => {
                     console.error('Erro ao fazer logout:', error);
-                    alert('Sorry about that, something didn\'t go as planned. Please try again, and if you\'re still seeing this message, go ahead and restart the app.');
+                    alert('Erro ao fazer logout: ' + error.message);
                 });
             }
             closeLogoutConfirmModal();
@@ -1547,7 +1459,7 @@
         function loadReminders(userId) {
             console.log('Carregando lembretes para o usuário:', userId);
             const selectedDate = document.getElementById('date').value || getCurrentDate();
-            const selectedMonth = selectedDate.slice(0, 7); // Ex: "2025-04"
+            const selectedMonth = selectedDate.slice(0, 7);
             console.log('Mês selecionado para exibir lembretes:', selectedMonth);
 
             database.ref(`reminders/${userId}`).once('value').then((snapshot) => {
@@ -1570,8 +1482,7 @@
                         description: reminder.description,
                         amount: reminder.amount,
                         type: reminder.type,
-                        monthly: reminder.monthly || false,
-                        confirmedDates: reminder.confirmedDates || []
+                        monthly: reminder.monthly || false
                     }))
                     .filter(reminder => reminder.date && reminder.description && reminder.amount !== undefined && reminder.type);
                 console.log('Lembretes carregados e filtrados:', reminders);
@@ -1580,32 +1491,35 @@
 
                 reminders.forEach(reminder => {
                     console.log('Processando lembrete:', reminder);
-                    const reminderDay = reminder.date.split('-')[2].padStart(2, '0'); // Dia original do lembrete (ex.: "15")
+                    const reminderMonth = reminder.date.slice(0, 7);
+                    const reminderDay = reminder.date.split('-')[2].padStart(2, '0');
+                    const selectedDateObj = new Date(selectedDate);
+                    const reminderDateObj = new Date(reminder.date);
 
                     if (reminder.monthly) {
-                        // Para lembretes mensais, ajustamos ao mês selecionado
-                        const displayDate = `${selectedMonth}-${reminderDay}`;
-                        const displayDateObj = new Date(displayDate);
-
-                        // Verifica se a data é válida e se o lembrete ainda não foi confirmado no mês selecionado
-                        if (!isNaN(displayDateObj.getTime()) && !reminder.confirmedDates.includes(selectedMonth)) {
-                            displayReminders.push({
-                                ...reminder,
-                                displayDate: displayDate,
-                                displayId: `${reminder.id}_${selectedMonth}`
-                            });
-                            console.log('Adicionado lembrete mensal para exibição:', { displayDate });
+                        let currentDate = new Date(reminderDateObj);
+                        console.log('Lembrete mensal, verificando meses até:', selectedDate);
+                        while (currentDate <= selectedDateObj) {
+                            const currentMonth = currentDate.toISOString().slice(0, 7);
+                            console.log('Verificando mês para lembrete mensal:', currentMonth);
+                            if (currentMonth === selectedMonth) {
+                                const displayDate = `${currentMonth}-${reminderDay}`;
+                                displayReminders.push({
+                                    ...reminder,
+                                    displayDate,
+                                    displayId: `${reminder.id}_${currentMonth}`
+                                });
+                                console.log('Adicionado lembrete mensal para exibição:', { displayDate });
+                            }
+                            currentDate.setMonth(currentDate.getMonth() + 1);
                         }
-                    } else {
-                        // Para lembretes não mensais, só exibe se a data original está no mês selecionado
-                        if (reminder.date.slice(0, 7) === selectedMonth) {
-                            displayReminders.push({
-                                ...reminder,
-                                displayDate: reminder.date,
-                                displayId: reminder.id
-                            });
-                            console.log('Adicionado lembrete único para exibição:', { displayDate: reminder.date });
-                        }
+                    } else if (reminderMonth === selectedMonth) {
+                        displayReminders.push({
+                            ...reminder,
+                            displayDate: reminder.date,
+                            displayId: reminder.id
+                        });
+                        console.log('Adicionado lembrete único para exibição:', { displayDate: reminder.date });
                     }
                 });
 
@@ -1740,8 +1654,7 @@
                 description,
                 amount,
                 type,
-                monthly,
-                confirmedDates: reminders.find(r => r.id === selectedReminderId).confirmedDates || []
+                monthly
             };
 
             console.log('Atualizando lembrete:', updatedReminder);
@@ -1783,7 +1696,7 @@
             }, 500);
         }
 
-                function deleteReminder(confirmed) {
+        function deleteReminder(confirmed) {
             if (!selectedReminderId || !confirmed) {
                 closeDeleteReminderConfirmModal();
                 return;
@@ -1844,12 +1757,11 @@
             }
 
             const userId = auth.currentUser.uid;
-            const selectedDate = document.getElementById('date').value;
             const transaction = {
                 id: generateTransactionId(),
-                date: selectedDate,
+                date: document.getElementById('date').value,
                 description: reminder.description,
-                amount: reminder.amount,
+                amount: reminder.type === 'payment' ? -reminder.amount : reminder.amount,
                 type: reminder.type === 'payment' ? 'despesa' : 'receita'
             };
 
@@ -1870,24 +1782,10 @@
                         alert('Erro ao processar o lembrete. Tente novamente.');
                     });
             } else {
-                const monthKey = selectedDate.slice(0, 7);
-                database.ref(`reminders/${userId}/${selectedReminderId}`).once('value').then((snapshot) => {
-                    const reminderData = snapshot.val();
-                    const confirmedDates = reminderData.confirmedDates || [];
-                    if (!confirmedDates.includes(monthKey)) {
-                        confirmedDates.push(monthKey);
-                    }
-                    return database.ref(`reminders/${userId}/${selectedReminderId}`).update({ confirmedDates });
-                }).then(() => {
-                    alert(`Transação de ${transaction.type} registrada com sucesso!`);
-                    closeReminderConfirmModal();
-                    loadReminders(userId);
-                    updateFilteredView();
-                    calculateBalances();
-                }).catch(error => {
-                    console.error('Erro ao atualizar lembrete:', error);
-                    alert('Erro ao processar o lembrete. Tente novamente.');
-                });
+                alert(`Transação de ${transaction.type} registrada com sucesso!`);
+                closeReminderConfirmModal();
+                updateFilteredView();
+                calculateBalances();
             }
         }
 
@@ -1951,70 +1849,223 @@
             }, 500);
         }
 
-        function applyTheme(color) {
-            document.documentElement.style.setProperty('--button-color', color);
-            document.documentElement.style.setProperty('--input-border-color', color);
-            const userId = auth.currentUser.uid;
-            if (userId) {
-                database.ref('users/' + userId + '/theme').set(color)
-                    .then(() => {
-                        console.log('Tema salvo com sucesso:', color);
-                        closeThemeSelectorModal();
-                    })
-                    .catch(error => {
-                        console.error('Erro ao salvar tema:', error);
-                        alert('Erro ao salvar o tema. Tente novamente.');
-                    });
-            } else {
-                console.error('Nenhum usuário autenticado.');
-                alert('Você precisa estar logado para alterar o tema.');
-            }
-        }
+       function applyTheme(color) {
+    document.documentElement.style.setProperty('--button-color', color);
+    document.documentElement.style.setProperty('--input-border-color', color);
+    const userId = auth.currentUser.uid;
+    if (userId) {
+        database.ref('users/' + userId + '/theme').set(color)
+            .then(() => {
+                console.log('Tema salvo com sucesso:', color);
+                closeThemeSelectorModal();
+            })
+            .catch(error => {
+                console.error('Erro ao salvar tema:', error);
+                alert('Erro ao salvar o tema. Tente novamente.');
+            });
+    }
+}
 
-        function goToLimitPage() {
-            window.location.href = 'definir_limite.html';
-        }
+function registerNewUser() {
+    const name = document.getElementById('newUserName').value;
+    const email = document.getElementById('newUserEmail').value;
+    const password = document.getElementById('newUserPassword').value;
 
-        function registerNewUser() {
-            const userName = document.getElementById('newUserName').value.trim();
-            const userEmail = document.getElementById('newUserEmail').value.trim();
-            const userPassword = document.getElementById('newUserPassword').value;
+    if (!name || !email || !password) {
+        alert('Por favor, preencha todos os campos.');
+        return;
+    }
 
-            if (!userName || !userEmail || !userPassword) {
-                alert('Por favor, preencha todos os campos corretamente.');
-                return;
-            }
-
-            auth.createUserWithEmailAndPassword(userEmail, userPassword)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-                    return database.ref('users/' + user.uid).set({
-                        name: userName,
-                        email: userEmail
-                    });
-                })
-                .then(() => {
-                    alert('Novo usuário registrado com sucesso!');
-                    closeAdminModal();
-                })
-                .catch(error => {
-                    console.error('Erro ao registrar usuário:', error);
-                    alert('Erro ao registrar usuário: ' + error.message);
-                });
-        }
-
-        function markAsPaid() {
-            closeReminderAlertModal();
-        }
-
-        function snoozeReminder() {
-            closeReminderAlertModal();
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const dateInput = document.getElementById('date');
-            dateInput.value = getCurrentDate();
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            database.ref('users/' + user.uid).set({
+                name: name,
+                email: email,
+                createdAt: new Date().toISOString()
+            }).then(() => {
+                alert('Novo usuário registrado com sucesso!');
+                document.getElementById('newUserName').value = '';
+                document.getElementById('newUserEmail').value = '';
+                document.getElementById('newUserPassword').value = '';
+                closeAdminModal();
+            }).catch(error => {
+                console.error('Erro ao salvar dados do usuário:', error);
+                alert('Erro ao salvar dados do usuário: ' + error.message);
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao registrar usuário:', error);
+            alert('Erro ao registrar usuário: ' + error.message);
         });
-    </script>
+}
+
+function markAsPaid() {
+    closeReminderAlertModal();
+}
+
+function snoozeReminder() {
+    closeReminderAlertModal();
+}
+
+function goToLimitPage() {
+    const monthlyLimitStr = prompt('Defina o limite de gastos mensais (R$):', formatCurrency(monthlyLimit).replace('R$', '').trim());
+    if (monthlyLimitStr !== null) {
+        monthlyLimit = parseCurrency(monthlyLimitStr);
+        localStorage.setItem('monthlyLimit', formatCurrency(monthlyLimit).replace('R$', '').trim());
+        checkMonthlyLimit();
+    }
+}
+
+// Funções para o gráfico em pizza
+function openPieChartModal() {
+    const modal = document.getElementById('pieChartModal');
+    modal.style.display = 'block';
+    modal.style.animation = 'slideIn 0.4s';
+    generatePieCharts();
+}
+
+function closePieChartModal() {
+    const modal = document.getElementById('pieChartModal');
+    modal.style.animation = 'fadeout 0.5s';
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 500);
+}
+
+function generatePieCharts() {
+    // Agrupar transações por descrição
+    const groupedTransactions = transactions.reduce((acc, transaction) => {
+        const key = transaction.description;
+        if (!acc[key]) {
+            acc[key] = { 
+                amount: 0, 
+                type: transaction.type 
+            };
+        }
+        acc[key].amount += transaction.amount;
+        return acc;
+    }, {});
+
+    // Separar receitas e despesas
+    const revenues = [];
+    const expenses = [];
+    let totalRevenue = 0;
+    let totalExpense = 0;
+
+    Object.entries(groupedTransactions).forEach(([description, data]) => {
+        if (data.type === 'receita') {
+            revenues.push({ description, amount: data.amount });
+            totalRevenue += data.amount;
+        } else {
+            expenses.push({ description, amount: data.amount });
+            totalExpense += data.amount;
+        }
+    });
+
+    // Preparar dados para os gráficos
+    const revenueLabels = revenues.map(r => `${r.description} (${((r.amount / totalRevenue) * 100).toFixed(1)}%)`);
+    const revenueData = revenues.map(r => r.amount);
+    const expenseLabels = expenses.map(e => `${e.description} (${((e.amount / totalExpense) * 100).toFixed(1)}%)`);
+    const expenseData = expenses.map(e => e.amount);
+
+    // Configuração das cores
+    const generateColors = (count) => {
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            const hue = (i * 360 / count) % 360;
+            colors.push(`hsl(${hue}, 70%, 50%)`);
+        }
+        return colors;
+    };
+
+    // Destruir gráficos existentes, se houver
+    if (window.revenueChart) window.revenueChart.destroy();
+    if (window.expenseChart) window.expenseChart.destroy();
+
+    // Criar gráfico de receitas
+    const revenueCtx = document.getElementById('revenuePieChart').getContext('2d');
+    window.revenueChart = new Chart(revenueCtx, {
+        type: 'pie',
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                data: revenueData,
+                backgroundColor: generateColors(revenues.length),
+                borderWidth: 1,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: 'var(--text-color)',
+                        font: {
+                            size: 14,
+                            family: "'Poppins', sans-serif"
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            return `${context.label.split(' (')[0]}: ${formatCurrency(value)}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Criar gráfico de despesas
+    const expenseCtx = document.getElementById('expensePieChart').getContext('2d');
+    window.expenseChart = new Chart(expenseCtx, {
+        type: 'pie',
+        data: {
+            labels: expenseLabels,
+            datasets: [{
+                data: expenseData,
+                backgroundColor: generateColors(expenses.length),
+                borderWidth: 1,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: 'var(--text-color)',
+                        font: {
+                            size: 14,
+                            family: "'Poppins', sans-serif"
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            return `${context.label.split(' (')[0]}: ${formatCurrency(value)}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Inicialização
+document.getElementById('date').value = getCurrentDate();
+updateFilteredView();
+calculateBalances();
+</script>
 </body>
 </html>
