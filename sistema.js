@@ -998,6 +998,7 @@ function generatePieChart() {
         return;
     }
 
+    // Filtrar transações pelo período e tipo
     const filteredTransactions = transactions.filter(t => {
         return t.date >= startDate && t.date <= endDate && t.type === chartType;
     });
@@ -1016,6 +1017,7 @@ function generatePieChart() {
         return;
     }
 
+    // Calcular total e porcentagens
     const totalAmount = data.reduce((sum, value) => sum + value, 0);
     const percentages = data.map(value => ((value / totalAmount) * 100).toFixed(1));
 
