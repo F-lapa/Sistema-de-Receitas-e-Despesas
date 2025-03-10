@@ -525,6 +525,36 @@ body::before {
     transform: rotate(90deg);
 }
 
+#pieChartModal .modal-content {
+    background: var(--card-bg);
+    margin: 8% auto;
+    padding: 35px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px; /* Reduzido para compactação */
+    max-height: 80vh; /* Limita altura máxima */
+    overflow-y: auto; /* Adiciona barra de rolagem se necessário */
+    box-shadow: var(--shadow);
+    color: var(--text-color);
+    animation: slideIn 0.5s ease-out;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#pieChartModal .modal-content > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza os itens horizontalmente */
+    gap: 15px;
+}
+
+#pieChartModal .modal-content canvas {
+    width: 100% !important; /* Usa largura disponível */
+    max-width: 400px; /* Tamanho máximo compacto */
+    height: auto !important; /* Mantém proporção */
+    margin: 20px auto; /* Centraliza o gráfico */
+}
+
 @keyframes slideIn {
     from { transform: translateY(-60px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
