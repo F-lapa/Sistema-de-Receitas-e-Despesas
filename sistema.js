@@ -1035,7 +1035,7 @@ function generatePieChart() {
             responsive: true,
             maintainAspectRatio: true,
             layout: {
-                padding: 10
+                padding: 5
             },
             plugins: {
                 legend: {
@@ -1043,11 +1043,11 @@ function generatePieChart() {
                     labels: {
                         color: 'var(--text-color)',
                         font: {
-                            size: 12,
+                            size: 10,
                             family: "'Poppins', sans-serif"
                         },
-                        padding: 10,
-                        boxWidth: 20
+                        padding: 5,
+                        boxWidth: 15
                     }
                 },
                 title: {
@@ -1055,12 +1055,12 @@ function generatePieChart() {
                     text: `Distribuição de ${chartType === 'receita' ? 'Receitas' : 'Despesas'} (${formatDate(startDate)} a ${formatDate(endDate)})`,
                     color: 'var(--positive-color)',
                     font: {
-                        size: 16,
+                        size: 14,
                         family: "'Orbitron', sans-serif"
                     },
                     padding: {
-                        top: 10,
-                        bottom: 10
+                        top: 5,
+                        bottom: 5
                     }
                 },
                 tooltip: {
@@ -1071,17 +1071,18 @@ function generatePieChart() {
                         }
                     },
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: { size: 12 },
-                    bodyFont: { size: 12 }
+                    titleFont: { size: 10 },
+                    bodyFont: { size: 10 }
                 }
             }
         }
     });
 
     const canvas = document.getElementById('pieChart');
-    canvas.style.maxWidth = '400px';
+    canvas.style.maxWidth = '350px';
     canvas.style.width = '100%';
     canvas.style.height = 'auto';
+    canvas.parentElement.style.minHeight = '200px';
 }
 
 function getRandomColor() {
