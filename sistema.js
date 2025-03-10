@@ -1002,6 +1002,7 @@ function generatePieChart() {
         return t.date >= startDate && t.date <= endDate && t.type === chartType;
     });
 
+    // Agrupar transações pelo nome da descrição e somar os valores
     const descriptionTotals = {};
     filteredTransactions.forEach(t => {
         descriptionTotals[t.description] = (descriptionTotals[t.description] || 0) + t.amount;
@@ -1014,6 +1015,9 @@ function generatePieChart() {
         alert('Nenhuma transação encontrada para o período e tipo selecionados.');
         return;
     }
+
+    const totalAmount = data.reduce((sum, value) => sum + value, 0);
+    const percentages = data.map(value => ((value / totalAmount) * 100).toFixed(1));
 
     const ctx = document.getElementById('pieChart').getContext('2d');
     if (window.pieChartInstance) {
@@ -1047,7 +1051,18 @@ function generatePieChart() {
                             family: "'Poppins', sans-serif"
                         },
                         padding: 5,
-                        boxWidth: 15
+                        boxWidth: 15,
+                        generateLabels: function(chart) {
+                            const data = chart.data;
+                            return data.labels.map((label, i) => ({
+                                text: `${label} (${percentages[i]}%)`,
+                                fillStyle: data.datasets[0].backgroundColor[i],
+                                strokeStyle: 'rgba(255, 255, 255, 0.8)',
+                                lineWidth: 2,
+                                hidden: isNaN(data.datasets[0].data[i]) || data.datasets[0].data[i] === null,
+                                index: i
+                            }));
+                        }
                     }
                 },
                 title: {
@@ -1067,7 +1082,8 @@ function generatePieChart() {
                     callbacks: {
                         label: function(context) {
                             const value = context.raw;
-                            return `${context.label}: ${formatCurrency(value)}`;
+                            const percentage = percentages[context.dataIndex];
+                            return `${context.label}: ${formatCurrency(value)} (${percentage}%)`;
                         }
                     },
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
