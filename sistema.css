@@ -567,11 +567,19 @@ body::before {
     margin-bottom: 8px;
 }
 
+#pieChartModal .modal-content .close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    cursor: pointer;
+}
+
 #pieChartModal .modal-content .legend {
     font-size: 0.9rem;
     line-height: 1.2;
     max-height: 100px;
     overflow-y: auto;
+    color: rgba(255, 255, 255, 0.9); /* Ajuste para legibilidade */
 }
 
 @keyframes slideIn {
@@ -639,4 +647,31 @@ body::before {
     font-weight: 700;
     color: var(--positive-color);
     text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+}
+
+.transaction-description {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.transaction-icon {
+    font-size: 1.2rem;
+}
+
+.transaction-amount {
+    font-weight: 600;
+}
+
+.transaction-amount.receita { color: var(--positive-color); }
+.transaction-amount.despesa { color: var(--negative-color); }
+
+.remove-icon {
+    color: var(--negative-color);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.remove-icon:hover {
+    transform: scale(1.2);
 }
