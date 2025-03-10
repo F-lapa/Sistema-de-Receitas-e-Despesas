@@ -527,32 +527,45 @@ body::before {
 
 #pieChartModal .modal-content {
     background: var(--card-bg);
-    margin: 8% auto;
-    padding: 35px;
+    margin: 5% auto; /* Ajustado para começar mais alto */
+    padding: 20px; /* Reduzido de 35px para liberar espaço */
     border-radius: 20px;
     width: 90%;
-    max-width: 600px; /* Reduzido para compactação */
-    max-height: 80vh; /* Limita altura máxima */
-    overflow-y: auto; /* Adiciona barra de rolagem se necessário */
+    max-width: 600px;
+    max-height: 85vh; /* Aumentado para 85vh para mais espaço */
+    overflow-y: auto; /* Mantém a barra de rolagem */
     box-shadow: var(--shadow);
     color: var(--text-color);
     animation: slideIn 0.5s ease-out;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centraliza verticalmente o conteúdo */
 }
 
 #pieChartModal .modal-content > div {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centraliza os itens horizontalmente */
-    gap: 15px;
+    align-items: center;
+    gap: 10px; /* Reduzido de 15px */
+}
+
+#pieChartModal .modal-content h2 {
+    font-size: 1.8rem; /* Reduzido de 2rem */
+    margin-bottom: 15px; /* Reduzido de 25px */
 }
 
 #pieChartModal .modal-content canvas {
-    width: 100% !important; /* Usa largura disponível */
-    max-width: 400px; /* Tamanho máximo compacto */
-    height: auto !important; /* Mantém proporção */
-    margin: 20px auto; /* Centraliza o gráfico */
+    width: 100% !important;
+    max-width: 400px;
+    height: auto !important;
+    margin: 10px auto; /* Reduzido de 20px */
+    flex-shrink: 0; /* Impede que o canvas encolha demais */
+}
+
+#pieChartModal .modal-content .form-group {
+    margin-bottom: 10px; /* Reduz espaço abaixo dos campos */
 }
 
 @keyframes slideIn {
